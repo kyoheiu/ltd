@@ -1,5 +1,4 @@
 <script lang="ts">
-  import svelteLogo from "./assets/svelte.svg";
   import { onMount } from "svelte";
   import SortableList from "@palsch/svelte-sortablejs";
   import { ulid } from "ulid";
@@ -8,16 +7,14 @@
     id: string;
     value: string;
     todo: boolean;
-    category: string | null;
+    tags: string[] | null;
   }
 
   let items = [];
-  let items2 = [];
   onMount(async () => {
     const res = await fetch("/task");
     const j: Task[] = await res.json();
     items = j;
-    items2 = j;
   });
 
   let newItem = "";
@@ -37,15 +34,35 @@
       value: value,
     });
     items = items;
+    newItem = "";
 
     fetch("/task", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         id: id,
         value: value,
+      }),
+    }).then((res) => {
+      console.log(res.status);
+    });
+  }
+
+  function deleteItem(id) {
+    const i = items.findIndex((item) => item.id === id);
+    console.log(`item to delete: ${id} at ${i}`)
+    items.splice(i, 1);
+    items = items;
+
+    fetch("/task", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        position: i,
       }),
     }).then((res) => {
       console.log(res.status);
@@ -57,7 +74,7 @@
   }
 
   function getItemById(id) {
-    return items.concat(items2).find((item) => item.id == id);
+    return items.find((item) => item.id === id);
   }
 </script>
 
@@ -74,7 +91,13 @@
     {getItemById}
   >
     {item.value}
+    {#if item.tags}
+    {#each item.tags as tag}
+      <div>{tag}</div>
+    {/each}
+    {/if}
     <input type="checkbox" />
+    <button on:click={() => deleteItem(item.id)}>x</button>
   </SortableList>
 </main>
 

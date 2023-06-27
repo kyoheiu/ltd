@@ -12,7 +12,7 @@ use axum::{
 use error::Error;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 use std::env;
 use std::sync::{Arc, Mutex};
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
@@ -24,7 +24,7 @@ const COOKIE_NAME: &str = "way_auth";
 struct Core {
     encoding_key: EncodingKey,
     decoding_key: DecodingKey,
-    items: Arc<Mutex<Vec<Task>>>
+    items: Arc<Mutex<VecDeque<Item>>>
 }
 
 impl Core {
@@ -33,10 +33,10 @@ impl Core {
     let json = match json {
         Err(_) => {
             println!("json file not found");
-            vec![]
+            VecDeque::new()
         },
         Ok(json) => {
-            let json: Vec<Task> = serde_json::from_str(&json).unwrap();
+            let json: VecDeque<Item> = serde_json::from_str(&json).unwrap();
             println!("{:?}", json);
             json
         }
@@ -50,20 +50,25 @@ impl Core {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Tasks(Vec<Task>);
+struct Items(VecDeque<Item>);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct Task {
+struct Item {
     id: String,
     value: String,
     todo: bool,
-    category: Option<String>
+    tags: Option<Vec<String>>
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Value {
+struct PostValue {
     id: String,
     value: String
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DeleteValue {
+    position: usize
 }
 
 #[derive(Deserialize)]
@@ -85,7 +90,7 @@ async fn main() -> Result<(), Error> {
     // build our application with a single route
     let app = Router::new()
         .route("/health", get(health))
-        .route("/task", get(read_task).post(post_task))
+        .route("/task", get(read_item).post(post_item).delete(delete_item))
         .route("/api/ldaplogin", post(ldaplogin))
         .route("/api/logout", get(logout))
         .layer(CookieManagerLayer::new())
@@ -105,21 +110,30 @@ async fn health() -> Html<&'static str> {
 }
 
 #[debug_handler]
-async fn read_task(State(core): State<Core>) -> Json<Vec<Task>> {
-    Json(core.items.lock().unwrap().to_vec())
+async fn read_item(State(core): State<Core>) -> Json<Vec<Item>> {
+    Json(core.items.lock().unwrap().clone().into())
 }
 
 #[debug_handler]
-async fn post_task(State(core): State<Core>, Json(payload): Json<Value>) {
+async fn post_item(State(core): State<Core>, Json(payload): Json<PostValue>) {
     println!("item to add: {:?}", payload);
     let mut items = core.items.lock().unwrap();
-    items.push(Task {
+    items.push_front(Item {
         id: payload.id,
         value: payload.value,
         todo: true,
-        category: None
+        tags: None
     });
-    let json = serde_json::to_string(&Tasks(items.to_vec())).unwrap();
+    let json = serde_json::to_string(&Items(items.clone())).unwrap();
+    std::fs::write("task.json", json).unwrap(); 
+}
+
+#[debug_handler]
+async fn delete_item(State(core): State<Core>, Json(payload): Json<DeleteValue>) {
+    println!("position to delete: {:?}", payload);
+    let mut items = core.items.lock().unwrap();
+    items.remove(payload.position);
+    let json = serde_json::to_string(&Items(items.clone())).unwrap();
     std::fs::write("task.json", json).unwrap(); 
 }
 
