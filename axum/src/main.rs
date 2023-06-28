@@ -23,7 +23,7 @@ const COOKIE_NAME: &str = "ltd_auth";
 struct Core {
     encoding_key: EncodingKey,
     decoding_key: DecodingKey,
-    items: Arc<Mutex<VecDeque<Item>>>,
+    items: Arc<Mutex<Items>>,
 }
 
 impl Core {
@@ -32,10 +32,12 @@ impl Core {
         let json = match json {
             Err(_) => {
                 println!("json file not found");
-                VecDeque::new()
+                Items {
+                    items: VecDeque::new(),
+                }
             }
             Ok(json) => {
-                let json: VecDeque<Item> = serde_json::from_str(&json).unwrap();
+                let json: Items = serde_json::from_str(&json).unwrap();
                 json
             }
         };
@@ -47,7 +49,7 @@ impl Core {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct Items {
     items: VecDeque<Item>,
 }
@@ -124,8 +126,8 @@ async fn read_item(cookies: Cookies, State(core): State<Core>) -> Result<impl In
     if let Ok(name) = is_valid(cookies, &core.decoding_key) {
         println!("{}", name);
         let item = core.items.lock().unwrap().clone();
-        println!("{:?}", item);
-        Ok(Json(item))
+        println!("{:?}", item.items);
+        Ok(Json(item.items))
     } else {
         Err(Error::NotVerified)
     }
@@ -138,7 +140,7 @@ async fn update_item(
 ) -> Result<(), Error> {
     if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
         let mut items = core.items.lock().unwrap();
-        *items = payload.items;
+        *items = payload;
         save_json(items);
         Ok(println!("Updated."))
     } else {
@@ -211,10 +213,7 @@ fn is_valid(cookies: Cookies, key: &DecodingKey) -> Result<String, Error> {
     }
 }
 
-fn save_json(items: MutexGuard<VecDeque<Item>>) {
-    let json = serde_json::to_string(&Items {
-        items: items.clone(),
-    })
-    .unwrap();
+fn save_json(items: MutexGuard<Items>) {
+    let json = serde_json::to_string(&items.clone()).unwrap();
     std::fs::write("items.json", json).unwrap();
 }
