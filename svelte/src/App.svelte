@@ -193,6 +193,7 @@
   </nav>
   <input type="text" bind:value={newItem} />
   <button on:click={() => addItem(newItem)}>add</button>
+  {#if state == 0}
   <SortableList
     {sortableOptions}
     on:orderChanged={itemOrderChanged}
@@ -209,4 +210,20 @@
     {/if}
     <button class="button-dot" style="color: {dotColor(item.dot)}" on:click={() => changeColor(item.id)}>●</button>
   </SortableList>
+  {:else}
+  <ul>
+  {#each items as item}
+  <li>
+    {item.value}
+    {#if state != 4}
+    <input type="checkbox" on:click={() => archiveItem(item.id)}/>
+    {:else}
+    <input type="checkbox" checked on:click={() => archiveItem(item.id)}/>
+    {/if}
+    <button class="button-dot" style="color: {dotColor(item.dot)}" on:click={() => changeColor(item.id)}>●</button>
+
+    </li>
+  {/each}
+</ul>
+  {/if}
 </main>
