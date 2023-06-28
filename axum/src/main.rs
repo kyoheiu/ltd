@@ -1,7 +1,7 @@
 mod error;
 
 use axum::debug_handler;
-use axum::extract::{Json, State};
+use axum::extract::{Json, Query, State};
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::Form;
 use axum::{
@@ -11,7 +11,7 @@ use axum::{
 use error::Error;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use std::collections::{VecDeque};
+use std::collections::VecDeque;
 use std::env;
 use std::sync::{Arc, Mutex, MutexGuard};
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
@@ -86,6 +86,11 @@ struct Claims {
     exp: usize,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct Param {
+    token: String,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let core = Core::default()?;
@@ -116,65 +121,102 @@ async fn health() -> Html<&'static str> {
 }
 
 #[debug_handler]
-async fn read_item(
-    cookies: Cookies,
-    State(core): State<Core>) -> Result<impl IntoResponse, Error> {
+async fn read_item(cookies: Cookies, State(core): State<Core>) -> Result<impl IntoResponse, Error> {
     if let Ok(name) = is_valid(cookies, &core.decoding_key) {
         println!("{}", name);
-    let item = core.items.lock().unwrap().clone();
-    println!("{:?}", item);
-    Ok(Json(item))
+        let item = core.items.lock().unwrap().clone();
+        println!("{:?}", item);
+        Ok(Json(item))
     } else {
-        Err(Error::Ldap("Not verified.".to_string()))
+        Err(Error::NotVerified)
     }
 }
 
 #[debug_handler]
-async fn post_item(State(core): State<Core>, Json(payload): Json<ValuePosted>) {
-    println!("item to add: {:?}", payload);
-    let mut items = core.items.lock().unwrap();
-    items.push_front(Item {
-        id: payload.id,
-        value: payload.value,
-        todo: true,
-        dot: 0,
-    });
-    save_json(items);
+async fn post_item(
+    State(core): State<Core>,
+    cookies: Cookies,
+    Json(payload): Json<ValuePosted>,
+) -> Result<(), Error> {
+    if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
+        println!("item to add: {:?}", payload);
+        let mut items = core.items.lock().unwrap();
+        items.push_front(Item {
+            id: payload.id,
+            value: payload.value,
+            todo: true,
+            dot: 0,
+        });
+        save_json(items);
+        Ok(())
+    } else {
+        Err(Error::NotVerified)
+    }
 }
 
 #[debug_handler]
-async fn archive_item(State(core): State<Core>, Json(payload): Json<ValueUpdated>) {
-    println!("position to archive: {:?}", payload);
-    let mut items = core.items.lock().unwrap();
-    let mut target = items.iter_mut().find(|x| x.id == payload.id).unwrap();
-    target.todo = !target.todo;
-    save_json(items);
+async fn archive_item(
+    State(core): State<Core>,
+
+    cookies: Cookies,
+    Json(payload): Json<ValueUpdated>,
+) -> Result<(), Error> {
+    if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
+        println!("position to archive: {:?}", payload);
+        let mut items = core.items.lock().unwrap();
+        let mut target = items.iter_mut().find(|x| x.id == payload.id).unwrap();
+        target.todo = !target.todo;
+        save_json(items);
+        Ok(())
+    } else {
+        Err(Error::NotVerified)
+    }
 }
 
 #[debug_handler]
-async fn change_dot(State(core): State<Core>, Json(payload): Json<ValueUpdated>) {
-    println!("item to change dot: {:?}", payload);
-    let mut items = core.items.lock().unwrap();
-    let mut target = items.iter_mut().find(|x| x.id == payload.id).unwrap();
-    let old_dot = target.dot;
-    target.dot = if old_dot == 3 { 0 } else { old_dot + 1 };
-    save_json(items);
+async fn change_dot(
+    State(core): State<Core>,
+
+    cookies: Cookies,
+    Json(payload): Json<ValueUpdated>,
+) -> Result<(), Error> {
+    if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
+        println!("item to change dot: {:?}", payload);
+        let mut items = core.items.lock().unwrap();
+        let mut target = items.iter_mut().find(|x| x.id == payload.id).unwrap();
+        let old_dot = target.dot;
+        target.dot = if old_dot == 3 { 0 } else { old_dot + 1 };
+        save_json(items);
+        Ok(())
+    } else {
+        Err(Error::NotVerified)
+    }
 }
 
 #[debug_handler]
-async fn change_order(State(core): State<Core>, Json(payload): Json<ValueSwapped>) {
-    println!("item to swap: {:?}", payload);
-    let mut items = core.items.lock().unwrap();
-    let target1 = items
-        .iter_mut()
-        .position(|x| x.id == payload.swap[0])
-        .unwrap();
-    let target2 = items
-        .iter_mut()
-        .position(|x| x.id == payload.swap[1])
-        .unwrap();
-    items.swap(target1, target2);
-    save_json(items);
+async fn change_order(
+    State(core): State<Core>,
+
+    cookies: Cookies,
+    Json(payload): Json<ValueSwapped>,
+) -> Result<(), Error> {
+    if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
+        println!("item to swap: {:?}", payload);
+        let mut items = core.items.lock().unwrap();
+        let target1 = items
+            .iter_mut()
+            .position(|x| x.id == payload.swap[0])
+            .unwrap();
+        let target2 = items
+            .iter_mut()
+            .position(|x| x.id == payload.swap[1])
+            .unwrap();
+        items.swap(target1, target2);
+        save_json(items);
+        Ok(())
+    } else {
+        Err(Error::NotVerified)
+    }
 }
 
 #[debug_handler]
