@@ -6,7 +6,7 @@ use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::Form;
 use axum::{
-    routing::{get, post},
+    routing::{get, post, put},
     Router,
 };
 use error::Error;
@@ -14,7 +14,7 @@ use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, 
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, VecDeque};
 use std::env;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
 use tower_http::services::ServeDir;
 
@@ -29,7 +29,7 @@ struct Core {
 
 impl Core {
     fn default() -> Result<Self, Error> {
-    let json = std::fs::read_to_string("task.json");
+    let json = std::fs::read_to_string("items.json");
     let json = match json {
         Err(_) => {
             println!("json file not found");
@@ -57,18 +57,23 @@ struct Item {
     id: String,
     value: String,
     todo: bool,
-    tags: Option<Vec<String>>
+    dot: usize
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct PostValue {
+struct ValuePosted {
     id: String,
     value: String
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct DeleteValue {
-    position: usize
+struct ValueUpdated {
+    id: String
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct ValueSwapped {
+    swap: Vec<String>
 }
 
 #[derive(Deserialize)]
@@ -90,7 +95,10 @@ async fn main() -> Result<(), Error> {
     // build our application with a single route
     let app = Router::new()
         .route("/health", get(health))
-        .route("/task", get(read_item).post(post_item).delete(delete_item))
+        .route("/item", get(read_item).post(post_item))
+        .route("/item/dot", put(change_dot))
+        .route("/item/archive", put(archive_item))
+        .route("/item/swap", put(change_order))
         .route("/api/ldaplogin", post(ldaplogin))
         .route("/api/logout", get(logout))
         .layer(CookieManagerLayer::new())
@@ -110,31 +118,56 @@ async fn health() -> Html<&'static str> {
 }
 
 #[debug_handler]
-async fn read_item(State(core): State<Core>) -> Json<Vec<Item>> {
-    Json(core.items.lock().unwrap().clone().into())
+async fn read_item(State(core): State<Core>) -> Json<VecDeque<Item>> {
+    let item = core.items.lock().unwrap().clone();
+    println!("{:?}", item);
+    Json(item)
 }
 
 #[debug_handler]
-async fn post_item(State(core): State<Core>, Json(payload): Json<PostValue>) {
+async fn post_item(State(core): State<Core>, Json(payload): Json<ValuePosted>) {
     println!("item to add: {:?}", payload);
     let mut items = core.items.lock().unwrap();
     items.push_front(Item {
         id: payload.id,
         value: payload.value,
         todo: true,
-        tags: None
+        dot: 0
     });
-    let json = serde_json::to_string(&Items(items.clone())).unwrap();
-    std::fs::write("task.json", json).unwrap(); 
+    save_json(items);
 }
 
 #[debug_handler]
-async fn delete_item(State(core): State<Core>, Json(payload): Json<DeleteValue>) {
-    println!("position to delete: {:?}", payload);
+async fn archive_item(State(core): State<Core>, Json(payload): Json<ValueUpdated>) {
+    println!("position to archive: {:?}", payload);
     let mut items = core.items.lock().unwrap();
-    items.remove(payload.position);
-    let json = serde_json::to_string(&Items(items.clone())).unwrap();
-    std::fs::write("task.json", json).unwrap(); 
+    let mut target = items.iter_mut().find(|x| x.id == payload.id).unwrap();
+    target.todo = !target.todo;
+    save_json(items);
+}
+
+#[debug_handler]
+async fn change_dot(State(core): State<Core>, Json(payload): Json<ValueUpdated>) {
+    println!("item to change dot: {:?}", payload);
+    let mut items = core.items.lock().unwrap();
+    let mut target = items.iter_mut().find(|x| x.id == payload.id).unwrap();
+    let old_dot = target.dot;
+    target.dot = if old_dot == 3 {
+        0
+    } else {
+        old_dot + 1
+    };
+    save_json(items);
+}
+
+#[debug_handler]
+async fn change_order(State(core): State<Core>, Json(payload): Json<ValueSwapped>) {
+    println!("item to swap: {:?}", payload);
+    let mut items = core.items.lock().unwrap();
+    let target1 = items.iter_mut().position(|x| x.id == payload.swap[0]).unwrap();
+    let target2 = items.iter_mut().position(|x| x.id == payload.swap[1]).unwrap();
+    items.swap(target1, target2);
+    save_json(items);
 }
 
 #[debug_handler]
@@ -150,42 +183,6 @@ async fn auth(
         Redirect::to(&format!("/?ref={}", rf)).into_response()
     }
 }
-
-// #[debug_handler]
-// async fn login(
-//     Query(params): Query<BTreeMap<String, String>>,
-//     cookies: Cookies,
-//     State(core): State<Arc<Core>>,
-//     Form(log_in): Form<LogIn>,
-// ) -> impl IntoResponse {
-//     let username = log_in.username.trim();
-//     let password = log_in.password.trim();
-//     if username == env::var("WAY_USERNAME").unwrap().trim()
-//         && password == env::var("WAY_PASSWORD").unwrap().trim()
-//     {
-//         let my_claims = Claims {
-//             sub: env::var("WAY_USERNAME").unwrap(),
-//             exp: 2000000000,
-//         };
-//         let token = encode(&Header::default(), &my_claims, &core.encoding_key).unwrap();
-//         let cookie = Cookie::build(COOKIE_NAME, token)
-//             .domain(env::var("WAY_DOMAIN").unwrap())
-//             .path("/")
-//             .max_age(cookie::time::Duration::days(7))
-//             .secure(true)
-//             .http_only(true)
-//             .finish();
-//         cookies.add(cookie);
-//
-//         if let Some(rf) = params.get("ref") {
-//             Redirect::to(rf).into_response()
-//         } else {
-//             Redirect::to("/").into_response()
-//         }
-//     } else {
-//         Redirect::to("/").into_response()
-//     }
-// }
 
 #[debug_handler]
 async fn ldaplogin(
@@ -251,4 +248,9 @@ fn is_valid(cookies: Cookies, key: &DecodingKey) -> Result<String, Error> {
     } else {
         Err(Error::Io("error".to_string()))
     }
+}
+
+fn save_json(items: MutexGuard<VecDeque<Item>>) {
+    let json = serde_json::to_string(&Items(items.clone())).unwrap();
+    std::fs::write("items.json", json).unwrap(); 
 }

@@ -35,3 +35,8 @@ li {
   display: flex;
   justify-content: space-between;
 }
+
+.button-dot {
+  border: none;
+  background-color: #242424;
+}
