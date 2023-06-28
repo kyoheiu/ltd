@@ -13,6 +13,12 @@
     NotLoggedIn,
   }
 
+  const normalColor = "#ACB0BE";
+  const greenColor = "#40A02B";
+  const yellowColor = "#DF8E1D";
+  const redColor = "#D20F39";
+  const archivedColor = "#5C5F77";
+
   interface Item {
     id: string;
     value: string;
@@ -21,6 +27,7 @@
   }
 
   let state = State.All;
+  let original = [];
   let items = [];
   let archived = [];
   let newItem = "";
@@ -40,6 +47,7 @@
           archived.push(j[i]);
         }
       }
+      original = items;
       items = items;
       archived = archived;
     }
@@ -54,6 +62,7 @@
   };
 
   const changeState = async (newState: State) => {
+    console.log("Changing state...");
     state = newState;
 
     const res = await fetch("/item");
@@ -61,6 +70,7 @@
       state = 5;
     }
     const j: Item[] = await res.json();
+    original = [];
     items = [];
     archived = [];
     for (let i = 0; i < j.length; i++) {
@@ -70,6 +80,7 @@
         archived.push(j[i]);
       }
     }
+    original = items;
 
     switch (state) {
       case State.All:
@@ -93,27 +104,33 @@
     }
   };
 
-  function dotColor(dot: number): string {
-    let color = "";
-    switch (dot) {
-      case 1:
-        color = "green";
+  const updateState = (s: State) => {
+    console.log("Updating state...");
+    switch (s) {
+      case State.All:
+        items = original;
         break;
-      case 2:
-        color = "yellow";
+      case State.Green:
+        items = original.filter((x) => x.dot == 1);
         break;
-      case 3:
-        color = "red";
+      case State.Yellow:
+        items = original.filter((x) => x.dot == 2);
         break;
-      default:
-        color = "black";
+      case State.Red:
+        items = original.filter((x) => x.dot == 3);
+        break;
+      case State.Archived:
+        break;
+      case State.NotLoggedIn:
+        original = [];
+        items = [];
+        archived = [];
         break;
     }
-    return color;
   }
 
   const updateItems = async () => {
-      const arr = items.concat(archived);
+    const arr = original.concat(archived);
     const res = await fetch("/item", {
       method: "POST",
       headers: {
@@ -124,34 +141,61 @@
       }),
     });
     console.log(res.status);
+  };
+
+  function dotColor(dot: number): string {
+    let color = "";
+    switch (dot) {
+      case 1:
+        color = greenColor;
+        break;
+      case 2:
+        color = yellowColor;
+        break;
+      case 3:
+        color = redColor;
+        break;
+      case 4:
+        color = archivedColor;
+        break;
+      default:
+        color = normalColor;
+        break;
+    }
+    return color;
   }
 
   const changeColor = async (id: string) => {
-    const i = items.findIndex((item) => item.id === id);
-    console.log(`item to change color: ${id} at ${i}`);
-    if (items[i].dot === 3) {
-      items[i].dot = 0;
-    } else {
-      items[i].dot += 1;
+    if (state == State.Archived) {
+      console.log("Cannot change color of archived item.");
+      return;
     }
-    items = items;
+    const i = original.findIndex((item) => item.id === id);
+    if (original[i].dot === 3) {
+      original[i].dot = 0;
+    } else {
+      original[i].dot += 1;
+    }
+    original = original;
 
+    updateState(state);
     updateItems();
-  }
+  };
 
   const addItem = async (value: string) => {
     console.log("item to add: " + value);
     const id = ulid();
     console.log(id);
     newItem = "";
-    items.unshift({
+    original.unshift({
       id: id,
       value: value,
       todo: true,
       dot: 0,
     });
-    items = items;
+    original = original;
 
+    updateState(state);
     updateItems();
   };
 
@@ -160,25 +204,29 @@
     if (state == State.Archived) {
       i = archived.findIndex((item) => item.id == id);
       const target = archived[i];
-      archived.slice(i, 1);
-      items.unshift(target);
+      archived.splice(i, 1);
+      original.unshift(target);
+      original[0].todo = true;
     } else {
-      i = items.findIndex((item) => item.id == id);
-      const target = items[i];
-      items.slice(i, 1);
-      archived.unshift(target);
+      i = original.findIndex((item) => item.id == id);
+      const target2 = original[i];
+      original.splice(i, 1);
+      archived.unshift(target2);
+      archived[0].todo = false;
     }
-    items = items;
+    original = original;
     archived = archived;
 
+    updateState(state);
     updateItems();
   }
 
   const itemOrderChanged = async (event) => {
     console.log("item order changed.");
     const newTodo: Item[] = event.detail;
-    items = newTodo;
+    original = newTodo;
 
+    updateState(state);
     updateItems();
   };
 
@@ -191,7 +239,6 @@
     animation: 100,
     easing: "cubic-bezier(1, 0, 0, 1)",
   };
-
 </script>
 
 <main>
@@ -222,23 +269,40 @@
     </div>
     <nav>
       <button class="button-filter" on:click={() => changeState(State.All)}
-        ><i class="ri-checkbox-blank-circle-fill" /></button
+        ><i
+          class="ri-checkbox-blank-circle-fill"
+          style="color: {normalColor}"
+        /></button
       >
       <button class="button-filter" on:click={() => changeState(State.Green)}
-        ><i class="ri-checkbox-blank-circle-fill" /></button
+        ><i
+          class="ri-checkbox-blank-circle-fill"
+          style="color: {greenColor}"
+        /></button
       >
       <button class="button-filter" on:click={() => changeState(State.Yellow)}
-        ><i class="ri-checkbox-blank-circle-fill" /></button
+        ><i
+          class="ri-checkbox-blank-circle-fill"
+          style="color: {yellowColor}"
+        /></button
       >
       <button class="button-filter" on:click={() => changeState(State.Red)}
-        ><i class="ri-checkbox-blank-circle-fill" /></button
+        ><i
+          class="ri-checkbox-blank-circle-fill"
+          style="color: {redColor}"
+        /></button
       >
       <button class="button-filter" on:click={() => changeState(State.Archived)}
-        ><i class="ri-checkbox-blank-circle-fill" /></button
+        ><i
+          class="ri-checkbox-blank-circle-fill"
+          style="color: {archivedColor}"
+        /></button
       >
     </nav>
-    <input type="text" bind:value={newItem} />
-    <button on:click={() => addItem(newItem)}>add</button>
+    {#if state != State.Archived}
+      <input type="text" bind:value={newItem} />
+      <button on:click={() => addItem(newItem)}>add</button>
+    {/if}
     {#if state == State.All}
       <SortableList
         {sortableOptions}
