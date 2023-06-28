@@ -1,8 +1,7 @@
 mod error;
 
 use axum::debug_handler;
-use axum::extract::{Json, Query, State};
-use axum::http::StatusCode;
+use axum::extract::{Json, State};
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::Form;
 use axum::{
@@ -12,13 +11,13 @@ use axum::{
 use error::Error;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, VecDeque};
+use std::collections::{VecDeque};
 use std::env;
 use std::sync::{Arc, Mutex, MutexGuard};
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
 use tower_http::services::ServeDir;
 
-const COOKIE_NAME: &str = "way_auth";
+const COOKIE_NAME: &str = "ltd_auth";
 
 #[derive(Clone)]
 struct Core {
@@ -37,7 +36,6 @@ impl Core {
             }
             Ok(json) => {
                 let json: VecDeque<Item> = serde_json::from_str(&json).unwrap();
-                println!("{:?}", json);
                 json
             }
         };
@@ -100,7 +98,7 @@ async fn main() -> Result<(), Error> {
         .route("/item/archive", put(archive_item))
         .route("/item/swap", put(change_order))
         .route("/api/ldaplogin", post(ldaplogin))
-        .route("/api/logout", get(logout))
+        .route("/api/logout", post(logout))
         .layer(CookieManagerLayer::new())
         .nest_service("/", ServeDir::new("static"))
         .with_state(core);
@@ -118,10 +116,17 @@ async fn health() -> Html<&'static str> {
 }
 
 #[debug_handler]
-async fn read_item(State(core): State<Core>) -> Json<VecDeque<Item>> {
+async fn read_item(
+    cookies: Cookies,
+    State(core): State<Core>) -> Result<impl IntoResponse, Error> {
+    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
+        println!("{}", name);
     let item = core.items.lock().unwrap().clone();
     println!("{:?}", item);
-    Json(item)
+    Ok(Json(item))
+    } else {
+        Err(Error::Ldap("Not verified.".to_string()))
+    }
 }
 
 #[debug_handler]
@@ -173,22 +178,7 @@ async fn change_order(State(core): State<Core>, Json(payload): Json<ValueSwapped
 }
 
 #[debug_handler]
-async fn auth(
-    Query(params): Query<BTreeMap<String, String>>,
-    cookies: Cookies,
-    State(core): State<Arc<Core>>,
-) -> impl IntoResponse {
-    if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
-        (StatusCode::OK, "Verified").into_response()
-    } else {
-        let rf = params.get("ref").unwrap();
-        Redirect::to(&format!("/?ref={}", rf)).into_response()
-    }
-}
-
-#[debug_handler]
 async fn ldaplogin(
-    Query(params): Query<BTreeMap<String, String>>,
     cookies: Cookies,
     State(core): State<Core>,
     Form(log_in): Form<LogIn>,
@@ -198,8 +188,9 @@ async fn ldaplogin(
     let (con, mut ldap) =
         ldap3::LdapConnAsync::new(&format!("ldap://{}:3890", env::var("TODO_NETWORK")?)).await?;
     ldap3::drive!(con);
-    if let Ok(_result) = ldap.simple_bind(username, password).await?.success() {
-        println!("{:#?}", _result);
+    println!("LDAP server connected.");
+    if let Ok(result) = ldap.simple_bind(username, password).await?.success() {
+        println!("{:#?}", result);
         let my_claims = Claims {
             sub: username.to_string(),
             exp: 2000000000,
@@ -210,16 +201,13 @@ async fn ldaplogin(
             .path("/")
             .max_age(cookie::time::Duration::days(7))
             .secure(true)
+            .same_site(cookie::SameSite::Strict)
             .http_only(true)
             .finish();
         cookies.add(cookie);
-
-        if let Some(rf) = params.get("ref") {
-            Ok(Redirect::to(rf).into_response())
-        } else {
-            Ok(Redirect::to("/").into_response())
-        }
+        Ok(Redirect::to("/").into_response())
     } else {
+        println!("logging in failed.");
         Ok(Redirect::to("/").into_response())
     }
 }
@@ -231,6 +219,7 @@ async fn logout(cookies: Cookies) -> Result<impl IntoResponse, Error> {
             .domain(env::var("TODO_DOMAIN")?)
             .path("/")
             .max_age(cookie::time::Duration::seconds(0))
+            .same_site(cookie::SameSite::Strict)
             .secure(true)
             .http_only(true)
             .finish();
