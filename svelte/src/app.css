@@ -36,9 +36,21 @@ li {
   justify-content: space-between;
 }
 
+.button-logout {
+  border: none;
+  background-color: transparent;
+  color: inherit;
+}
+
 .button-filter {
   border: none;
   background-color: transparent;
+}
+
+.button-toggle {
+  border: none;
+  background-color: transparent;
+  color: inherit;
 }
 
 .button-dot {

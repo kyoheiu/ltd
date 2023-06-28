@@ -127,7 +127,7 @@
         archived = [];
         break;
     }
-  }
+  };
 
   const updateItems = async () => {
     const arr = original.concat(archived);
@@ -265,7 +265,7 @@
   {:else}
     <div class="header">
       <div>ltd</div>
-      <button on:click={logout}><i class="ri-logout-box-r-fill" /></button>
+      <button class="button-logout" on:click={logout}><i class="ri-logout-box-r-fill" /></button>
     </div>
     <nav>
       <button class="button-filter" on:click={() => changeState(State.All)}
@@ -301,7 +301,9 @@
     </nav>
     {#if state != State.Archived}
       <input type="text" bind:value={newItem} />
-      <button on:click={() => addItem(newItem)}>add</button>
+      <button on:click={() => addItem(newItem)}
+        ><i class="ri-add-line" /></button
+      >
     {/if}
     {#if state == State.All}
       <SortableList
@@ -313,7 +315,9 @@
         {getItemById}
       >
         {item.value}
-        <button on:click={() => toggleArchived(item.id)}>archive</button>
+        <button class="button-toggle" on:click={() => toggleArchived(item.id)}
+          ><i class="ri-checkbox-blank-fill" /></button
+        >
         <button
           class="button-dot"
           style="color: {dotColor(item.dot)}"
@@ -325,7 +329,9 @@
         {#each items as item}
           <li>
             {item.value}
-            <button on:click={() => toggleArchived(item.id)}>archive</button>
+            <button class="button-toggle" on:click={() => toggleArchived(item.id)}
+              ><i class="ri-checkbox-blank-fill" /></button
+            >
             <button
               class="button-dot"
               style="color: {dotColor(item.dot)}"
@@ -339,7 +345,9 @@
         {#each archived as item}
           <li>
             {item.value}
-            <button on:click={() => toggleArchived(item.id)}>unarchive</button>
+            <button class="button-toggle" on:click={() => toggleArchived(item.id)}
+              ><i class="ri-checkbox-fill" /></button
+            >
             <button
               class="button-dot"
               style="color: {dotColor(item.dot)}"
