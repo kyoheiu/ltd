@@ -1,7 +1,7 @@
 mod error;
 
 use axum::debug_handler;
-use axum::extract::{Query, State, Json};
+use axum::extract::{Json, Query, State};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::Form;
@@ -24,27 +24,27 @@ const COOKIE_NAME: &str = "way_auth";
 struct Core {
     encoding_key: EncodingKey,
     decoding_key: DecodingKey,
-    items: Arc<Mutex<VecDeque<Item>>>
+    items: Arc<Mutex<VecDeque<Item>>>,
 }
 
 impl Core {
     fn default() -> Result<Self, Error> {
-    let json = std::fs::read_to_string("items.json");
-    let json = match json {
-        Err(_) => {
-            println!("json file not found");
-            VecDeque::new()
-        },
-        Ok(json) => {
-            let json: VecDeque<Item> = serde_json::from_str(&json).unwrap();
-            println!("{:?}", json);
-            json
-        }
-    };
+        let json = std::fs::read_to_string("items.json");
+        let json = match json {
+            Err(_) => {
+                println!("json file not found");
+                VecDeque::new()
+            }
+            Ok(json) => {
+                let json: VecDeque<Item> = serde_json::from_str(&json).unwrap();
+                println!("{:?}", json);
+                json
+            }
+        };
         Ok(Core {
             encoding_key: EncodingKey::from_secret(env::var("TODO_SECRET_KEY")?.as_bytes()),
             decoding_key: DecodingKey::from_secret(env::var("TODO_SECRET_KEY")?.as_bytes()),
-            items: Arc::new(Mutex::new(json))
+            items: Arc::new(Mutex::new(json)),
         })
     }
 }
@@ -57,23 +57,23 @@ struct Item {
     id: String,
     value: String,
     todo: bool,
-    dot: usize
+    dot: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ValuePosted {
     id: String,
-    value: String
+    value: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ValueUpdated {
-    id: String
+    id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ValueSwapped {
-    swap: Vec<String>
+    swap: Vec<String>,
 }
 
 #[derive(Deserialize)]
@@ -132,7 +132,7 @@ async fn post_item(State(core): State<Core>, Json(payload): Json<ValuePosted>) {
         id: payload.id,
         value: payload.value,
         todo: true,
-        dot: 0
+        dot: 0,
     });
     save_json(items);
 }
@@ -152,11 +152,7 @@ async fn change_dot(State(core): State<Core>, Json(payload): Json<ValueUpdated>)
     let mut items = core.items.lock().unwrap();
     let mut target = items.iter_mut().find(|x| x.id == payload.id).unwrap();
     let old_dot = target.dot;
-    target.dot = if old_dot == 3 {
-        0
-    } else {
-        old_dot + 1
-    };
+    target.dot = if old_dot == 3 { 0 } else { old_dot + 1 };
     save_json(items);
 }
 
@@ -164,8 +160,14 @@ async fn change_dot(State(core): State<Core>, Json(payload): Json<ValueUpdated>)
 async fn change_order(State(core): State<Core>, Json(payload): Json<ValueSwapped>) {
     println!("item to swap: {:?}", payload);
     let mut items = core.items.lock().unwrap();
-    let target1 = items.iter_mut().position(|x| x.id == payload.swap[0]).unwrap();
-    let target2 = items.iter_mut().position(|x| x.id == payload.swap[1]).unwrap();
+    let target1 = items
+        .iter_mut()
+        .position(|x| x.id == payload.swap[0])
+        .unwrap();
+    let target2 = items
+        .iter_mut()
+        .position(|x| x.id == payload.swap[1])
+        .unwrap();
     items.swap(target1, target2);
     save_json(items);
 }
@@ -193,7 +195,8 @@ async fn ldaplogin(
 ) -> Result<impl IntoResponse, Error> {
     let username = log_in.username.trim();
     let password = log_in.password.trim();
-    let (con, mut ldap) = ldap3::LdapConnAsync::new(&format!("ldap://{}:3890", env::var("TODO_NETWORK")?)).await?;
+    let (con, mut ldap) =
+        ldap3::LdapConnAsync::new(&format!("ldap://{}:3890", env::var("TODO_NETWORK")?)).await?;
     ldap3::drive!(con);
     if let Ok(_result) = ldap.simple_bind(username, password).await?.success() {
         println!("{:#?}", _result);
@@ -252,5 +255,5 @@ fn is_valid(cookies: Cookies, key: &DecodingKey) -> Result<String, Error> {
 
 fn save_json(items: MutexGuard<VecDeque<Item>>) {
     let json = serde_json::to_string(&Items(items.clone())).unwrap();
-    std::fs::write("items.json", json).unwrap(); 
+    std::fs::write("items.json", json).unwrap();
 }
