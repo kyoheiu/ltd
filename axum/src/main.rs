@@ -1,11 +1,11 @@
 mod error;
 
 use axum::debug_handler;
-use axum::extract::{Json, Query, State};
+use axum::extract::{Json, State};
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::Form;
 use axum::{
-    routing::{get, post, put},
+    routing::{get, post},
     Router,
 };
 use error::Error;
@@ -48,7 +48,9 @@ impl Core {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Items(VecDeque<Item>);
+struct Items {
+    items: VecDeque<Item>,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Item {
@@ -98,10 +100,7 @@ async fn main() -> Result<(), Error> {
     // build our application with a single route
     let app = Router::new()
         .route("/health", get(health))
-        .route("/item", get(read_item).post(post_item))
-        .route("/item/dot", put(change_dot))
-        .route("/item/archive", put(archive_item))
-        .route("/item/swap", put(change_order))
+        .route("/item", get(read_item).post(update_item))
         .route("/api/ldaplogin", post(ldaplogin))
         .route("/api/logout", post(logout))
         .layer(CookieManagerLayer::new())
@@ -131,89 +130,17 @@ async fn read_item(cookies: Cookies, State(core): State<Core>) -> Result<impl In
         Err(Error::NotVerified)
     }
 }
-
 #[debug_handler]
-async fn post_item(
-    State(core): State<Core>,
+async fn update_item(
     cookies: Cookies,
-    Json(payload): Json<ValuePosted>,
+    State(core): State<Core>,
+    Json(payload): Json<Items>,
 ) -> Result<(), Error> {
     if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
-        println!("item to add: {:?}", payload);
         let mut items = core.items.lock().unwrap();
-        items.push_front(Item {
-            id: payload.id,
-            value: payload.value,
-            todo: true,
-            dot: 0,
-        });
+        *items = payload.items;
         save_json(items);
-        Ok(())
-    } else {
-        Err(Error::NotVerified)
-    }
-}
-
-#[debug_handler]
-async fn archive_item(
-    State(core): State<Core>,
-
-    cookies: Cookies,
-    Json(payload): Json<ValueUpdated>,
-) -> Result<(), Error> {
-    if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
-        println!("position to archive: {:?}", payload);
-        let mut items = core.items.lock().unwrap();
-        let mut target = items.iter_mut().find(|x| x.id == payload.id).unwrap();
-        target.todo = !target.todo;
-        save_json(items);
-        Ok(())
-    } else {
-        Err(Error::NotVerified)
-    }
-}
-
-#[debug_handler]
-async fn change_dot(
-    State(core): State<Core>,
-
-    cookies: Cookies,
-    Json(payload): Json<ValueUpdated>,
-) -> Result<(), Error> {
-    if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
-        println!("item to change dot: {:?}", payload);
-        let mut items = core.items.lock().unwrap();
-        let mut target = items.iter_mut().find(|x| x.id == payload.id).unwrap();
-        let old_dot = target.dot;
-        target.dot = if old_dot == 3 { 0 } else { old_dot + 1 };
-        save_json(items);
-        Ok(())
-    } else {
-        Err(Error::NotVerified)
-    }
-}
-
-#[debug_handler]
-async fn change_order(
-    State(core): State<Core>,
-
-    cookies: Cookies,
-    Json(payload): Json<ValueSwapped>,
-) -> Result<(), Error> {
-    if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
-        println!("item to swap: {:?}", payload);
-        let mut items = core.items.lock().unwrap();
-        let target1 = items
-            .iter_mut()
-            .position(|x| x.id == payload.swap[0])
-            .unwrap();
-        let target2 = items
-            .iter_mut()
-            .position(|x| x.id == payload.swap[1])
-            .unwrap();
-        items.swap(target1, target2);
-        save_json(items);
-        Ok(())
+        Ok(println!("Updated."))
     } else {
         Err(Error::NotVerified)
     }
@@ -285,6 +212,9 @@ fn is_valid(cookies: Cookies, key: &DecodingKey) -> Result<String, Error> {
 }
 
 fn save_json(items: MutexGuard<VecDeque<Item>>) {
-    let json = serde_json::to_string(&Items(items.clone())).unwrap();
+    let json = serde_json::to_string(&Items {
+        items: items.clone(),
+    })
+    .unwrap();
     std::fs::write("items.json", json).unwrap();
 }

@@ -36,6 +36,11 @@ li {
   justify-content: space-between;
 }
 
+.button-filter {
+  border: none;
+  background-color: transparent;
+}
+
 .button-dot {
   border: none;
   background-color: #242424;

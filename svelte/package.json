@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@palsch/svelte-sortablejs": "^1.2.1",
+    "remixicon": "^3.4.0",
     "svelte-drag-drop-touch": "^0.1.9",
     "ulid": "^2.3.0"
   }
