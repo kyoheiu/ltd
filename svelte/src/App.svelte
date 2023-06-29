@@ -1,8 +1,12 @@
 <script lang="ts">
+  import "./app.css";
   import { onMount } from "svelte";
   import SortableList from "@palsch/svelte-sortablejs";
   import { ulid } from "ulid";
   import "remixicon/fonts/remixicon.css";
+  import Modal from "./Modal.svelte";
+  import Login from "./Login.svelte";
+  import Rename from "./Rename.svelte";
 
   enum State {
     All,
@@ -24,6 +28,7 @@
     value: string;
     todo: boolean;
     dot: number;
+    showModal: boolean
   }
 
   let state = State.All;
@@ -242,69 +247,62 @@
 </script>
 
 <main>
-  {#if state == 5}
-    <div class="title">ltd</div>
-    <div>
-      <form id="login-form" method="post" action="api/ldaplogin">
-        <div>
-          <input type="text" name="username" placeholder="DN" required />
-        </div>
-        <div>
-          <input
-            type="password"
-            name="password"
-            placeholder="PASSWORD"
-            required
-          />
-        </div>
-        <p>
-          <button type="submit"> &nbsp;GO&nbsp; </button>
-        </p>
-      </form>
-    </div>
+  {#if state == State.NotLoggedIn}
+    <Login />
   {:else}
-    <div class="header">
-      <div>ltd</div>
-      <button class="button-logout" on:click={logout}><i class="ri-logout-box-r-fill" /></button>
+    <div class="flex flex-col space-y-4 mb-4">
+      <div class="text-3xl flex justify-between">
+        <div class="text-slate-200">ltd</div>
+        <button class="text-slate-200" on:click={logout}
+          ><i class="ri-logout-box-r-fill" /></button
+        >
+      </div>
+
+      {#if state != State.Archived}
+        <div class="flex justify-center">
+          <input class="rounded-md" type="text" bind:value={newItem} />
+          <button class="text-slate-200" on:click={() => addItem(newItem)}
+            ><i class="ri-add-line" /></button
+          >
+        </div>
+      {/if}
+
+      <nav class="flex justify-center space-x-4">
+        <button class="button-filter" on:click={() => changeState(State.All)}
+          ><i
+            class="ri-checkbox-blank-circle-fill"
+            style="color: {normalColor}"
+          /></button
+        >
+        <button class="button-filter" on:click={() => changeState(State.Green)}
+          ><i
+            class="ri-checkbox-blank-circle-fill"
+            style="color: {greenColor}"
+          /></button
+        >
+        <button class="button-filter" on:click={() => changeState(State.Yellow)}
+          ><i
+            class="ri-checkbox-blank-circle-fill"
+            style="color: {yellowColor}"
+          /></button
+        >
+        <button class="button-filter" on:click={() => changeState(State.Red)}
+          ><i
+            class="ri-checkbox-blank-circle-fill"
+            style="color: {redColor}"
+          /></button
+        >
+        <button
+          class="button-filter"
+          on:click={() => changeState(State.Archived)}
+          ><i
+            class="ri-checkbox-blank-circle-fill"
+            style="color: {archivedColor}"
+          /></button
+        >
+      </nav>
     </div>
-    <nav>
-      <button class="button-filter" on:click={() => changeState(State.All)}
-        ><i
-          class="ri-checkbox-blank-circle-fill"
-          style="color: {normalColor}"
-        /></button
-      >
-      <button class="button-filter" on:click={() => changeState(State.Green)}
-        ><i
-          class="ri-checkbox-blank-circle-fill"
-          style="color: {greenColor}"
-        /></button
-      >
-      <button class="button-filter" on:click={() => changeState(State.Yellow)}
-        ><i
-          class="ri-checkbox-blank-circle-fill"
-          style="color: {yellowColor}"
-        /></button
-      >
-      <button class="button-filter" on:click={() => changeState(State.Red)}
-        ><i
-          class="ri-checkbox-blank-circle-fill"
-          style="color: {redColor}"
-        /></button
-      >
-      <button class="button-filter" on:click={() => changeState(State.Archived)}
-        ><i
-          class="ri-checkbox-blank-circle-fill"
-          style="color: {archivedColor}"
-        /></button
-      >
-    </nav>
-    {#if state != State.Archived}
-      <input type="text" bind:value={newItem} />
-      <button on:click={() => addItem(newItem)}
-        ><i class="ri-add-line" /></button
-      >
-    {/if}
+
     {#if state == State.All}
       <SortableList
         {sortableOptions}
@@ -313,44 +311,60 @@
         idKey="id"
         let:item
         {getItemById}
+        ulClass="flex flex-col space-y-2"
+        liClass="text-slate-200 text-lg flex space-x-2 m-auto p-2 border-2 rounded-md w-2/3"
       >
-        {item.value}
-        <button class="button-toggle" on:click={() => toggleArchived(item.id)}
+        <button on:click={() => toggleArchived(item.id)}
           ><i class="ri-checkbox-blank-fill" /></button
         >
+
+        <button on:click={() => (item.showModal = true)}>{item.value}</button>
+        {#if item.showModal}
+        <Modal showModal={item.showModal}>
+          <Rename value={item.value} id={item.id} />
+        </Modal>
+        {/if}
+
         <button
-          class="button-dot"
-          style="color: {dotColor(item.dot)}"
+          style="color: {dotColor(item.dot)}; margin-left: auto"
           on:click={() => changeColor(item.id)}>●</button
         >
       </SortableList>
     {:else if state != State.Archived}
-      <ul>
+      <ul class="flex flex-col space-y-2">
         {#each items as item}
-          <li>
-            {item.value}
-            <button class="button-toggle" on:click={() => toggleArchived(item.id)}
+          <li
+            class="text-slate-200 text-lg flex space-x-2 m-auto p-2 border-2 rounded-md w-2/3"
+          >
+            <button on:click={() => toggleArchived(item.id)}
               ><i class="ri-checkbox-blank-fill" /></button
             >
+
+            <button on:click={() => (item.showModal = true)}>{item.value}</button>
+            <Modal bind:showModal={item.showModal}>
+              <Rename value={item.value} id={item.id} />
+            </Modal>
+
             <button
-              class="button-dot"
-              style="color: {dotColor(item.dot)}"
+              style="color: {dotColor(item.dot)}; margin-left: auto"
               on:click={() => changeColor(item.id)}>●</button
             >
           </li>
         {/each}
       </ul>
     {:else}
-      <ul>
+      <ul class="flex flex-col space-y-2">
         {#each archived as item}
-          <li>
-            {item.value}
-            <button class="button-toggle" on:click={() => toggleArchived(item.id)}
+          <li
+            class="text-slate-200 text-lg flex space-x-2 m-auto p-2 border-2 rounded-md w-2/3"
+          >
+            <button
+              on:click={() => toggleArchived(item.id)}
               ><i class="ri-checkbox-fill" /></button
             >
+            {item.value}
             <button
-              class="button-dot"
-              style="color: {dotColor(item.dot)}"
+              style="color: {dotColor(item.dot)}; margin-left: auto"
               on:click={() => changeColor(item.id)}>●</button
             >
           </li>

@@ -68,16 +68,6 @@ struct ValuePosted {
     value: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct ValueUpdated {
-    id: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct ValueSwapped {
-    swap: Vec<String>,
-}
-
 #[derive(Deserialize)]
 struct LogIn {
     username: String,
@@ -103,6 +93,7 @@ async fn main() -> Result<(), Error> {
     let app = Router::new()
         .route("/health", get(health))
         .route("/item", get(read_item).post(update_item))
+        .route("/api/rename", post(rename_item))
         .route("/api/ldaplogin", post(ldaplogin))
         .route("/api/logout", post(logout))
         .layer(CookieManagerLayer::new())
@@ -132,6 +123,7 @@ async fn read_item(cookies: Cookies, State(core): State<Core>) -> Result<impl In
         Err(Error::NotVerified)
     }
 }
+
 #[debug_handler]
 async fn update_item(
     cookies: Cookies,
@@ -143,6 +135,26 @@ async fn update_item(
         *items = payload;
         save_json(items);
         Ok(println!("Updated."))
+    } else {
+        Err(Error::NotVerified)
+    }
+}
+
+#[debug_handler]
+async fn rename_item (
+    cookies: Cookies,
+    State(core): State<Core>,
+    Form(payload): Form<ValuePosted>,
+) -> Result<impl IntoResponse, Error> {
+    if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
+        let mut items = core.items.lock().unwrap();
+        let target = items.items.iter_mut().find(|x| x.id == payload.id).unwrap();
+        println!("Rename: {} -> {}", target.value, payload.value);
+        target.value = payload.value;
+
+        save_json(items);
+        println!("Updated.");
+        Ok(Redirect::to("/").into_response())
     } else {
         Err(Error::NotVerified)
     }
