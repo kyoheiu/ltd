@@ -1,6 +1,7 @@
 <script lang="ts">
   import "./app.css";
   import { onMount } from "svelte";
+  import logo from "./assets/logo.png";
   import SortableList from "@palsch/svelte-sortablejs";
   import { ulid } from "ulid";
   import "remixicon/fonts/remixicon.css";
@@ -249,10 +250,10 @@
     <Login />
   {:else}
     <div class="flex flex-col space-y-4 mx-4 mb-4 mt-4">
-      <div class="flex justify-between mx-2">
-        <a href="/" class="text-slate-200">ltd</a>
+      <div class="flex justify-between items-center mx-2">
+        <a href="/" class="text-slate-200"><img src={logo} alt="ltd" class="w-5 h-auto" /></a>
         <button class="text-slate-200" on:click={logout}
-          ><i class="ri-logout-circle-r-line" /></button
+          ><i class="ri-logout-circle-r-line" style="color: #A5ADCB" /></button
         >
       </div>
 
@@ -261,7 +262,7 @@
           <div>
             <input
               id="submit-form"
-              class="text-neutral-800 rounded-md p-1 w-full max-w-xs"
+              class="text-neutral-800 bg-slate-200 rounded-md p-1 w-full max-w-xs"
               type="text"
               bind:value={newItem}
             />
@@ -270,7 +271,7 @@
             <button
               id="submit-button"
               type="submit"
-              class="text-slate-200 rounded-md border-2"
+              class="text-slate-200 rounded-md border-2 border-slate-200"
               on:click={(event) => addItem(event, newItem)}
               >&nbsp;<i class="ri-add-line" />&nbsp;</button
             >
@@ -290,7 +291,7 @@
         idKey="id"
         {getItemById}
         ulClass="flex flex-col space-y-2"
-        liClass="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 rounded-md w-5/6"
+        liClass="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
       >
         <button on:click={() => toggleArchived(item.id)}
           ><i class="ri-checkbox-blank-fill" /></button
@@ -307,7 +308,7 @@
       <ul class="flex flex-col space-y-2">
         {#each items as item}
           <li
-            class="text-slate-200 flex space-x-2 m-auto p-2 border-2 rounded-md w-5/6"
+            class="text-slate-200 flex space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
           >
             <button on:click={() => toggleArchived(item.id)}
               ><i class="ri-checkbox-blank-fill" /></button

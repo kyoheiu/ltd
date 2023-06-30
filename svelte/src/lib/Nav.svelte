@@ -15,7 +15,7 @@
 <nav class="flex justify-center space-x-4">
   {#if state == State.All}
     <button
-      class="button-filter border-b"
+      class="button-filter border-b border-slate-200"
       on:click={() => changeState(State.All)}
       ><i
         class="ri-checkbox-blank-circle-fill"
@@ -32,7 +32,7 @@
   {/if}
   {#if state == State.Green}
     <button
-      class="button-filter border-b"
+      class="button-filter border-b border-slate-200"
       on:click={() => changeState(State.Green)}
       ><i
         class="ri-checkbox-blank-circle-fill"
@@ -49,7 +49,7 @@
   {/if}
   {#if state == State.Yellow}
     <button
-      class="button-filter border-b"
+      class="button-filter border-b border-slate-200"
       on:click={() => changeState(State.Yellow)}
       ><i
         class="ri-checkbox-blank-circle-fill"
@@ -66,7 +66,7 @@
   {/if}
   {#if state == State.Red}
     <button
-      class="button-filter border-b"
+      class="button-filter border-b border-slate-200"
       on:click={() => changeState(State.Red)}
       ><i
         class="ri-checkbox-blank-circle-fill"
@@ -83,7 +83,7 @@
   {/if}
   {#if state == State.Archived}
     <button
-      class="button-filter border-b"
+      class="button-filter border-b border-slate-200"
       on:click={() => changeState(State.Archived)}
       ><i
         class="ri-archive-fill"
