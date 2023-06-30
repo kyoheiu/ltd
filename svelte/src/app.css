@@ -4,6 +4,6 @@
 
 @layer base {
   body {
-    @apply bg-slate-800;
+    @apply w-4/5 max-w-screen-sm bg-slate-800 m-auto;
   }
 }

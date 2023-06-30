@@ -238,7 +238,7 @@
   {#if state == State.NotLoggedIn}
     <Login />
   {:else}
-    <div class="flex flex-col space-y-4 mb-4">
+    <div class="flex flex-col space-y-4 mx-4 mb-4">
       <div class="flex justify-between mx-2">
         <a href="/" class="text-slate-200">ltd</a>
         <button class="text-slate-200" on:click={logout}
@@ -247,15 +247,15 @@
       </div>
 
       {#if state != State.Archived}
-        <div class="flex w-2/3 space-x-1 m-auto">
+        <div class="flex justify-center items-center space-x-1">
           <div>
-            <input class="rounded-md max-w-prose w-full" type="text" bind:value={newItem} />
+            <input class="rounded-md p-1" type="text" bind:value={newItem} />
           </div>
           <div>
             <button
               class="text-slate-200 rounded-md border-2"
               on:click={() => addItem(newItem)}
-              ><i class="ri-add-line" /></button
+              >&nbsp;<i class="ri-add-line" />&nbsp;</button
             >
           </div>
         </div>
@@ -289,7 +289,7 @@
       <ul class="flex flex-col space-y-2">
         {#each items as item}
           <li
-            class="text-slate-200 text-lg flex space-x-2 m-auto p-2 border-2 rounded-md w-2/3"
+            class="text-slate-200 flex space-x-2 m-auto p-2 border-2 rounded-md w-5/6"
           >
             <button on:click={() => toggleArchived(item.id)}
               ><i class="ri-checkbox-blank-fill" /></button
@@ -313,12 +313,12 @@
       <ul class="flex flex-col space-y-2">
         {#each archived as item}
           <li
-            class="text-slate-200 text-lg flex space-x-2 m-auto p-2 border-2 rounded-md w-2/3"
+            class="text-slate-200 flex space-x-2 m-auto p-2 border-2 rounded-md w-5/6"
           >
             <button on:click={() => toggleArchived(item.id)}
               ><i class="ri-checkbox-fill" /></button
             >
-            {item.value}
+            <button>{item.value}</button>
             <button
               style="color: {dotColor(item.dot)}; margin-left: auto"
               on:click={() => changeColor(item.id)}>●</button
