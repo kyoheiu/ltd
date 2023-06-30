@@ -8,8 +8,9 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
+<div class="m-auto">
 <dialog
-    class="w-5/6 bg-slate-600"
+    class="bg-slate-600 w-auto rounded-md"
     bind:this={dialog}
     on:close={() => (showModal = false)}
     on:click|self={() => dialog.close()}
@@ -24,3 +25,4 @@
         >
     </div>
 </dialog>
+</div>
