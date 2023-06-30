@@ -7,29 +7,17 @@
   import Modal from "./Modal.svelte";
   import Login from "./Login.svelte";
   import Rename from "./Rename.svelte";
-
-  enum State {
-    All,
-    Green,
-    Yellow,
-    Red,
-    Archived,
-    NotLoggedIn,
-  }
-
-  const normalColor = "#ACB0BE";
-  const greenColor = "#40A02B";
-  const yellowColor = "#DF8E1D";
-  const redColor = "#D20F39";
-  const archivedColor = "#5C5F77";
-
-  interface Item {
-    id: string;
-    value: string;
-    todo: boolean;
-    dot: number;
-    showModal: boolean
-  }
+  import ItemRenamable from "./ItemRenamable.svelte";
+  import {
+    normalColor,
+    greenColor,
+    yellowColor,
+    redColor,
+    archivedColor,
+  } from "./Color.ts";
+  import { State } from "./types.ts";
+  import type { Item } from "./types.ts";
+  import Nav from "./Nav.svelte";
 
   let state = State.All;
   let original = [];
@@ -240,7 +228,7 @@
   }
 
   const sortableOptions = {
-    group: "todo",
+    group: "items",
     animation: 100,
     easing: "cubic-bezier(1, 0, 0, 1)",
   };
@@ -251,7 +239,7 @@
     <Login />
   {:else}
     <div class="flex flex-col space-y-4 mb-4">
-      <div class="text-3xl flex justify-between">
+      <div class="flex justify-between mx-2">
         <div class="text-slate-200">ltd</div>
         <button class="text-slate-200" on:click={logout}
           ><i class="ri-logout-box-r-fill" /></button
@@ -267,40 +255,7 @@
         </div>
       {/if}
 
-      <nav class="flex justify-center space-x-4">
-        <button class="button-filter" on:click={() => changeState(State.All)}
-          ><i
-            class="ri-checkbox-blank-circle-fill"
-            style="color: {normalColor}"
-          /></button
-        >
-        <button class="button-filter" on:click={() => changeState(State.Green)}
-          ><i
-            class="ri-checkbox-blank-circle-fill"
-            style="color: {greenColor}"
-          /></button
-        >
-        <button class="button-filter" on:click={() => changeState(State.Yellow)}
-          ><i
-            class="ri-checkbox-blank-circle-fill"
-            style="color: {yellowColor}"
-          /></button
-        >
-        <button class="button-filter" on:click={() => changeState(State.Red)}
-          ><i
-            class="ri-checkbox-blank-circle-fill"
-            style="color: {redColor}"
-          /></button
-        >
-        <button
-          class="button-filter"
-          on:click={() => changeState(State.Archived)}
-          ><i
-            class="ri-checkbox-blank-circle-fill"
-            style="color: {archivedColor}"
-          /></button
-        >
-      </nav>
+      <Nav changeState={changeState} />
     </div>
 
     {#if state == State.All}
@@ -308,25 +263,19 @@
         {sortableOptions}
         on:orderChanged={itemOrderChanged}
         bind:items
-        idKey="id"
         let:item
+        idKey="id"
         {getItemById}
         ulClass="flex flex-col space-y-2"
-        liClass="text-slate-200 text-lg flex space-x-2 m-auto p-2 border-2 rounded-md w-2/3"
+        liClass="text-slate-200 text-lg flex space-x-2 m-auto p-2 border-2 rounded-md w-5/6"
       >
         <button on:click={() => toggleArchived(item.id)}
           ><i class="ri-checkbox-blank-fill" /></button
         >
-
-        <button on:click={() => (item.showModal = true)}>{item.value}</button>
-        {#if item.showModal}
-        <Modal showModal={item.showModal}>
-          <Rename value={item.value} id={item.id} />
-        </Modal>
-        {/if}
-
+        <ItemRenamable {item} />
+        <i class="ri-drag-move-fill" style="margin-left: auto; cursor: move" />
         <button
-          style="color: {dotColor(item.dot)}; margin-left: auto"
+          style="color: {dotColor(item.dot)}"
           on:click={() => changeColor(item.id)}>●</button
         >
       </SortableList>
@@ -340,7 +289,9 @@
               ><i class="ri-checkbox-blank-fill" /></button
             >
 
-            <button on:click={() => (item.showModal = true)}>{item.value}</button>
+            <button on:click={() => (item.showModal = true)}
+              >{item.value}</button
+            >
             <Modal bind:showModal={item.showModal}>
               <Rename value={item.value} id={item.id} />
             </Modal>
@@ -358,8 +309,7 @@
           <li
             class="text-slate-200 text-lg flex space-x-2 m-auto p-2 border-2 rounded-md w-2/3"
           >
-            <button
-              on:click={() => toggleArchived(item.id)}
+            <button on:click={() => toggleArchived(item.id)}
               ><i class="ri-checkbox-fill" /></button
             >
             {item.value}
