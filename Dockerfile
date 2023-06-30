@@ -15,6 +15,7 @@ FROM debian:bookworm-slim
 WORKDIR /ltd
 COPY --from=frontend-builder /svelte/dist /ltd/static
 COPY --from=backend-builder /axum/target/release/ltd-backend .
+RUN touch items.json
 ENV RUST_LOG info
 EXPOSE 8080
 ENTRYPOINT [ "./ltd-backend" ]
