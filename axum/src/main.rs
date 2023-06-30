@@ -32,7 +32,7 @@ impl Core {
         let json = std::fs::read_to_string("items.json");
         let json = match json {
             Err(_) => {
-                println!("json file not found");
+                println!("Json file not found.");
                 Items {
                     items: VecDeque::new(),
                 }
@@ -126,7 +126,6 @@ async fn read_item(cookies: Cookies, State(core): State<Core>) -> Result<impl In
     if let Ok(name) = is_valid(cookies, &core.decoding_key) {
         println!("{}", name);
         let item = core.items.lock().unwrap().clone();
-        println!("{:?}", item.items);
         Ok(Json(item.items))
     } else {
         Err(Error::NotVerified)
@@ -143,7 +142,6 @@ async fn update_item(
         let mut items = core.items.lock().unwrap();
         *items = payload;
         save_json(items)?;
-        Ok(println!("Updated."))
     } else {
         Err(Error::NotVerified)
     }
@@ -169,9 +167,11 @@ async fn post_item(
             save_json(items)?;
             Ok(println!("Added new item."))
         } else {
+            println!("Invalid token.");
             Err(Error::NotVerified)
         }
     } else {
+        println!("No header.");
         Err(Error::Header)
     }
 }
@@ -188,7 +188,6 @@ async fn rename_item(
         println!("Rename: {} -> {}", target.value, payload.value);
         target.value = payload.value;
         save_json(items)?;
-        println!("Updated.");
         Ok(Redirect::to("/").into_response())
         } else {
             Err(Error::Json(format!("Item with this id not found: {}", payload.id)))
@@ -227,7 +226,7 @@ async fn ldaplogin(
         cookies.add(cookie);
         Ok(Redirect::to("/").into_response())
     } else {
-        println!("logging in failed.");
+        println!("Logging in failed.");
         Ok(Redirect::to("/").into_response())
     }
 }
@@ -244,7 +243,7 @@ async fn logout(cookies: Cookies) -> Result<impl IntoResponse, Error> {
             .http_only(true)
             .finish();
         cookies.add(cookie);
-        println!("cookie removed");
+        println!("Cookie removed.");
     }
     Ok(Redirect::to("/").into_response())
 }
