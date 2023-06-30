@@ -240,22 +240,28 @@
   {:else}
     <div class="flex flex-col space-y-4 mb-4">
       <div class="flex justify-between mx-2">
-        <div class="text-slate-200">ltd</div>
+        <a href="/" class="text-slate-200">ltd</a>
         <button class="text-slate-200" on:click={logout}
-          ><i class="ri-logout-box-r-fill" /></button
+          ><i class="ri-logout-circle-r-line" /></button
         >
       </div>
 
       {#if state != State.Archived}
-        <div class="flex justify-center">
-          <input class="rounded-md" type="text" bind:value={newItem} />
-          <button class="text-slate-200" on:click={() => addItem(newItem)}
-            ><i class="ri-add-line" /></button
-          >
+        <div class="flex w-2/3 space-x-1 m-auto">
+          <div>
+            <input class="rounded-md max-w-prose w-full" type="text" bind:value={newItem} />
+          </div>
+          <div>
+            <button
+              class="text-slate-200 rounded-md border-2"
+              on:click={() => addItem(newItem)}
+              ><i class="ri-add-line" /></button
+            >
+          </div>
         </div>
       {/if}
 
-      <Nav changeState={changeState} />
+      <Nav {changeState} />
     </div>
 
     {#if state == State.All}
@@ -267,7 +273,7 @@
         idKey="id"
         {getItemById}
         ulClass="flex flex-col space-y-2"
-        liClass="text-slate-200 text-lg flex space-x-2 m-auto p-2 border-2 rounded-md w-5/6"
+        liClass="text-slate-200 flex space-x-2 m-auto p-2 border-2 rounded-md w-5/6"
       >
         <button on:click={() => toggleArchived(item.id)}
           ><i class="ri-checkbox-blank-fill" /></button

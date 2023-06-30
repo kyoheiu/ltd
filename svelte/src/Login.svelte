@@ -1,11 +1,23 @@
-<div class="text-3xl">ltd</div>
+<div class="text-3xl text-slate-200 text-center m-2">ltd</div>
 <div>
-    <form id="login-form" method="post" action="api/ldaplogin">
+    <form
+        class="space-y-2 m-4 text-center"
+        id="login-form"
+        method="post"
+        action="api/ldaplogin"
+    >
         <div>
-            <input type="text" name="username" placeholder="DN" required />
+            <input
+                class="rounded-md p-1"
+                type="text"
+                name="username"
+                placeholder="DN"
+                required
+            />
         </div>
         <div>
             <input
+                class="rounded-md p-1"
                 type="password"
                 name="password"
                 placeholder="PASSWORD"
@@ -13,7 +25,9 @@
             />
         </div>
         <p>
-            <button type="submit"> &nbsp;GO&nbsp; </button>
+            <button class="text-2xl text-slate-200 m-2" type="submit"
+                ><i class="ri-login-circle-line" /></button
+            >
         </p>
     </form>
 </div>

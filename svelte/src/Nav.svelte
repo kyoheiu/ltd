@@ -38,7 +38,7 @@
   >
   <button class="button-filter" on:click={() => changeState(State.Archived)}
     ><i
-      class="ri-checkbox-blank-circle-fill"
+      class="ri-archive-fill"
       style="color: {archivedColor}"
     /></button
   >
