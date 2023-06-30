@@ -9,6 +9,7 @@ pub enum Error {
     Env(String),
     Ldap(String),
     Jwt(String),
+    Header,
     NotVerified,
 }
 
@@ -21,6 +22,7 @@ impl std::fmt::Display for Error {
             Error::Env(s) => s,
             Error::Ldap(s) => s,
             Error::Jwt(s) => s,
+            Error::Header => "Token not found.",
             Error::NotVerified => "Not verified.",
         };
         write!(f, "{}", printable)
@@ -45,6 +47,12 @@ impl From<std::env::VarError> for Error {
     }
 }
 
+impl From<http::header::ToStrError> for Error {
+    fn from(err: http::header::ToStrError) -> Self {
+        Error::Io(err.to_string())
+    }
+}
+
 impl From<jsonwebtoken::errors::Error> for Error {
     fn from(err: jsonwebtoken::errors::Error) -> Self {
         Error::Io(err.to_string())
@@ -58,6 +66,7 @@ impl IntoResponse for Error {
             Error::Env(s) => s,
             Error::Ldap(s) => s,
             Error::Jwt(s) => s,
+            Error::Header => "Token not found.".to_string(),
             Error::NotVerified => "Not verified.".to_string(),
         };
         (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()

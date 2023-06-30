@@ -2,6 +2,7 @@ mod error;
 
 use axum::debug_handler;
 use axum::extract::{Json, State};
+use axum::http::HeaderMap;
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::Form;
 use axum::{
@@ -63,8 +64,13 @@ struct Item {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct ValuePosted {
+struct ValueRenamed {
     id: String,
+    value: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Value {
     value: String,
 }
 
@@ -96,6 +102,7 @@ async fn main() -> Result<(), Error> {
         .route("/api/rename", post(rename_item))
         .route("/api/ldaplogin", post(ldaplogin))
         .route("/api/logout", post(logout))
+        .route("/api/post", post(post_item))
         .layer(CookieManagerLayer::new())
         .nest_service("/", ServeDir::new("static"))
         .with_state(core);
@@ -141,10 +148,37 @@ async fn update_item(
 }
 
 #[debug_handler]
-async fn rename_item (
+async fn post_item(
+    State(core): State<Core>,
+    headers: HeaderMap,
+    Json(payload): Json<Value>,
+) -> Result<(), Error> {
+    if let Some(token) = headers.get("authorization") {
+        if token.to_str()? == env::var("LTD_API_TOKEN")? {
+            let value = payload.value;
+            let id = ulid::Ulid::new().to_string();
+            let mut items = core.items.lock().unwrap();
+            items.items.push_front(Item {
+                id,
+                value,
+                todo: true,
+                dot: 0,
+            });
+            save_json(items);
+            Ok(println!("Added new item."))
+        } else {
+            Err(Error::NotVerified)
+        }
+    } else {
+        Err(Error::Header)
+    }
+}
+
+#[debug_handler]
+async fn rename_item(
     cookies: Cookies,
     State(core): State<Core>,
-    Form(payload): Form<ValuePosted>,
+    Form(payload): Form<ValueRenamed>,
 ) -> Result<impl IntoResponse, Error> {
     if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
         let mut items = core.items.lock().unwrap();
