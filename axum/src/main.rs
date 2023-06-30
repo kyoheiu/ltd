@@ -37,10 +37,12 @@ impl Core {
                     items: VecDeque::new(),
                 }
             }
-            Ok(json) => {
-                let json: Items = serde_json::from_str(&json).unwrap();
-                json
-            }
+            Ok(json) => match serde_json::from_str(&json) {
+                Ok(json) => json,
+                Err(_) => Items {
+                    items: VecDeque::new(),
+                },
+            },
         };
         Ok(Core {
             encoding_key: EncodingKey::from_secret(env::var("LTD_SECRET_KEY")?.as_bytes()),
@@ -140,7 +142,7 @@ async fn update_item(
     if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
         let mut items = core.items.lock().unwrap();
         *items = payload;
-        save_json(items);
+        save_json(items)?;
         Ok(println!("Updated."))
     } else {
         Err(Error::NotVerified)
@@ -164,7 +166,7 @@ async fn post_item(
                 todo: true,
                 dot: 0,
             });
-            save_json(items);
+            save_json(items)?;
             Ok(println!("Added new item."))
         } else {
             Err(Error::NotVerified)
@@ -182,13 +184,15 @@ async fn rename_item(
 ) -> Result<impl IntoResponse, Error> {
     if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
         let mut items = core.items.lock().unwrap();
-        let target = items.items.iter_mut().find(|x| x.id == payload.id).unwrap();
+        if let Some(target) = items.items.iter_mut().find(|x| x.id == payload.id) {
         println!("Rename: {} -> {}", target.value, payload.value);
         target.value = payload.value;
-
-        save_json(items);
+        save_json(items)?;
         println!("Updated.");
         Ok(Redirect::to("/").into_response())
+        } else {
+            Err(Error::Json(format!("Item with this id not found: {}", payload.id)))
+        }
     } else {
         Err(Error::NotVerified)
     }
@@ -202,8 +206,7 @@ async fn ldaplogin(
 ) -> Result<impl IntoResponse, Error> {
     let username = log_in.username.trim();
     let password = log_in.password.trim();
-    let (con, mut ldap) =
-        ldap3::LdapConnAsync::new(&format!("ldap://{}:3890", env::var("LTD_NETWORK")?)).await?;
+    let (con, mut ldap) = ldap3::LdapConnAsync::new(&env::var("LTD_NETWORK")?).await?;
     ldap3::drive!(con);
     println!("LDAP server connected.");
     if let Ok(result) = ldap.simple_bind(username, password).await?.success() {
@@ -259,7 +262,8 @@ fn is_valid(cookies: Cookies, key: &DecodingKey) -> Result<String, Error> {
     }
 }
 
-fn save_json(items: MutexGuard<Items>) {
-    let json = serde_json::to_string(&items.clone()).unwrap();
-    std::fs::write("items.json", json).unwrap();
+fn save_json(items: MutexGuard<Items>) -> Result<(), Error> {
+    let json = serde_json::to_string(&items.clone())?;
+    std::fs::write("items.json", json)?;
+    Ok(())
 }
