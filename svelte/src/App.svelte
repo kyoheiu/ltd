@@ -278,7 +278,7 @@
         </form>
       {/if}
 
-      <Nav {changeState} />
+      <Nav {state} {changeState} />
     </div>
 
     {#if state == State.All}
