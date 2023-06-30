@@ -4,20 +4,21 @@
   import SortableList from "@palsch/svelte-sortablejs";
   import { ulid } from "ulid";
   import "remixicon/fonts/remixicon.css";
-  import Modal from "./Modal.svelte";
-  import Login from "./Login.svelte";
-  import Rename from "./Rename.svelte";
-  import ItemRenamable from "./ItemRenamable.svelte";
+  import Modal from "./lib/Modal.svelte";
+  import Login from "./lib/Login.svelte";
+  import Rename from "./lib/Rename.svelte";
+  import ItemRenamable from "./lib/ItemRenamable.svelte";
   import {
     normalColor,
     greenColor,
     yellowColor,
     redColor,
     archivedColor,
-  } from "./Color.ts";
-  import { State } from "./types.ts";
-  import type { Item } from "./types.ts";
-  import Nav from "./Nav.svelte";
+  } from "./lib/Color.ts";
+  import { State } from "./lib/types.ts";
+  import type { Item } from "./lib/types.ts";
+  import Nav from "./lib/Nav.svelte";
+  import { SvelteToast, toast } from "@zerodevx/svelte-toast";
 
   let state = State.All;
   let original = [];
@@ -46,16 +47,24 @@
     }
   });
 
+  const toastMsg = (s: string) => {
+    toast.pop(0);
+    toast.push(s, {
+      duration: 2000,
+      theme: {
+        "--toastBarHeight": 0,
+      },
+    });
+  };
+
   const logout = async () => {
     const res = await fetch("api/logout", {
       method: "POST",
     });
-    console.log(res.status);
     window.location.reload();
   };
 
   const changeState = async (newState: State) => {
-    console.log("Changing state...");
     state = newState;
 
     const res = await fetch("/item");
@@ -98,7 +107,6 @@
   };
 
   const updateState = (s: State) => {
-    console.log("Updating state...");
     switch (s) {
       case State.All:
         items = original;
@@ -133,7 +141,6 @@
         items: arr,
       }),
     });
-    console.log(res.status);
   };
 
   function dotColor(dot: number): string {
@@ -175,10 +182,9 @@
     updateItems();
   };
 
-  const addItem = async (value: string) => {
-    console.log("item to add: " + value);
+  const addItem = async (event, value: string) => {
+    event.preventDefault();
     const id = ulid();
-    console.log(id);
     newItem = "";
     original.unshift({
       id: id,
@@ -190,6 +196,7 @@
 
     updateState(state);
     updateItems();
+    toastMsg("Added: " + value);
   };
 
   function toggleArchived(id: string) {
@@ -200,12 +207,14 @@
       archived.splice(i, 1);
       original.unshift(target);
       original[0].todo = true;
+      toastMsg("Unarchived: " + target.value);
     } else {
       i = original.findIndex((item) => item.id == id);
       const target2 = original[i];
       original.splice(i, 1);
       archived.unshift(target2);
       archived[0].todo = false;
+      toastMsg("Archived: " + target2.value);
     }
     original = original;
     archived = archived;
@@ -234,11 +243,12 @@
   };
 </script>
 
+<SvelteToast options={{ reversed: true }} />
 <main>
   {#if state == State.NotLoggedIn}
     <Login />
   {:else}
-    <div class="flex flex-col space-y-4 mx-4 mb-4">
+    <div class="flex flex-col space-y-4 mx-4 mb-4 mt-4">
       <div class="flex justify-between mx-2">
         <a href="/" class="text-slate-200">ltd</a>
         <button class="text-slate-200" on:click={logout}
@@ -247,18 +257,25 @@
       </div>
 
       {#if state != State.Archived}
-        <div class="flex justify-center items-center space-x-1">
+        <form class="flex justify-center items-center mx-2 space-x-1">
           <div>
-            <input class="rounded-md p-1" type="text" bind:value={newItem} />
+            <input
+              id="submit-form"
+              class="text-neutral-800 rounded-md p-1 w-full max-w-xs"
+              type="text"
+              bind:value={newItem}
+            />
           </div>
           <div>
             <button
+              id="submit-button"
+              type="submit"
               class="text-slate-200 rounded-md border-2"
-              on:click={() => addItem(newItem)}
+              on:click={(event) => addItem(event, newItem)}
               >&nbsp;<i class="ri-add-line" />&nbsp;</button
             >
           </div>
-        </div>
+        </form>
       {/if}
 
       <Nav {changeState} />
@@ -273,13 +290,14 @@
         idKey="id"
         {getItemById}
         ulClass="flex flex-col space-y-2"
-        liClass="text-slate-200 flex space-x-2 m-auto p-2 border-2 rounded-md w-5/6"
+        liClass="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 rounded-md w-5/6"
       >
         <button on:click={() => toggleArchived(item.id)}
           ><i class="ri-checkbox-blank-fill" /></button
         >
         <ItemRenamable {item} />
         <i class="ri-drag-move-fill" style="margin-left: auto; cursor: move" />
+        &nbsp;
         <button
           style="color: {dotColor(item.dot)}"
           on:click={() => changeColor(item.id)}>●</button
@@ -295,9 +313,12 @@
               ><i class="ri-checkbox-blank-fill" /></button
             >
 
-            <button on:click={() => (item.showModal = true)}
-              >{item.value}</button
+            <div
+              class="flex-auto break-all line-clamp-2 cursor-pointer"
+              on:click={() => (item.showModal = true)}
             >
+              {item.value}
+            </div>
             <Modal bind:showModal={item.showModal}>
               <Rename value={item.value} id={item.id} />
             </Modal>
@@ -329,3 +350,12 @@
     {/if}
   {/if}
 </main>
+
+<style>
+  :root {
+    --toastContainerTop: auto;
+    --toastContainerRight: auto;
+    --toastContainerBottom: 8rem;
+    --toastContainerLeft: calc(50vw - 8rem);
+  }
+</style>
