@@ -1,4 +1,4 @@
-<div class="text-3xl text-slate-200 text-center m-2">ltd</div>
+<div class="text-3xl text-slate-200 text-center m-2 mt-4">ltd</div>
 <div>
     <form
         class="space-y-2 m-4 text-center"

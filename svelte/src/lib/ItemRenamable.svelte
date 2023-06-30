@@ -6,9 +6,8 @@
     export let item: Item;
 </script>
 
-<button class="flex-auto max-w-xs w-2/3" on:click={() => (item.showModal = true)}
-    ><div class="text-left truncate">{item.value}</div></button
->
+<div class="flex-auto break-all line-clamp-2 cursor-pointer" on:click={() => (item.showModal = true)}
+    >{item.value}</div>
 <Modal bind:showModal={item.showModal}>
     <Rename value={item.value} id={item.id} />
 </Modal>
