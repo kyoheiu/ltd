@@ -42,8 +42,8 @@ impl Core {
             }
         };
         Ok(Core {
-            encoding_key: EncodingKey::from_secret(env::var("TODO_SECRET_KEY")?.as_bytes()),
-            decoding_key: DecodingKey::from_secret(env::var("TODO_SECRET_KEY")?.as_bytes()),
+            encoding_key: EncodingKey::from_secret(env::var("LTD_SECRET_KEY")?.as_bytes()),
+            decoding_key: DecodingKey::from_secret(env::var("LTD_SECRET_KEY")?.as_bytes()),
             items: Arc::new(Mutex::new(json)),
         })
     }
@@ -169,7 +169,7 @@ async fn ldaplogin(
     let username = log_in.username.trim();
     let password = log_in.password.trim();
     let (con, mut ldap) =
-        ldap3::LdapConnAsync::new(&format!("ldap://{}:3890", env::var("TODO_NETWORK")?)).await?;
+        ldap3::LdapConnAsync::new(&format!("ldap://{}:3890", env::var("LTD_NETWORK")?)).await?;
     ldap3::drive!(con);
     println!("LDAP server connected.");
     if let Ok(result) = ldap.simple_bind(username, password).await?.success() {
@@ -180,7 +180,7 @@ async fn ldaplogin(
         };
         let token = encode(&Header::default(), &my_claims, &core.encoding_key)?;
         let cookie = Cookie::build(COOKIE_NAME, token)
-            .domain(env::var("TODO_DOMAIN")?)
+            .domain(env::var("LTD_DOMAIN")?)
             .path("/")
             .max_age(cookie::time::Duration::days(7))
             .secure(true)
@@ -199,7 +199,7 @@ async fn ldaplogin(
 async fn logout(cookies: Cookies) -> Result<impl IntoResponse, Error> {
     if cookies.get(COOKIE_NAME).is_some() {
         let cookie = Cookie::build(COOKIE_NAME, "")
-            .domain(env::var("TODO_DOMAIN")?)
+            .domain(env::var("LTD_DOMAIN")?)
             .path("/")
             .max_age(cookie::time::Duration::seconds(0))
             .same_site(cookie::SameSite::Strict)
