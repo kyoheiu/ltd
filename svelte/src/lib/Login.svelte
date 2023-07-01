@@ -6,7 +6,7 @@
     <img src={logo} alt="ltd" class="w-8 h-auto mb-2" />
     <div>
         <form
-            class="space-y-2 m-4 text-center"
+            class="text-neutral-800 space-y-2 m-4 text-center"
             id="login-form"
             method="post"
             action="api/ldaplogin"
