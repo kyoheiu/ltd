@@ -142,6 +142,7 @@ async fn update_item(
         let mut items = core.items.lock().unwrap();
         *items = payload;
         save_json(items)?;
+        Ok(())
     } else {
         Err(Error::NotVerified)
     }
