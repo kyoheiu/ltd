@@ -102,6 +102,7 @@ async fn main() -> Result<(), Error> {
         .route("/health", get(health))
         .route("/item", get(read_item).post(update_item))
         .route("/api/rename", post(rename_item))
+        .route("/api/delete", post(delete_archived))
         .route("/api/ldaplogin", post(ldaplogin))
         .route("/api/logout", post(logout))
         .route("/api/post", post(post_item))
@@ -123,8 +124,7 @@ async fn health() -> Html<&'static str> {
 
 #[debug_handler]
 async fn read_item(cookies: Cookies, State(core): State<Core>) -> Result<impl IntoResponse, Error> {
-    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
-        println!("{}", name);
+    if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
         let item = core.items.lock().unwrap().clone();
         Ok(Json(item.items))
     } else {
@@ -186,13 +186,33 @@ async fn rename_item(
     if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
         let mut items = core.items.lock().unwrap();
         if let Some(target) = items.items.iter_mut().find(|x| x.id == payload.id) {
-        println!("Rename: {} -> {}", target.value, payload.value);
-        target.value = payload.value;
+            println!("Rename: {} -> {}", target.value, payload.value);
+            target.value = payload.value;
+            save_json(items)?;
+            Ok(Redirect::to("/").into_response())
+        } else {
+            Err(Error::Json(format!(
+                "Item with this id not found: {}",
+                payload.id
+            )))
+        }
+    } else {
+        Err(Error::NotVerified)
+    }
+}
+
+#[debug_handler]
+async fn delete_archived(
+    cookies: Cookies,
+    State(core): State<Core>,
+) -> Result<impl IntoResponse, Error> {
+    if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
+        let mut items = core.items.lock().unwrap();
+        let filtered: VecDeque<Item> = items.items.clone().into_iter().filter(|x| x.todo).collect();
+        items.items = filtered;
+        println!("Deleted Archived items.");
         save_json(items)?;
         Ok(Redirect::to("/").into_response())
-        } else {
-            Err(Error::Json(format!("Item with this id not found: {}", payload.id)))
-        }
     } else {
         Err(Error::NotVerified)
     }
@@ -209,8 +229,8 @@ async fn ldaplogin(
     let (con, mut ldap) = ldap3::LdapConnAsync::new(&env::var("LTD_NETWORK")?).await?;
     ldap3::drive!(con);
     println!("LDAP server connected.");
-    if let Ok(result) = ldap.simple_bind(username, password).await?.success() {
-        println!("{:#?}", result);
+    if let Ok(_result) = ldap.simple_bind(username, password).await?.success() {
+        println!("{}", username);
         let my_claims = Claims {
             sub: username.to_string(),
             exp: 2000000000,
