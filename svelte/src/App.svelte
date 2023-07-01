@@ -187,11 +187,15 @@
     event.preventDefault();
     const id = ulid();
     newItem = "";
+    let dot = state;
+    if (state = State.Archived) {
+      dot = 0;
+    }
     original.unshift({
       id: id,
       value: value,
       todo: true,
-      dot: 0,
+      dot: dot,
     });
     original = original;
 
