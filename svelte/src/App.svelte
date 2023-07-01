@@ -179,10 +179,13 @@
 
   const addItem = async (event, value: string) => {
     event.preventDefault();
+    if (newItem.trim() === "") {
+      return;
+    }
     const id = ulid();
     newItem = "";
     let dot = state;
-    if (state = State.Archived) {
+    if (state == State.Archived) {
       dot = 0;
     }
     original.unshift({
@@ -244,11 +247,11 @@
 
 <SvelteToast options={{ reversed: true }} />
 <main>
-  {#if state == State.All}
+  {#if state == State.NotLoggedIn}
     <Login />
   {:else}
-    <div class="flex flex-col space-y-4 mx-4 mb-4 mt-4">
-      <div class="flex justify-between items-center mx-2">
+    <div class="flex flex-col space-y-4 mx-6 mb-4 mt-4">
+      <div class="flex justify-between items-center">
         <a href="/" class="text-slate-200"
           ><img src={logo} alt="ltd" class="w-5 h-auto" /></a
         >
@@ -257,11 +260,11 @@
         >
       </div>
 
-      <form class="flex justify-center items-center mx-2 space-x-1">
+      <form class="flex justify-center items-center mx-2 space-x-2">
         <div>
           <input
             id="submit-form"
-            class="text-neutral-800 bg-slate-200 rounded-md p-1 w-full max-w-xs"
+            class="text-slate-800 bg-slate-200 rounded-full py-1 px-2 w-full"
             type="text"
             bind:value={newItem}
           />
@@ -270,7 +273,7 @@
           <button
             id="submit-button"
             type="submit"
-            class="text-slate-200 rounded-md border-2 border-slate-200"
+            class="text-sm text-slate-200 border-slate-200 hover:bg-slate-200 hover:text-neutral-800 rounded-md border-2"
             on:click={(event) => addItem(event, newItem)}
             >&nbsp;<i class="ri-add-line" />&nbsp;</button
           >
@@ -299,7 +302,7 @@
         &nbsp;
         <button
           style="color: {dotColor(item.dot)}"
-          on:click={() => changeColor(item.id)}>●</button
+          on:click={() => changeColor(item.id)}><i class="ri-checkbox-blank-circle-fill"></i></button
         >
       </SortableList>
     {:else if state != State.Archived}
@@ -311,7 +314,6 @@
             <button on:click={() => toggleArchived(item.id)}
               ><i class="ri-checkbox-blank-fill" /></button
             >
-
             <div
               class="flex-auto break-all line-clamp-2 cursor-pointer"
               on:click={() => (item.showModal = true)}
@@ -324,7 +326,7 @@
 
             <button
               style="color: {dotColor(item.dot)}; margin-left: auto"
-              on:click={() => changeColor(item.id)}>●</button
+              on:click={() => changeColor(item.id)}><i class="ri-checkbox-blank-circle-fill"></i></button
             >
           </li>
         {/each}
@@ -332,7 +334,7 @@
     {:else}
       <div class="flex flex-col my-6">
         <button
-          class="text-sm text-neutral-800 bg-slate-200 rounded-full m-auto px-2"
+          class="text-sm text-red border-red hover:bg-red hover:text-slate-50 rounded-md border-2 m-auto px-2"
           on:click={() => (showDialog = true)}
           ><i class="ri-delete-bin-2-fill" /> Delete all archived items</button
         >
@@ -348,10 +350,10 @@
             <button on:click={() => toggleArchived(item.id)}
               ><i class="ri-checkbox-fill" /></button
             >
-            <button>{item.value}</button>
+            <div class="flex-auto break-all line-clamp-2">{item.value}</div>
             <button
               style="color: {dotColor(item.dot)}; margin-left: auto"
-              on:click={() => changeColor(item.id)}>●</button
+              on:click={() => changeColor(item.id)}><i class="ri-checkbox-blank-circle-fill"></i></button
             >
           </li>
         {/each}

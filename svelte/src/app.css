@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply w-4/5 max-w-screen-sm m-auto;
+    @apply w-4/5 max-w-sm m-auto;
     color: #A5ADCB;
     background-color: #24273A;
   }
