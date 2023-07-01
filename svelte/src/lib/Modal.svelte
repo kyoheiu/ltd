@@ -18,10 +18,10 @@
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div on:click|stopPropagation>
         <slot />
-        <hr />
+        <hr class="my-4"/>
         <!-- svelte-ignore a11y-autofocus -->
-        <button class="text-sm text-slate-200 ml-auto" autofocus on:click={() => dialog.close()}
-            >close</button
+        <button class="bg-slate-200 text-sm ml-auto rounded-md border-2 px-1" autofocus on:click={() => dialog.close()}
+            >cancel</button
         >
     </div>
 </dialog>

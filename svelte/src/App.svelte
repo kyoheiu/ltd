@@ -20,12 +20,16 @@
   import type { Item } from "./lib/types.ts";
   import Nav from "./lib/Nav.svelte";
   import { SvelteToast, toast } from "@zerodevx/svelte-toast";
+  import Dialog from "./lib/Dialog.svelte";
+  import DeleteArchived from "./lib/DeleteArchived.svelte";
+  import { toastMsg } from "./lib/Toast.ts";
 
   let state = State.All;
   let original = [];
   let items = [];
   let archived = [];
   let newItem = "";
+  let showDialog = false;
 
   onMount(async () => {
     const res = await fetch("/item");
@@ -47,16 +51,6 @@
       archived = archived;
     }
   });
-
-  const toastMsg = (s: string) => {
-    toast.pop(0);
-    toast.push(s, {
-      duration: 2000,
-      theme: {
-        "--toastBarHeight": 0,
-      },
-    });
-  };
 
   const logout = async () => {
     const res = await fetch("api/logout", {
@@ -133,7 +127,7 @@
 
   const updateItems = async () => {
     const arr = original.concat(archived);
-    const res = await fetch("/item", {
+    const _res = await fetch("/item", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -168,7 +162,7 @@
 
   const changeColor = async (id: string) => {
     if (state == State.Archived) {
-      console.log("Cannot change color of archived item.");
+      toastMsg("Cannot change color of archived item.");
       return;
     }
     const i = original.findIndex((item) => item.id === id);
@@ -250,38 +244,38 @@
 
 <SvelteToast options={{ reversed: true }} />
 <main>
-  {#if state == State.NotLoggedIn}
+  {#if state == State.All}
     <Login />
   {:else}
     <div class="flex flex-col space-y-4 mx-4 mb-4 mt-4">
       <div class="flex justify-between items-center mx-2">
-        <a href="/" class="text-slate-200"><img src={logo} alt="ltd" class="w-5 h-auto" /></a>
+        <a href="/" class="text-slate-200"
+          ><img src={logo} alt="ltd" class="w-5 h-auto" /></a
+        >
         <button class="text-slate-200" on:click={logout}
           ><i class="ri-logout-circle-r-line" style="color: #A5ADCB" /></button
         >
       </div>
 
-      {#if state != State.Archived}
-        <form class="flex justify-center items-center mx-2 space-x-1">
-          <div>
-            <input
-              id="submit-form"
-              class="text-neutral-800 bg-slate-200 rounded-md p-1 w-full max-w-xs"
-              type="text"
-              bind:value={newItem}
-            />
-          </div>
-          <div>
-            <button
-              id="submit-button"
-              type="submit"
-              class="text-slate-200 rounded-md border-2 border-slate-200"
-              on:click={(event) => addItem(event, newItem)}
-              >&nbsp;<i class="ri-add-line" />&nbsp;</button
-            >
-          </div>
-        </form>
-      {/if}
+      <form class="flex justify-center items-center mx-2 space-x-1">
+        <div>
+          <input
+            id="submit-form"
+            class="text-neutral-800 bg-slate-200 rounded-md p-1 w-full max-w-xs"
+            type="text"
+            bind:value={newItem}
+          />
+        </div>
+        <div>
+          <button
+            id="submit-button"
+            type="submit"
+            class="text-slate-200 rounded-md border-2 border-slate-200"
+            on:click={(event) => addItem(event, newItem)}
+            >&nbsp;<i class="ri-add-line" />&nbsp;</button
+          >
+        </div>
+      </form>
 
       <Nav {state} {changeState} />
     </div>
@@ -336,10 +330,20 @@
         {/each}
       </ul>
     {:else}
+      <div class="flex flex-col my-6">
+        <button
+          class="text-sm text-neutral-800 bg-slate-200 rounded-full m-auto px-2"
+          on:click={() => (showDialog = true)}
+          ><i class="ri-delete-bin-2-fill" /> Delete all archived items</button
+        >
+        <Dialog bind:showDialog>
+          <DeleteArchived />
+        </Dialog>
+      </div>
       <ul class="flex flex-col space-y-2">
         {#each archived as item}
           <li
-            class="text-slate-200 flex space-x-2 m-auto p-2 border-2 rounded-md w-5/6"
+            class="text-slate-200 flex space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
           >
             <button on:click={() => toggleArchived(item.id)}
               ><i class="ri-checkbox-fill" /></button
