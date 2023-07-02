@@ -194,6 +194,8 @@
       todo: true,
       dot: dot,
     });
+    toastMsg("Added: " + value);
+
     original = original;
 
     updateState(state);
@@ -215,6 +217,7 @@
       original.splice(i, 1);
       archived.unshift(target2);
       archived[0].todo = false;
+      toastMsg("Archived: " + target2.value);
     }
     original = original;
     archived = archived;
@@ -243,7 +246,9 @@
   };
 </script>
 
+<div class="wrap">
 <SvelteToast options={{ reversed: true }} />
+</div>
 <main>
   {#if state == State.NotLoggedIn}
     <Login />
@@ -364,7 +369,7 @@
   :root {
     --toastContainerTop: auto;
     --toastContainerRight: auto;
-    --toastContainerBottom: 8rem;
+    --toastContainerBottom: 2rem;
     --toastContainerLeft: calc(50vw - 8rem);
   }
 </style>
