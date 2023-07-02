@@ -1,4 +1,4 @@
-![ltd](./svelte/src/assets/logo.png)
+# ltd
 
 Lightweight self-hostable to-do lists app with LDAP authentication.
 
