@@ -1,11 +1,12 @@
-# ltd
-Lightweight to-do lists app with LDAP authentication.
+![ltd](./svelte/logo.png)
+
+Lightweight self-hostable to-do lists app with LDAP authentication.
 
 ![screenshot.png](screenshot.png)
 
 ## feature
 - Store items as single JSON file.
-- Simply highlight items by color: No tags, no categories. Just colors.
+- Organize items by color: No tags, no categories. Just colors. Click/tap the dot on the right to change the color of the item. (`default -> green -> yellow -> red -> default`)
 - Sortable. (Only in default color tab though)
 - Built-in LDAP authentication. (No multiple user management yet for now)
 
