@@ -198,7 +198,6 @@
 
     updateState(state);
     updateItems();
-    toastMsg("Added: " + value);
   };
 
   function toggleArchived(id: string) {
@@ -216,7 +215,6 @@
       original.splice(i, 1);
       archived.unshift(target2);
       archived[0].todo = false;
-      toastMsg("Archived: " + target2.value);
     }
     original = original;
     archived = archived;
