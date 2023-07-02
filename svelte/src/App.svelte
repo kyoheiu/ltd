@@ -250,11 +250,11 @@
   {:else}
     <div class="flex flex-col space-y-4 mx-6 mb-4 mt-4">
       <div class="flex justify-between items-center">
-        <a href="/" class="text-slate-200"
+        <a href="/"
           ><img src={logo} alt="ltd" class="w-5 h-auto" /></a
         >
-        <button class="text-slate-200" on:click={logout}
-          ><i class="ri-logout-circle-r-line" style="color: #A5ADCB" /></button
+        <button on:click={logout}
+          ><i class="ri-logout-circle-r-line text-slate-200" /></button
         >
       </div>
 
