@@ -1,6 +1,5 @@
 <script>
     import "remixicon/fonts/remixicon.css";
-    import { toastMsg } from "./Toast.ts";
 
     export let showDialog; // boolean
 
