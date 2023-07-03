@@ -21,7 +21,7 @@ LTD_API_TOKEN=SECRET_KEY_TO_POST_ITEM_VIA_API
 ```
 
 2. 
-`touch /path/to/items.json && sudo docker run -d -v /path/to/items.json:/ltd/items.json --env-file /path/to/.env --network="lldap_docker_network" --name ltd -p 8080:8080 kyoheiudev/ltd:0.2.1`
+`touch /path/to/items.json && sudo docker run -d -v /path/to/items.json:/ltd/items.json --env-file /path/to/.env --network="lldap_docker_network" --name ltd -p 8080:8080 kyoheiudev/ltd:0.3.0`
 
 ## tech stack
 - Svelte as the frontend
