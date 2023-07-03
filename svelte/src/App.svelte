@@ -2,7 +2,7 @@
   import "./app.css";
   import { onMount } from "svelte";
   import logo from "./assets/logo.png";
-  import SortableList from "@palsch/svelte-sortablejs";
+  import SortableList from "./lib/SortableList.svelte";
   import { ulid } from "ulid";
   import "remixicon/fonts/remixicon.css";
   import Modal from "./lib/Modal.svelte";
@@ -23,33 +23,88 @@
   import Dialog from "./lib/Dialog.svelte";
   import DeleteArchived from "./lib/DeleteArchived.svelte";
   import { toastMsg } from "./lib/Toast.ts";
+  import { quintOut } from "svelte/easing";
+  import { crossfade } from "svelte/transition";
+  import { flip } from "svelte/animate";
+
+  const [send, receive] = crossfade({
+    duration: (d) => Math.sqrt(d * 200),
+
+    fallback(node, params) {
+      const style = getComputedStyle(node);
+      const transform = style.transform === "none" ? "" : style.transform;
+
+      return {
+        duration: 100,
+        easing: quintOut,
+        css: (t) => `
+					transform: ${transform} scale(${t});
+					opacity: ${t}
+				`,
+      };
+    },
+  });
 
   let state = State.All;
-  let original = [];
   let items = [];
   let archived = [];
   let newItem = "";
   let showDialog = false;
 
-  onMount(async () => {
-    const res = await fetch("/item");
-    if (!res.ok) {
-      console.log("Not verified: login form will appear.");
-      state = State.NotLoggedIn;
-    } else {
-      state = State.All;
-      const j: Item[] = await res.json();
-      for (let i = 0; i < j.length; i++) {
-        if (j[i].todo) {
-          items.push(j[i]);
-        } else {
-          archived.push(j[i]);
-        }
-      }
-      original = items;
-      items = items;
-      archived = archived;
-    }
+  // onMount(async () => {
+  //   const res = await fetch("/item");
+  //   if (!res.ok) {
+  //     console.log("Not verified: login form will appear.");
+  //     state = State.NotLoggedIn;
+  //   } else {
+  //     state = State.All;
+  //     const j: Item[] = await res.json();
+  //     for (let i = 0; i < j.length; i++) {
+  //       if (j[i].todo) {
+  //         items.push(j[i]);
+  //       } else {
+  //         archived.push(j[i]);
+  //       }
+  //     }
+  //     original = items;
+  //     items = items;
+  //     archived = archived;
+  //   }
+  // });
+
+  onMount(() => {
+    items = [
+      {
+        id: "1",
+        value: "milk",
+        todo: true,
+        dot: 0,
+      },
+      {
+        id: "2",
+        value: "orange",
+        todo: true,
+        dot: 0,
+      },
+      {
+        id: "3",
+        value: "banana",
+        todo: true,
+        dot: 0,
+      },
+      {
+        id: "4",
+        value: "apple",
+        todo: true,
+        dot: 0,
+      },
+      {
+        id: "5",
+        value: "watermelon",
+        todo: true,
+        dot: 0,
+      },
+    ];
   });
 
   const logout = async () => {
@@ -61,72 +116,10 @@
 
   const changeState = async (newState: State) => {
     state = newState;
-
-    const res = await fetch("/item");
-    if (!res.ok) {
-      state = 5;
-    }
-    const j: Item[] = await res.json();
-    original = [];
-    items = [];
-    archived = [];
-    for (let i = 0; i < j.length; i++) {
-      if (j[i].todo) {
-        items.push(j[i]);
-      } else {
-        archived.push(j[i]);
-      }
-    }
-    original = items;
-
-    switch (state) {
-      case State.All:
-        items = items;
-        break;
-      case State.Green:
-        items = items.filter((x) => x.dot == 1);
-        break;
-      case State.Yellow:
-        items = items.filter((x) => x.dot == 2);
-        break;
-      case State.Red:
-        items = items.filter((x) => x.dot == 3);
-        break;
-      case State.Archived:
-        break;
-      case State.NotLoggedIn:
-        items = [];
-        archived = [];
-        break;
-    }
-  };
-
-  const updateState = (s: State) => {
-    switch (s) {
-      case State.All:
-        items = original;
-        break;
-      case State.Green:
-        items = original.filter((x) => x.dot == 1);
-        break;
-      case State.Yellow:
-        items = original.filter((x) => x.dot == 2);
-        break;
-      case State.Red:
-        items = original.filter((x) => x.dot == 3);
-        break;
-      case State.Archived:
-        break;
-      case State.NotLoggedIn:
-        original = [];
-        items = [];
-        archived = [];
-        break;
-    }
   };
 
   const updateItems = async () => {
-    const arr = original.concat(archived);
+    const arr = items.concat(archived);
     const _res = await fetch("/item", {
       method: "POST",
       headers: {
@@ -165,20 +158,18 @@
       toastMsg("Cannot change color of archived item.");
       return;
     }
-    const i = original.findIndex((item) => item.id === id);
-    if (original[i].dot === 3) {
-      original[i].dot = 0;
+    const i = items.findIndex((item) => item.id === id);
+    if (items[i].dot === 3) {
+      items[i].dot = 0;
     } else {
-      original[i].dot += 1;
+      items[i].dot += 1;
     }
-    original = original;
+    items = items;
 
-    updateState(state);
     updateItems();
   };
 
-  const addItem = async (event, value: string) => {
-    event.preventDefault();
+  const addItem = async (value: string) => {
     if (newItem.trim() === "") {
       return;
     }
@@ -188,7 +179,7 @@
     if (state == State.Archived) {
       dot = 0;
     }
-    original.unshift({
+    items.unshift({
       id: id,
       value: value,
       todo: true,
@@ -196,9 +187,8 @@
     });
     toastMsg("Added: " + value);
 
-    original = original;
+    items = items;
 
-    updateState(state);
     updateItems();
   };
 
@@ -208,30 +198,28 @@
       i = archived.findIndex((item) => item.id == id);
       const target = archived[i];
       archived.splice(i, 1);
-      original.unshift(target);
-      original[0].todo = true;
+      items.unshift(target);
+      items[0].todo = true;
       toastMsg("Unarchived: " + target.value);
     } else {
-      i = original.findIndex((item) => item.id == id);
-      const target2 = original[i];
-      original.splice(i, 1);
+      i = items.findIndex((item) => item.id == id);
+      const target2 = items[i];
+      items.splice(i, 1);
       archived.unshift(target2);
       archived[0].todo = false;
       toastMsg("Archived: " + target2.value);
     }
-    original = original;
+    items = items;
     archived = archived;
 
-    updateState(state);
     updateItems();
   }
 
   const itemOrderChanged = async (event) => {
     console.log("item order changed.");
     const newTodo: Item[] = event.detail;
-    original = newTodo;
+    items = newTodo;
 
-    updateState(state);
     updateItems();
   };
 
@@ -247,7 +235,7 @@
 </script>
 
 <div class="wrap">
-<SvelteToast options={{ reversed: true }} />
+  <SvelteToast options={{ reversed: true }} />
 </div>
 <main>
   {#if state == State.NotLoggedIn}
@@ -255,33 +243,21 @@
   {:else}
     <div class="flex flex-col space-y-4 mx-6 mb-4 mt-4">
       <div class="flex justify-between items-center">
-        <a href="/"
-          ><img src={logo} alt="ltd" class="w-5 h-auto" /></a
-        >
+        <a href="/"><img src={logo} alt="ltd" class="w-5 h-auto" /></a>
         <button on:click={logout}
           ><i class="ri-logout-circle-r-line text-slate-200" /></button
         >
       </div>
 
-      <form class="flex justify-center items-center mx-2 space-x-2">
-        <div>
-          <input
-            id="submit-form"
-            class="text-slate-800 bg-slate-200 rounded-full py-1 px-2 w-full"
-            type="text"
-            bind:value={newItem}
-          />
-        </div>
-        <div>
-          <button
-            id="submit-button"
-            type="submit"
-            class="text-sm text-slate-200 border-slate-200 hover:bg-slate-200 hover:text-neutral-800 rounded-md border-2"
-            on:click={(event) => addItem(event, newItem)}
-            >&nbsp;<i class="ri-add-line" />&nbsp;</button
-          >
-        </div>
-      </form>
+      <div class="flex justify-center items-center mx-2 space-x-2">
+        <input
+          id="submit-form"
+          class="text-slate-800 bg-slate-200 rounded-full py-1 px-2 w-full"
+          type="text"
+          bind:value={newItem}
+          on:keydown={(e) => e.key === "Enter" && addItem(newItem)}
+        />
+      </div>
 
       <Nav {state} {changeState} />
     </div>
@@ -295,24 +271,36 @@
         idKey="id"
         {getItemById}
         ulClass="flex flex-col space-y-2"
-        liClass="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
       >
-        <button on:click={() => toggleArchived(item.id)}
-          ><i class="ri-checkbox-blank-fill" /></button
+        <label
+          in:receive={{ key: item.id }}
+          out:send={{ key: item.id }}
+          class="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
         >
-        <ItemRenamable {item} />
-        <i class="ri-drag-move-fill" style="margin-left: auto; cursor: move" />
-        &nbsp;
-        <button
-          style="color: {dotColor(item.dot)}"
-          on:click={() => changeColor(item.id)}><i class="ri-checkbox-blank-circle-fill"></i></button
-        >
+          <button on:click={() => toggleArchived(item.id)}
+            ><i class="ri-checkbox-blank-fill" /></button
+          >
+          <ItemRenamable {item} />
+          <i
+            class="ri-drag-move-fill"
+            style="margin-left: auto; cursor: move"
+          />
+          &nbsp;
+          <button
+            style="color: {dotColor(item.dot)}"
+            on:click={() => changeColor(item.id)}
+            ><i class="ri-checkbox-blank-circle-fill" /></button
+          >
+        </label>
       </SortableList>
     {:else if state != State.Archived}
       <ul class="flex flex-col space-y-2">
-        {#each items as item}
-          <li
-            class="text-slate-200 flex space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
+        {#each items.filter((x) => x.dot === state) as item, index (item)}
+          <label
+            in:receive={{ key: item.id }}
+            out:send={{ key: item.id }}
+            animate:flip={{ duration: 100 }}
+            class="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
           >
             <button on:click={() => toggleArchived(item.id)}
               ><i class="ri-checkbox-blank-fill" /></button
@@ -329,9 +317,10 @@
 
             <button
               style="color: {dotColor(item.dot)}; margin-left: auto"
-              on:click={() => changeColor(item.id)}><i class="ri-checkbox-blank-circle-fill"></i></button
+              on:click={() => changeColor(item.id)}
+              ><i class="ri-checkbox-blank-circle-fill" /></button
             >
-          </li>
+          </label>
         {/each}
       </ul>
     {:else}
@@ -346,8 +335,11 @@
         </Dialog>
       </div>
       <ul class="flex flex-col space-y-2">
-        {#each archived as item}
+        {#each archived as item, index (item)}
           <li
+            in:receive={{ key: item.id }}
+            out:send={{ key: item.id }}
+            animate:flip={{ duration: 100 }}
             class="text-slate-200 flex space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
           >
             <button on:click={() => toggleArchived(item.id)}
@@ -356,7 +348,8 @@
             <div class="flex-auto break-all line-clamp-2">{item.value}</div>
             <button
               style="color: {dotColor(item.dot)}; margin-left: auto"
-              on:click={() => changeColor(item.id)}><i class="ri-checkbox-blank-circle-fill"></i></button
+              on:click={() => changeColor(item.id)}
+              ><i class="ri-checkbox-blank-circle-fill" /></button
             >
           </li>
         {/each}
