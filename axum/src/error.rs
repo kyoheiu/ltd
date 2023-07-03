@@ -10,6 +10,7 @@ pub enum Error {
     Ldap(String),
     Jwt(String),
     Json(String),
+    ParseInt(String),
     Header,
     NotVerified,
 }
@@ -24,6 +25,7 @@ impl std::fmt::Display for Error {
             Error::Ldap(s) => s,
             Error::Jwt(s) => s,
             Error::Json(s) => s,
+            Error::ParseInt(s) => s,
             Error::Header => "Token not found.",
             Error::NotVerified => "Not verified.",
         };
@@ -67,6 +69,12 @@ impl From<jsonwebtoken::errors::Error> for Error {
     }
 }
 
+impl From<std::num::ParseIntError> for Error {
+    fn from(err: std::num::ParseIntError) -> Self {
+        Error::ParseInt(err.to_string())
+    }
+}
+
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
         let body = match self {
@@ -75,6 +83,7 @@ impl IntoResponse for Error {
             Error::Ldap(s) => s,
             Error::Jwt(s) => s,
             Error::Json(s) => s,
+            Error::ParseInt(s) => s,
             Error::Header => "Token not found.".to_string(),
             Error::NotVerified => "Not verified.".to_string(),
         };

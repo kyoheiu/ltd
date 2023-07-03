@@ -1,10 +1,10 @@
 <script lang="ts">
-  import "./app.css";
-  import { onMount } from "svelte";
   import logo from "./assets/logo.png";
-  import SortableList from "./lib/SortableList.svelte";
-  import { ulid } from "ulid";
+  import "./app.css";
   import "remixicon/fonts/remixicon.css";
+  import { onMount } from "svelte";
+  import { ulid } from "ulid";
+  import SortableList from "./lib/SortableList.svelte";
   import Modal from "./lib/Modal.svelte";
   import Login from "./lib/Login.svelte";
   import Rename from "./lib/Rename.svelte";
@@ -19,14 +19,13 @@
   import { State } from "./lib/types.ts";
   import type { Item } from "./lib/types.ts";
   import Nav from "./lib/Nav.svelte";
-  import { SvelteToast, toast } from "@zerodevx/svelte-toast";
   import Dialog from "./lib/Dialog.svelte";
   import DeleteArchived from "./lib/DeleteArchived.svelte";
-  import { toastMsg } from "./lib/Toast.ts";
   import { quintOut } from "svelte/easing";
   import { crossfade } from "svelte/transition";
   import { flip } from "svelte/animate";
 
+  // Animation when adding/archiving/unarchiving item
   const [send, receive] = crossfade({
     duration: (d) => Math.sqrt(d * 200),
 
@@ -51,64 +50,64 @@
   let newItem = "";
   let showDialog = false;
 
-  // onMount(async () => {
-  //   const res = await fetch("/item");
-  //   if (!res.ok) {
-  //     console.log("Not verified: login form will appear.");
-  //     state = State.NotLoggedIn;
-  //   } else {
-  //     state = State.All;
-  //     const j: Item[] = await res.json();
-  //     for (let i = 0; i < j.length; i++) {
-  //       if (j[i].todo) {
-  //         items.push(j[i]);
-  //       } else {
-  //         archived.push(j[i]);
-  //       }
-  //     }
-  //     original = items;
-  //     items = items;
-  //     archived = archived;
-  //   }
-  // });
-
-  onMount(() => {
-    items = [
-      {
-        id: "1",
-        value: "milk",
-        todo: true,
-        dot: 0,
-      },
-      {
-        id: "2",
-        value: "orange",
-        todo: true,
-        dot: 0,
-      },
-      {
-        id: "3",
-        value: "banana",
-        todo: true,
-        dot: 0,
-      },
-      {
-        id: "4",
-        value: "apple",
-        todo: true,
-        dot: 0,
-      },
-      {
-        id: "5",
-        value: "watermelon",
-        todo: true,
-        dot: 0,
-      },
-    ];
+  onMount(async () => {
+    const res = await fetch("/api/item");
+    if (!res.ok) {
+      console.log("Not verified: login form will appear.");
+      state = State.NotLoggedIn;
+    } else {
+      state = State.All;
+      const j: Item[] = await res.json();
+      for (let i = 0; i < j.length; i++) {
+        if (j[i].todo) {
+          items.push(j[i]);
+        } else {
+          archived.push(j[i]);
+        }
+      }
+      items = items;
+      archived = archived;
+    }
   });
 
+  // for testing
+  // onMount(() => {
+  //   items = [
+  //     {
+  //       id: "1",
+  //       value: "milk",
+  //       todo: true,
+  //       dot: 0,
+  //     },
+  //     {
+  //       id: "2",
+  //       value: "orange",
+  //       todo: true,
+  //       dot: 0,
+  //     },
+  //     {
+  //       id: "3",
+  //       value: "banana",
+  //       todo: true,
+  //       dot: 0,
+  //     },
+  //     {
+  //       id: "4",
+  //       value: "apple",
+  //       todo: true,
+  //       dot: 0,
+  //     },
+  //     {
+  //       id: "5",
+  //       value: "watermelon",
+  //       todo: true,
+  //       dot: 0,
+  //     },
+  //   ];
+  // });
+
   const logout = async () => {
-    const res = await fetch("api/logout", {
+    const res = await fetch("/api/logout", {
       method: "POST",
     });
     window.location.reload();
@@ -118,9 +117,9 @@
     state = newState;
   };
 
-  const updateItems = async () => {
+  const sortItems = async () => {
     const arr = items.concat(archived);
-    const _res = await fetch("/item", {
+    const _res = await fetch("/api/item/sort", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -131,7 +130,7 @@
     });
   };
 
-  function dotColor(dot: number): string {
+  const dotColor = (dot: number): string => {
     let color = "";
     switch (dot) {
       case 1:
@@ -151,22 +150,6 @@
         break;
     }
     return color;
-  }
-
-  const changeColor = async (id: string) => {
-    if (state == State.Archived) {
-      toastMsg("Cannot change color of archived item.");
-      return;
-    }
-    const i = items.findIndex((item) => item.id === id);
-    if (items[i].dot === 3) {
-      items[i].dot = 0;
-    } else {
-      items[i].dot += 1;
-    }
-    items = items;
-
-    updateItems();
   };
 
   const addItem = async (value: string) => {
@@ -185,14 +168,42 @@
       todo: true,
       dot: dot,
     });
-    toastMsg("Added: " + value);
 
     items = items;
 
-    updateItems();
+    const _res = await fetch(
+      `/api/item?add=true&id=${id}&value=${value}&dot=${dot}`,
+      {
+        method: "POST",
+      }
+    );
   };
 
-  function toggleArchived(id: string) {
+  const changeColor = async (id: string) => {
+    let i: number;
+    if (state == State.Archived) {
+      i = archived.findIndex((item) => item.id === id);
+      if (archived[i].dot === 3) {
+        archived[i].dot = 0;
+      } else {
+        archived[i].dot += 1;
+      }
+      archived = archived;
+    } else {
+      i = items.findIndex((item) => item.id === id);
+      if (items[i].dot === 3) {
+        items[i].dot = 0;
+      } else {
+        items[i].dot += 1;
+      }
+      items = items;
+    }
+    const _res = await fetch(`/api/item?toggle_dot=true&id=${id}`, {
+      method: "POST",
+    });
+  };
+
+  const toggleArchived = async (id: string) => {
     let i: number;
     if (state == State.Archived) {
       i = archived.findIndex((item) => item.id == id);
@@ -200,32 +211,32 @@
       archived.splice(i, 1);
       items.unshift(target);
       items[0].todo = true;
-      toastMsg("Unarchived: " + target.value);
     } else {
       i = items.findIndex((item) => item.id == id);
       const target2 = items[i];
       items.splice(i, 1);
       archived.unshift(target2);
       archived[0].todo = false;
-      toastMsg("Archived: " + target2.value);
     }
     items = items;
     archived = archived;
 
-    updateItems();
-  }
+    const _res = await fetch(`/api/item?toggle_archived=true&id=${id}`, {
+      method: "POST",
+    });
+  };
 
   const itemOrderChanged = async (event) => {
     console.log("item order changed.");
     const newTodo: Item[] = event.detail;
     items = newTodo;
 
-    updateItems();
+    sortItems();
   };
 
-  function getItemById(id: string) {
+  const getItemById = (id: string) => {
     return items.find((item) => item.id === id);
-  }
+  };
 
   const sortableOptions = {
     group: "items",
@@ -234,9 +245,7 @@
   };
 </script>
 
-<div class="wrap">
-  <SvelteToast options={{ reversed: true }} />
-</div>
+<div class="wrap" />
 <main>
   {#if state == State.NotLoggedIn}
     <Login />
@@ -256,6 +265,7 @@
           type="text"
           bind:value={newItem}
           on:keydown={(e) => e.key === "Enter" && addItem(newItem)}
+          placeholder="+"
         />
       </div>
 
@@ -305,6 +315,7 @@
             <button on:click={() => toggleArchived(item.id)}
               ><i class="ri-checkbox-blank-fill" /></button
             >
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div
               class="flex-auto break-all line-clamp-2 cursor-pointer"
               on:click={() => (item.showModal = true)}

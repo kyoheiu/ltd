@@ -2,19 +2,21 @@
   import "remixicon/fonts/remixicon.css";
   export let value;
   export let id;
+
+  let originalValue = value;
 </script>
 
-<div class="text-neutral-800 text-xl p-2">{value}</div>
+<div class="text-neutral-800 text-xl p-2">{originalValue}</div>
 <form
   class="flex flex-col justify-items-center content-center space-y-2 m-1 rounded-md"
-  action="/api/rename"
+  action={`/api/item?rename=true&id=${id}&value=${value}`}
   method="post"
 >
   <input
     class="bg-slate-300 py-1 px-2 rounded-full"
     type="text"
     name="value"
-    {value}
+    bind:value
   />
   <input type="hidden" name="id" value={id} />
   <button
