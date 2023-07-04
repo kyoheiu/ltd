@@ -1,6 +1,6 @@
 <script>
   import {
-    normalColor,
+    defaultColor,
     greenColor,
     yellowColor,
     redColor,
@@ -15,18 +15,29 @@
 <nav class="flex justify-center space-x-4">
   {#if state == State.All}
     <button
-      class="button-filter border-b border-slate-200"
+      class="button-filter border-b border-slate-200 text-slate-200"
       on:click={() => changeState(State.All)}
+      ><i class="ri-checkbox-blank-circle-line"></i></button
+    >
+  {:else}
+    <button class="button-filter text-slate-200" on:click={() => changeState(State.All)}
+      ><i class="ri-checkbox-blank-circle-line"></i></button
+    >
+  {/if}
+  {#if state == State.Default}
+    <button
+      class="button-filter border-b border-slate-200"
+      on:click={() => changeState(State.Default)}
       ><i
         class="ri-checkbox-blank-circle-fill"
-        style="color: {normalColor}"
+        style="color: {defaultColor}"
       /></button
     >
   {:else}
-    <button class="button-filter" on:click={() => changeState(State.All)}
+    <button class="button-filter" on:click={() => changeState(State.Default)}
       ><i
         class="ri-checkbox-blank-circle-fill"
-        style="color: {normalColor}"
+        style="color: {defaultColor}"
       /></button
     >
   {/if}

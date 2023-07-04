@@ -10,7 +10,7 @@
   import Rename from "./lib/Rename.svelte";
   import ItemRenamable from "./lib/ItemRenamable.svelte";
   import {
-    normalColor,
+    defaultColor,
     greenColor,
     yellowColor,
     redColor,
@@ -26,10 +26,10 @@
   import { flip } from "svelte/animate";
 
   // Animation when adding/archiving/unarchiving item
-  const [send, receive] = crossfade({
+  const [_send, receive] = crossfade({
     duration: (d) => Math.sqrt(d * 200),
 
-    fallback(node, params) {
+    fallback(node, _params) {
       const style = getComputedStyle(node);
       const transform = style.transform === "none" ? "" : style.transform;
 
@@ -146,7 +146,7 @@
         color = archivedColor;
         break;
       default:
-        color = normalColor;
+        color = defaultColor;
         break;
     }
     return color;
@@ -158,8 +158,10 @@
     }
     const id = ulid();
     newItem = "";
-    let dot = state;
+    let dot = state - 1;
     if (state == State.Archived) {
+      dot = 0;
+    } else if (dot == -1) {
       dot = 0;
     }
     items.unshift({
@@ -227,7 +229,6 @@
   };
 
   const itemOrderChanged = async (event) => {
-    console.log("item order changed.");
     const newTodo: Item[] = event.detail;
     items = newTodo;
 
@@ -284,7 +285,6 @@
       >
         <label
           in:receive={{ key: item.id }}
-          out:send={{ key: item.id }}
           class="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
         >
           <button on:click={() => toggleArchived(item.id)}
@@ -305,10 +305,9 @@
       </SortableList>
     {:else if state != State.Archived}
       <ul class="flex flex-col space-y-2">
-        {#each items.filter((x) => x.dot === state) as item, index (item)}
+        {#each items.filter((x) => x.dot === state - 1) as item, index (item)}
           <label
             in:receive={{ key: item.id }}
-            out:send={{ key: item.id }}
             animate:flip={{ duration: 100 }}
             class="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
           >
@@ -349,7 +348,6 @@
         {#each archived as item, index (item)}
           <li
             in:receive={{ key: item.id }}
-            out:send={{ key: item.id }}
             animate:flip={{ duration: 100 }}
             class="text-slate-200 flex space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
           >
