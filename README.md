@@ -11,7 +11,7 @@ Lightweight self-hostable to-do lists app with LDAP authentication.
 - Built-in LDAP authentication. Items are managed based on the `ou`: For instance, if your DN is `cn=user,ou=people,dc=example,dc=com` you can manage items in the `people.json`. However, you will not be able to view items in `users.json`, which can only be accessed by those with `ou=users`.
 
 ## deploy
-1. Prepare `.env` file:
+1. Prepare empty `items` directory, and `.env` file with the following variables:
 
 ```
 LTD_DOMAIN=yourdomain.com
@@ -21,7 +21,7 @@ LTD_API_TOKEN=SECRET_KEY_TO_POST_ITEM_VIA_API
 ```
 
 2. 
-`mkdir -p items && sudo docker run -d -v /path/to/items:/ltd/items --env-file /path/to/.env --network="ldap_network_name" --name ltd -p 8080:8080 kyoheiudev/ltd:0.4.0`
+`sudo docker run -d -v /path/to/items:/ltd/items --env-file /path/to/.env --network="ldap_network_name" --name ltd -p 8080:8080 kyoheiudev/ltd:0.4.0`
 
 ## API
 To post an item via API, use HTTP POST request:
