@@ -13,6 +13,7 @@ pub enum Error {
     ParseInt(String),
     Header,
     NotVerified,
+    OrganizationalUnitName,
 }
 
 impl std::error::Error for Error {}
@@ -28,6 +29,7 @@ impl std::fmt::Display for Error {
             Error::ParseInt(s) => s,
             Error::Header => "Token not found.",
             Error::NotVerified => "Not verified.",
+            Error::OrganizationalUnitName => "OrganizationalUnitName not found.",
         };
         write!(f, "{}", printable)
     }
@@ -86,6 +88,7 @@ impl IntoResponse for Error {
             Error::ParseInt(s) => s,
             Error::Header => "Token not found.".to_string(),
             Error::NotVerified => "Not verified.".to_string(),
+            Error::OrganizationalUnitName => "OrganizationalUnitName not found.".to_string(),
         };
         (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
     }

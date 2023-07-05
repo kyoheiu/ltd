@@ -14,7 +14,6 @@ use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, 
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, VecDeque};
 use std::env;
-use std::sync::{Arc, Mutex, MutexGuard};
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
 use tower_http::services::ServeDir;
 
@@ -24,30 +23,13 @@ const COOKIE_NAME: &str = "ltd_auth";
 struct Core {
     encoding_key: EncodingKey,
     decoding_key: DecodingKey,
-    items: Arc<Mutex<Items>>,
 }
 
 impl Core {
     fn default() -> Result<Self, Error> {
-        let json = std::fs::read_to_string("items.json");
-        let json = match json {
-            Err(_) => {
-                println!("Json file not found.");
-                Items {
-                    items: VecDeque::new(),
-                }
-            }
-            Ok(json) => match serde_json::from_str(&json) {
-                Ok(json) => json,
-                Err(_) => Items {
-                    items: VecDeque::new(),
-                },
-            },
-        };
         Ok(Core {
             encoding_key: EncodingKey::from_secret(env::var("LTD_SECRET_KEY")?.as_bytes()),
             decoding_key: DecodingKey::from_secret(env::var("LTD_SECRET_KEY")?.as_bytes()),
-            items: Arc::new(Mutex::new(json)),
         })
     }
 }
@@ -123,9 +105,9 @@ async fn health() -> Html<&'static str> {
 
 #[debug_handler]
 async fn read_item(cookies: Cookies, State(core): State<Core>) -> Result<impl IntoResponse, Error> {
-    if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
-        let item = core.items.lock().unwrap().clone();
-        Ok(Json(item.items))
+    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
+        let items = read_json(&to_ou(&name)?)?;
+        Ok(Json(items.items))
     } else {
         Err(Error::NotVerified)
     }
@@ -137,8 +119,10 @@ async fn update_item(
     State(core): State<Core>,
     Query(params): Query<BTreeMap<String, String>>,
 ) -> Result<impl IntoResponse, Error> {
-    if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
-        let mut items = core.items.lock().unwrap();
+    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
+        let ou = to_ou(&name)?;
+        let mut items = read_json(&ou)?;
+
         if params.contains_key("add") {
             let id = params.get("id").unwrap();
             let value = params.get("value").unwrap();
@@ -175,18 +159,18 @@ async fn update_item(
             } else {
                 println!("ID not found.");
             }
-            save_json(items)?;
+            save_json(items, &ou)?;
             return Ok(Redirect::to("/").into_response());
         } else if params.contains_key("delete_archived") {
             let filtered: VecDeque<Item> =
                 items.items.clone().into_iter().filter(|x| x.todo).collect();
             items.items = filtered;
             println!("Deleted Archived items.");
-            save_json(items)?;
+            save_json(items, &ou)?;
             return Ok(Redirect::to("/").into_response());
         }
 
-        save_json(items)?;
+        save_json(items, &ou)?;
         Ok(().into_response())
     } else {
         Err(Error::NotVerified)
@@ -194,24 +178,25 @@ async fn update_item(
 }
 
 #[debug_handler]
-async fn post_item(
-    State(core): State<Core>,
-    headers: HeaderMap,
-    Json(payload): Json<Value>,
-) -> Result<(), Error> {
+async fn post_item(headers: HeaderMap, Json(payload): Json<Value>) -> Result<(), Error> {
     if let Some(token) = headers.get("authorization") {
         if token.to_str()? == env::var("LTD_API_TOKEN")? {
-            let value = payload.value;
-            let id = ulid::Ulid::new().to_string();
-            let mut items = core.items.lock().unwrap();
-            items.items.push_front(Item {
-                id,
-                value,
-                todo: true,
-                dot: 0,
-            });
-            save_json(items)?;
-            Ok(println!("Added new item."))
+            if let Some(ou) = headers.get("X-Ou") {
+                let ou = ou.to_str()?;
+                let value = payload.value;
+                let id = ulid::Ulid::new().to_string();
+                let mut items = read_json(ou)?;
+                items.items.push_front(Item {
+                    id,
+                    value,
+                    todo: true,
+                    dot: 0,
+                });
+                save_json(items, ou)?;
+                Ok(println!("Added new item to ou {}.", ou))
+            } else {
+                Err(Error::OrganizationalUnitName)
+            }
         } else {
             println!("Invalid token.");
             Err(Error::NotVerified)
@@ -228,11 +213,15 @@ async fn sort_item(
     State(core): State<Core>,
     Json(payload): Json<Items>,
 ) -> Result<(), Error> {
-    if let Ok(_name) = is_valid(cookies, &core.decoding_key) {
-        let mut items = core.items.lock().unwrap();
-        *items = payload;
+    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
+        let ou = to_ou(&name)?;
+        save_json(
+            Items {
+                items: payload.items,
+            },
+            &ou,
+        )?;
         println!("Sort: Done.");
-        save_json(items)?;
         Ok(())
     } else {
         Err(Error::NotVerified)
@@ -303,8 +292,37 @@ fn is_valid(cookies: Cookies, key: &DecodingKey) -> Result<String, Error> {
     }
 }
 
-fn save_json(items: MutexGuard<Items>) -> Result<(), Error> {
-    let json = serde_json::to_string(&items.clone())?;
-    std::fs::write("items.json", json)?;
+fn to_ou(dn: &str) -> Result<String, Error> {
+    let ou = dn.split(',').find(|x| x.starts_with("ou="));
+    if let Some(ou) = ou {
+        Ok(ou.strip_prefix("ou=").unwrap().to_string())
+    } else {
+        Err(Error::OrganizationalUnitName)
+    }
+}
+
+fn read_json(ou: &str) -> Result<Items, Error> {
+    let json = std::fs::read_to_string(format!("items/{}.json", ou));
+    match json {
+        Err(_) => {
+            println!("Json file not found: Will create a new one.");
+            std::fs::create_dir("items")?;
+            std::fs::File::create(format!("items/{}.json", ou))?;
+            Ok(Items {
+                items: VecDeque::new(),
+            })
+        }
+        Ok(json) => match serde_json::from_str(&json) {
+            Ok(json) => Ok(json),
+            Err(_) => Ok(Items {
+                items: VecDeque::new(),
+            }),
+        },
+    }
+}
+
+fn save_json(items: Items, ou: &str) -> Result<(), Error> {
+    let json = serde_json::to_string(&items)?;
+    std::fs::write(format!("items/{}.json", ou), json)?;
     Ok(())
 }
