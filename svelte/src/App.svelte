@@ -245,7 +245,7 @@
     easing: "cubic-bezier(1, 0, 0, 1)",
   };
 </script>
- 
+
 <div class="wrap" />
 <main>
   {#if state == State.NotLoggedIn}

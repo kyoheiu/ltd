@@ -17,11 +17,13 @@
     <button
       class="button-filter border-b border-slate-200 text-slate-200"
       on:click={() => changeState(State.All)}
-      ><i class="ri-checkbox-blank-circle-line"></i></button
+      ><i class="ri-checkbox-blank-circle-line" /></button
     >
   {:else}
-    <button class="button-filter text-slate-200" on:click={() => changeState(State.All)}
-      ><i class="ri-checkbox-blank-circle-line"></i></button
+    <button
+      class="button-filter text-slate-200"
+      on:click={() => changeState(State.All)}
+      ><i class="ri-checkbox-blank-circle-line" /></button
     >
   {/if}
   {#if state == State.Default}
@@ -96,10 +98,7 @@
     <button
       class="button-filter border-b border-slate-200"
       on:click={() => changeState(State.Archived)}
-      ><i
-        class="ri-archive-fill"
-        style="color: {archivedColor}"
-      /></button
+      ><i class="ri-archive-fill" style="color: {archivedColor}" /></button
     >
   {:else}
     <button class="button-filter" on:click={() => changeState(State.Archived)}
