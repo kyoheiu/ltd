@@ -5,9 +5,9 @@ Lightweight self-hostable to-do lists app with LDAP authentication.
 ![screenshot.png](screenshot.png)
 
 ## features
-- Store items as single JSON file.
-- Organize items by color: No tags, no categories. Just colors. Click/tap the dot on the right to change the color of the item. (`default -> green -> yellow -> red -> default`)
-- Sortable. (Only in the top page though)
+- Store items as single JSON file in `items` directory, which is mounted to the Docker container.
+- No tags, no categories. Just colors. Click/tap the dot on the right to change the color of the item. (`default -> green -> yellow -> red -> default`)
+- Sortable. (Only in the left-most tab)
 - Built-in LDAP authentication. Items are managed based on the `ou`: For instance, if your DN is `cn=user,ou=people,dc=example,dc=com` you can manage items in the `people.json`. However, you will not be able to view items in `users.json`, which can only be accessed by those with `ou=users`.
 
 ## deploy
