@@ -48,14 +48,9 @@ struct Item {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct ValueRenamed {
-    id: String,
-    value: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 struct Value {
     value: String,
+    ou: String,
 }
 
 #[derive(Deserialize)]
@@ -68,11 +63,6 @@ struct LogIn {
 struct Claims {
     sub: String,
     exp: usize,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Param {
-    token: String,
 }
 
 #[tokio::main]
@@ -181,22 +171,18 @@ async fn update_item(
 async fn post_item(headers: HeaderMap, Json(payload): Json<Value>) -> Result<(), Error> {
     if let Some(token) = headers.get("authorization") {
         if token.to_str()? == env::var("LTD_API_TOKEN")? {
-            if let Some(ou) = headers.get("X-Ou") {
-                let ou = ou.to_str()?;
-                let value = payload.value;
-                let id = ulid::Ulid::new().to_string();
-                let mut items = read_json(ou)?;
-                items.items.push_front(Item {
-                    id,
-                    value,
-                    todo: true,
-                    dot: 0,
-                });
-                save_json(items, ou)?;
-                Ok(println!("Added new item to ou {}.", ou))
-            } else {
-                Err(Error::OrganizationalUnitName)
-            }
+            let value = payload.value;
+            let ou = payload.ou;
+            let id = ulid::Ulid::new().to_string();
+            let mut items = read_json(&ou)?;
+            items.items.push_front(Item {
+                id,
+                value: value.clone(),
+                todo: true,
+                dot: 0,
+            });
+            save_json(items, &ou)?;
+            Ok(println!("Added new item {} to ou {}.", value, ou))
         } else {
             println!("Invalid token.");
             Err(Error::NotVerified)
@@ -306,7 +292,9 @@ fn read_json(ou: &str) -> Result<Items, Error> {
     match json {
         Err(_) => {
             println!("Json file not found: Will create a new one.");
-            std::fs::create_dir("items")?;
+            if !std::path::Path::new("items").exists() {
+                std::fs::create_dir("items")?;
+            }
             std::fs::File::create(format!("items/{}.json", ou))?;
             Ok(Items {
                 items: VecDeque::new(),

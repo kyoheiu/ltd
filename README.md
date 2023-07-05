@@ -8,7 +8,7 @@ Lightweight self-hostable to-do lists app with LDAP authentication.
 - Store items as single JSON file.
 - Organize items by color: No tags, no categories. Just colors. Click/tap the dot on the right to change the color of the item. (`default -> green -> yellow -> red -> default`)
 - Sortable. (Only in the top page though)
-- Built-in LDAP authentication. (No multiple user management yet for now)
+- Built-in LDAP authentication. Items are managed based on the `ou`: For instance, if your DN is `cn=user,ou=people,dc=example,dc=com` you can manage items in the `people.json`. However, you will not be able to view items in `users.json`, which can only be accessed by those with `ou=users`.
 
 ## deploy
 1. Prepare `.env` file:
@@ -16,12 +16,12 @@ Lightweight self-hostable to-do lists app with LDAP authentication.
 ```
 LTD_DOMAIN=yourdomain.com
 LTD_SECRET_KEY=SECRET_STRING_TO_ENCODE_JWT
-LTD_NETWORK=lldap://lldap:3890
+LTD_NETWORK=ldap://ldap:3890
 LTD_API_TOKEN=SECRET_KEY_TO_POST_ITEM_VIA_API
 ```
 
 2. 
-`touch /path/to/items.json && sudo docker run -d -v /path/to/items.json:/ltd/items.json --env-file /path/to/.env --network="lldap_docker_network" --name ltd -p 8080:8080 kyoheiudev/ltd:0.3.1`
+`mkdir -p items && sudo docker run -d -v /path/to/items:/ltd/items --env-file /path/to/.env --network="ldap_network_name" --name ltd -p 8080:8080 kyoheiudev/ltd:0.4.0`
 
 ## API
 To post an item via API, use HTTP POST request:
@@ -32,7 +32,8 @@ Content-Type: application/json
 Authorization: LTD_API_TOKEN
 
 {
-  "value": "new item"
+  "value": "new item",
+  "ou": "people"
 }
 ```
 
