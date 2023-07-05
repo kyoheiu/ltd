@@ -245,7 +245,7 @@
     easing: "cubic-bezier(1, 0, 0, 1)",
   };
 </script>
-
+ 
 <div class="wrap" />
 <main>
   {#if state == State.NotLoggedIn}
@@ -287,7 +287,7 @@
           in:receive={{ key: item.id }}
           class="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
         >
-          <button on:click={() => toggleArchived(item.id)}
+          <button on:click={() => !item.showModal && toggleArchived(item.id)}
             ><i class="ri-checkbox-blank-fill" /></button
           >
           <ItemRenamable {item} />
@@ -311,7 +311,7 @@
             animate:flip={{ duration: 100 }}
             class="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
           >
-            <button on:click={() => toggleArchived(item.id)}
+            <button on:click={() => !item.showModal && toggleArchived(item.id)}
               ><i class="ri-checkbox-blank-fill" /></button
             >
             <!-- svelte-ignore a11y-click-events-have-key-events -->
