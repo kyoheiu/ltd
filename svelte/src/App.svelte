@@ -281,7 +281,7 @@
         let:item
         idKey="id"
         {getItemById}
-        ulClass="flex flex-col space-y-2"
+        ulClass="flex flex-col space-y-2 mb-4"
       >
         <label
           in:receive={{ key: item.id }}
@@ -304,7 +304,7 @@
         </label>
       </SortableList>
     {:else if state != State.Archived}
-      <ul class="flex flex-col space-y-2">
+      <ul class="flex flex-col space-y-2 mb-4">
         {#each items.filter((x) => x.dot === state - 1) as item, index (item)}
           <label
             in:receive={{ key: item.id }}
@@ -344,8 +344,8 @@
           <DeleteArchived />
         </Dialog>
       </div>
-      <ul class="flex flex-col space-y-2">
-        {#each archived as item, index (item)}
+      <ul class="flex flex-col space-y-2 mb-4">
+        {#each archived as item, _index (item)}
           <li
             in:receive={{ key: item.id }}
             animate:flip={{ duration: 100 }}
