@@ -1,4 +1,4 @@
 /target
 /static
-*.json
+/items
 .env
