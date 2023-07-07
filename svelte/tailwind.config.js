@@ -6,6 +6,7 @@ export default {
   content: ["./src/**/*.{html,js,svelte,ts}"],
   theme: {
     extend: {},
+    // color scheme: catppuccin macchiato
     colors: {
       slate: colors.slate,
       neutral: colors.neutral,
