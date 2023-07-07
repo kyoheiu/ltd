@@ -1,6 +1,5 @@
 <script lang="ts">
-  import Modal from "./Modal.svelte";
-  import Rename from "./Rename.svelte";
+  import DialogToRename from "./DialogToRename.svelte";
   import type { Item } from "./types.ts";
 
   export let item: Item;
@@ -13,6 +12,4 @@
 >
   {item.value}
 </div>
-<Modal bind:showModal={item.showModal}>
-  <Rename value={item.value} id={item.id} />
-</Modal>
+<DialogToRename item={item} bind:showModal={item.showModal} />
