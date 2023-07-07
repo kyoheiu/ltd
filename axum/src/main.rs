@@ -144,8 +144,8 @@ async fn update_item(
             let id = params.get("id").unwrap();
             let value = params.get("value").unwrap();
             if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
-                target.value = value.to_string();
                 println!("Rename: {} -> {}", target.value, value);
+                target.value = value.to_string();
             } else {
                 println!("ID not found.");
             }
