@@ -1,10 +1,11 @@
 <script>
   import logo from "../assets/logo.png";
+  import Footer from "./Footer.svelte";
 </script>
 
-<div class="flex flex-col items-center mt-4 p-6">
+<div class="flex flex-col items-center mt-4 p-6 h-screen">
   <img src={logo} alt="ltd" class="w-8 h-auto mb-2" />
-  <div>
+  <div class="flex-grow">
     <form
       class="text-neutral-800 space-y-2 m-4 text-center"
       id="login-form"
@@ -36,4 +37,5 @@
       </p>
     </form>
   </div>
+  <Footer />
 </div>

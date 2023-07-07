@@ -24,6 +24,7 @@
   import { quintOut } from "svelte/easing";
   import { crossfade } from "svelte/transition";
   import { flip } from "svelte/animate";
+  import Footer from "./lib/Footer.svelte";
 
   // Animation when adding/archiving/unarchiving item
   const [_send, receive] = crossfade({
@@ -251,119 +252,138 @@
   {#if state == State.NotLoggedIn}
     <Login />
   {:else}
-    <div class="flex flex-col space-y-4 mx-6 mb-4 mt-4">
-      <div class="flex justify-between items-center">
-        <a href="/"><img src={logo} alt="ltd" class="w-5 h-auto" /></a>
-        <button on:click={logout}
-          ><i class="ri-logout-circle-r-line text-slate-200" /></button
-        >
-      </div>
-
-      <div class="flex justify-center items-center mx-2 space-x-2">
-        <input
-          id="submit-form"
-          class="text-slate-800 bg-slate-200 rounded-full py-1 px-2 w-full"
-          type="text"
-          bind:value={newItem}
-          on:keydown={(e) => e.key === "Enter" && addItem(newItem)}
-          placeholder="+"
-        />
-      </div>
-
-      <Nav {state} {changeState} />
-    </div>
-
-    {#if state == State.All}
-      <SortableList
-        {sortableOptions}
-        on:orderChanged={itemOrderChanged}
-        bind:items
-        let:item
-        idKey="id"
-        {getItemById}
-        ulClass="flex flex-col space-y-2 mb-4"
-      >
-        <label
-          in:receive={{ key: item.id }}
-          class="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
-        >
-          <button on:click={() => !item.showModal && toggleArchived(item.id)}
-            ><i class="ri-checkbox-blank-fill" /></button
+    <div class="flex flex-col h-screen">
+      <div class="flex flex-col space-y-4 mx-6 mb-4 mt-4">
+        <div class="flex justify-between items-center">
+          <a href="/"><img src={logo} alt="ltd" class="w-5 h-auto" /></a>
+          <button on:click={logout}
+            ><i class="ri-logout-circle-r-line text-slate-200" /></button
           >
-          <ItemRenamable {item} />
-          <i
-            class="ri-drag-move-fill"
-            style="margin-left: auto; cursor: move"
+        </div>
+
+        <div class="flex justify-center items-center mx-2 space-x-2">
+          <input
+            id="submit-form"
+            class="text-slate-800 bg-slate-200 rounded-full py-1 px-2 w-full"
+            type="text"
+            bind:value={newItem}
+            on:keydown={(e) => e.key === "Enter" && addItem(newItem)}
+            placeholder="+"
           />
-          &nbsp;
-          <button
-            style="color: {dotColor(item.dot)}"
-            on:click={() => changeColor(item.id)}
-            ><i class="ri-checkbox-blank-circle-fill" /></button
-          >
-        </label>
-      </SortableList>
-    {:else if state != State.Archived}
-      <ul class="flex flex-col space-y-2 mb-4">
-        {#each items.filter((x) => x.dot === state - 1) as item, index (item)}
-          <label
-            in:receive={{ key: item.id }}
-            animate:flip={{ duration: 100 }}
-            class="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
-          >
-            <button on:click={() => !item.showModal && toggleArchived(item.id)}
-              ><i class="ri-checkbox-blank-fill" /></button
-            >
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div
-              class="flex-auto break-all line-clamp-2 cursor-pointer"
-              on:click={() => (item.showModal = true)}
-            >
-              {item.value}
-            </div>
-            <Modal bind:showModal={item.showModal}>
-              <Rename value={item.value} id={item.id} />
-            </Modal>
+        </div>
 
-            <button
-              style="color: {dotColor(item.dot)}; margin-left: auto"
-              on:click={() => changeColor(item.id)}
-              ><i class="ri-checkbox-blank-circle-fill" /></button
-            >
-          </label>
-        {/each}
-      </ul>
-    {:else}
-      <div class="flex flex-col my-6">
-        <button
-          class="text-sm text-red border-red hover:bg-red hover:text-slate-50 rounded-md border-2 m-auto px-2"
-          on:click={() => (showDialog = true)}
-          ><i class="ri-delete-bin-2-fill" /> Delete all archived items</button
-        >
-        <Dialog bind:showDialog>
-          <DeleteArchived />
-        </Dialog>
+        <Nav {state} {changeState} />
       </div>
-      <ul class="flex flex-col space-y-2 mb-4">
-        {#each archived as item, _index (item)}
-          <li
-            in:receive={{ key: item.id }}
-            animate:flip={{ duration: 100 }}
-            class="text-slate-200 flex space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
+
+      {#if state == State.All}
+        <div class="flex-grow">
+          <SortableList
+            {sortableOptions}
+            on:orderChanged={itemOrderChanged}
+            bind:items
+            let:item
+            idKey="id"
+            {getItemById}
+            ulClass="flex flex-col space-y-2"
           >
-            <button on:click={() => toggleArchived(item.id)}
-              ><i class="ri-checkbox-fill" /></button
+            <label
+              in:receive={{ key: item.id }}
+              class="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
             >
-            <div class="flex-auto break-all line-clamp-2">{item.value}</div>
-            <button
-              style="color: {dotColor(item.dot)}; margin-left: auto"
-              on:click={() => changeColor(item.id)}
-              ><i class="ri-checkbox-blank-circle-fill" /></button
-            >
-          </li>
-        {/each}
-      </ul>
-    {/if}
+              <button
+                on:click={() => !item.showModal && toggleArchived(item.id)}
+                ><i class="ri-checkbox-blank-fill" /></button
+              >
+              <ItemRenamable {item} />
+              <i
+                class="ri-drag-move-fill"
+                style="margin-left: auto; cursor: move"
+              />
+              &nbsp;
+              <button
+                style="color: {dotColor(item.dot)}"
+                on:click={() => changeColor(item.id)}
+                ><i class="ri-checkbox-blank-circle-fill" /></button
+              >
+            </label>
+          </SortableList>
+        </div>
+        <div class="flex justify-center">
+          <Footer />
+        </div>
+      {:else if state != State.Archived}
+        <div class="flex-grow">
+          <ul class="flex flex-col space-y-2">
+            {#each items.filter((x) => x.dot === state - 1) as item, index (item)}
+              <label
+                in:receive={{ key: item.id }}
+                animate:flip={{ duration: 100 }}
+                class="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
+              >
+                <button
+                  on:click={() => !item.showModal && toggleArchived(item.id)}
+                  ><i class="ri-checkbox-blank-fill" /></button
+                >
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <div
+                  class="flex-auto break-all line-clamp-2 cursor-pointer"
+                  on:click={() => (item.showModal = true)}
+                >
+                  {item.value}
+                </div>
+                <Modal bind:showModal={item.showModal}>
+                  <Rename value={item.value} id={item.id} />
+                </Modal>
+
+                <button
+                  style="color: {dotColor(item.dot)}; margin-left: auto"
+                  on:click={() => changeColor(item.id)}
+                  ><i class="ri-checkbox-blank-circle-fill" /></button
+                >
+              </label>
+            {/each}
+          </ul>
+        </div>
+        <div class="flex justify-center">
+          <Footer />
+        </div>
+      {:else}
+        <div class="flex flex-col my-6">
+          <button
+            class="text-sm text-red border-red hover:bg-red hover:text-slate-50 rounded-md border-2 m-auto px-2"
+            on:click={() => (showDialog = true)}
+            ><i class="ri-delete-bin-2-fill" /> Delete all archived items</button
+          >
+          <Dialog bind:showDialog>
+            <DeleteArchived />
+          </Dialog>
+        </div>
+        <div class="flex-grow">
+          <ul class="flex flex-col space-y-2">
+            {#each archived as item, _index (item)}
+              <li
+                in:receive={{ key: item.id }}
+                animate:flip={{ duration: 100 }}
+                class="text-slate-200 flex space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
+              >
+                <button on:click={() => toggleArchived(item.id)}
+                  ><i class="ri-checkbox-fill" /></button
+                >
+                <div class="flex-auto break-all line-clamp-2">{item.value}</div>
+                <button
+                  style="color: {dotColor(item.dot)}; margin-left: auto"
+                  on:click={() => changeColor(item.id)}
+                  ><i class="ri-checkbox-blank-circle-fill" /></button
+                >
+              </li>
+            {/each}
+          </ul>
+        </div>
+        <div class="flex justify-center">
+          <Footer />
+        </div>
+      {/if}
+    </div>
   {/if}
 </main>
 
