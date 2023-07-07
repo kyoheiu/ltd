@@ -5,9 +5,8 @@
   import { onMount } from "svelte";
   import { ulid } from "ulid";
   import SortableList from "./lib/SortableList.svelte";
-  import Modal from "./lib/Modal.svelte";
+  import DialogToRename from "./lib/DialogToRename.svelte";
   import Login from "./lib/Login.svelte";
-  import Rename from "./lib/Rename.svelte";
   import ItemRenamable from "./lib/ItemRenamable.svelte";
   import {
     defaultColor,
@@ -19,8 +18,7 @@
   import { State } from "./lib/types.ts";
   import type { Item } from "./lib/types.ts";
   import Nav from "./lib/Nav.svelte";
-  import Dialog from "./lib/Dialog.svelte";
-  import DeleteArchived from "./lib/DeleteArchived.svelte";
+  import DialogToDelete from "./lib/DialogToDelete.svelte";
   import { quintOut } from "svelte/easing";
   import { crossfade } from "svelte/transition";
   import { flip } from "svelte/animate";
@@ -331,9 +329,7 @@
                 >
                   {item.value}
                 </div>
-                <Modal bind:showModal={item.showModal}>
-                  <Rename value={item.value} id={item.id} />
-                </Modal>
+                <DialogToRename bind:item bind:showModal={item.showModal} />
 
                 <button
                   style="color: {dotColor(item.dot)}; margin-left: auto"
@@ -348,17 +344,15 @@
           <Footer />
         </div>
       {:else}
-        <div class="flex flex-col my-6">
-          <button
-            class="text-sm text-red border-red hover:bg-red hover:text-slate-50 rounded-md border-2 m-auto px-2"
-            on:click={() => (showDialog = true)}
-            ><i class="ri-delete-bin-2-fill" /> Delete all archived items</button
-          >
-          <Dialog bind:showDialog>
-            <DeleteArchived />
-          </Dialog>
-        </div>
         <div class="flex-grow">
+          <div class="flex flex-col mb-4">
+            <button
+              class="text-sm text-red border-red hover:bg-red hover:text-slate-50 rounded-md border-2 m-auto px-2"
+              on:click={() => (showDialog = true)}
+              ><i class="ri-delete-bin-2-fill" /> Delete all archived items</button
+            >
+            <DialogToDelete bind:showDialog />
+          </div>
           <ul class="flex flex-col space-y-2">
             {#each archived as item, _index (item)}
               <li
