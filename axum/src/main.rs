@@ -130,7 +130,7 @@ async fn update_item(
                 target.todo = !target.todo;
                 println!("Toggle archived: id {}", id);
             } else {
-                println!("ID not found.");
+                eprintln!("ID not found.");
             }
         } else if params.contains_key("toggle_dot") {
             let id = params.get("id").unwrap();
@@ -138,7 +138,7 @@ async fn update_item(
                 target.dot = if target.dot == 3 { 0 } else { target.dot + 1 };
                 println!("Toggle dot color: id {}", id);
             } else {
-                println!("ID not found.");
+                eprintln!("ID not found.");
             }
         } else if params.contains_key("rename") {
             let id = params.get("id").unwrap();
@@ -147,7 +147,7 @@ async fn update_item(
                 println!("Rename: {} -> {}", target.value, value);
                 target.value = value.to_string();
             } else {
-                println!("ID not found.");
+                eprintln!("ID not found.");
             }
             save_json(items, &ou)?;
             return Ok(Redirect::to("/").into_response());
@@ -176,19 +176,19 @@ async fn post_item(headers: HeaderMap, Json(payload): Json<Value>) -> Result<(),
             let id = ulid::Ulid::new().to_string();
             let mut items = read_json(&ou)?;
             items.items.push_front(Item {
-                id,
+                id: id.clone(),
                 value: value.clone(),
                 todo: true,
                 dot: 0,
             });
             save_json(items, &ou)?;
-            Ok(println!("Added new item {} to ou {}.", value, ou))
+            Ok(println!("Add(via API): id {} value {} dot 0", id, value))
         } else {
-            println!("Invalid token.");
+            eprintln!("Invalid token.");
             Err(Error::NotVerified)
         }
     } else {
-        println!("No header.");
+        eprintln!("No header.");
         Err(Error::Header)
     }
 }
@@ -207,7 +207,7 @@ async fn sort_item(
             },
             &ou,
         )?;
-        println!("Sort: Done.");
+        println!("Sorted.");
         Ok(())
     } else {
         Err(Error::NotVerified)
@@ -243,7 +243,7 @@ async fn ldaplogin(
         cookies.add(cookie);
         Ok(Redirect::to("/").into_response())
     } else {
-        println!("Logging in failed.");
+        eprintln!("Logging in failed.");
         Ok(Redirect::to("/").into_response())
     }
 }
