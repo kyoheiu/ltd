@@ -5,7 +5,7 @@ Lightweight self-hostable to-do lists app with LDAP authentication.
 ![screenshot.png](screenshot.png)
 
 Demo site is [here](https://ltd-cdd.pages.dev/).  
-(as SPA: No persistent data)
+(No persistent data)
 
 ## features
 - Store items as single JSON file in `items` directory, which is mounted to the Docker container.
@@ -24,10 +24,10 @@ LTD_API_TOKEN=SECRET_KEY_TO_POST_ITEM_VIA_API
 ```
 
 2. 
-`sudo docker run -d -v /path/to/items:/ltd/items --env-file /path/to/.env --network="ldap_network_name" --name ltd -p 8080:8080 kyoheiudev/ltd:0.4.1`
+`sudo docker run -d -v /path/to/items:/ltd/items --env-file /path/to/.env --network="ldap_docker_network_name_if_needed" --name ltd -p 8080:8080 kyoheiudev/ltd:0.4.1`  
 
 ## API
-To post an item via API, use HTTP POST request:
+To post an item via API, use HTTP `POST` request:
 
 ```http
 POST /api/post
