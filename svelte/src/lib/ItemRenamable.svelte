@@ -12,4 +12,4 @@
 >
   {item.value}
 </div>
-<DialogToRename item={item} bind:showModal={item.showModal} />
+<DialogToRename {item} bind:showModal={item.showModal} />

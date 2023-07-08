@@ -35,11 +35,10 @@
           class="text-sm border-neutral-800 hover:bg-neutral-800 hover:text-slate-100 rounded-md border-2 px-1"
           on:click={() => dialog.close()}>cancel</button
         >
-          <button
-            class="border-red text-red hover:bg-red hover:text-slate-50 text-sm rounded-md border-2 px-1"
-            on:click={() => deleteArchived()}
-            >delete</button
-          >
+        <button
+          class="border-red text-red hover:bg-red hover:text-slate-50 text-sm rounded-md border-2 px-1"
+          on:click={() => deleteArchived()}>delete</button
+        >
       </div>
     </div>
   </dialog>
