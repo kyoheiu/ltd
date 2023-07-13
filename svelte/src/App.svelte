@@ -250,19 +250,19 @@
   {#if state == State.NotLoggedIn}
     <Login />
   {:else}
-    <div class="flex flex-col h-screen">
-      <div class="flex flex-col space-y-4 mx-6 mb-4 mt-4">
-        <div class="flex justify-between items-center">
-          <a href="/"><img src={logo} alt="ltd" class="w-5 h-auto" /></a>
+    <div class="flex h-screen flex-col">
+      <div class="mx-6 mb-4 mt-4 flex flex-col space-y-4">
+        <div class="flex items-center justify-between">
+          <a href="/"><img src={logo} alt="ltd" class="h-auto w-5" /></a>
           <button on:click={logout}
             ><i class="ri-logout-circle-r-line text-slate-200" /></button
           >
         </div>
 
-        <div class="flex justify-center items-center mx-2 space-x-2">
+        <div class="mx-2 flex items-center justify-center space-x-2">
           <input
             id="submit-form"
-            class="text-slate-800 bg-slate-200 rounded-full py-1 px-2 w-full"
+            class="w-full rounded-full bg-slate-200 px-2 py-1 text-slate-800"
             type="text"
             bind:value={newItem}
             on:keydown={(e) => e.key === "Enter" && addItem(newItem)}
@@ -286,7 +286,7 @@
           >
             <label
               in:receive={{ key: item.id }}
-              class="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
+              class="m-auto flex w-5/6 items-center space-x-2 rounded-md border-2 border-slate-200 p-2 text-slate-200"
             >
               <button
                 on:click={() => !item.showModal && toggleArchived(item.id)}
@@ -316,7 +316,7 @@
               <label
                 in:receive={{ key: item.id }}
                 animate:flip={{ duration: 100 }}
-                class="text-slate-200 flex items-center space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
+                class="m-auto flex w-5/6 items-center space-x-2 rounded-md border-2 border-slate-200 p-2 text-slate-200"
               >
                 <button
                   on:click={() => !item.showModal && toggleArchived(item.id)}
@@ -324,7 +324,7 @@
                 >
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <div
-                  class="flex-auto break-all line-clamp-2 cursor-pointer"
+                  class="line-clamp-2 flex-auto cursor-pointer break-all"
                   on:click={() => (item.showModal = true)}
                 >
                   {item.value}
@@ -345,9 +345,9 @@
         </div>
       {:else}
         <div class="flex-grow">
-          <div class="flex flex-col mb-4">
+          <div class="mb-4 flex flex-col">
             <button
-              class="text-sm text-red border-red hover:bg-red hover:text-slate-50 rounded-md border-2 m-auto px-2"
+              class="m-auto rounded-md border-2 border-red px-2 text-sm text-red hover:bg-red hover:text-slate-50"
               on:click={() => (showDialog = true)}
               ><i class="ri-delete-bin-2-fill" /> Delete all archived items</button
             >
@@ -358,12 +358,12 @@
               <li
                 in:receive={{ key: item.id }}
                 animate:flip={{ duration: 100 }}
-                class="text-slate-200 flex space-x-2 m-auto p-2 border-2 border-slate-200 rounded-md w-5/6"
+                class="m-auto flex w-5/6 space-x-2 rounded-md border-2 border-slate-200 p-2 text-slate-200"
               >
                 <button on:click={() => toggleArchived(item.id)}
                   ><i class="ri-checkbox-fill" /></button
                 >
-                <div class="flex-auto break-all line-clamp-2">{item.value}</div>
+                <div class="line-clamp-2 flex-auto break-all">{item.value}</div>
                 <button
                   style="color: {dotColor(item.dot)}; margin-left: auto"
                   on:click={() => changeColor(item.id)}
