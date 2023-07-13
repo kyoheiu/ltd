@@ -10,6 +10,7 @@ export default {
     colors: {
       slate: colors.slate,
       neutral: colors.neutral,
+      rose: colors.rose,
       "default": "#A5ADCB",
       "green": "#A6DA95",
       "yellow": "#EED49F",

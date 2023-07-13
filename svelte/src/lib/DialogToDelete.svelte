@@ -32,11 +32,11 @@
       <!-- svelte-ignore a11y-autofocus -->
       <div class="flex justify-between">
         <button
-          class="rounded-md border-2 border-neutral-800 px-1 text-sm hover:bg-neutral-800 hover:text-slate-100"
+          class="rounded-md border border-neutral-800 px-1 text-sm hover:bg-neutral-800 hover:text-slate-100"
           on:click={() => dialog.close()}>cancel</button
         >
         <button
-          class="rounded-md border-2 border-red px-1 text-sm text-red hover:bg-red hover:text-slate-50"
+          class="rounded-md border border-rose-500 px-1 text-sm text-rose-500 hover:bg-rose-500 hover:text-slate-50"
           on:click={() => deleteArchived()}>delete</button
         >
       </div>

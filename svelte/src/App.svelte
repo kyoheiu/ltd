@@ -347,7 +347,7 @@
         <div class="flex-grow">
           <div class="mb-4 flex flex-col">
             <button
-              class="m-auto rounded-md border-2 border-red px-2 text-sm text-red hover:bg-red hover:text-slate-50"
+              class="m-auto rounded-full border border-rose-500 px-2 text-sm text-rose-500 hover:bg-rose-500 hover:text-slate-200"
               on:click={() => (showDialog = true)}
               ><i class="ri-delete-bin-2-fill" /> Delete all archived items</button
             >
