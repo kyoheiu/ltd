@@ -3,11 +3,11 @@
   import Footer from "./Footer.svelte";
 </script>
 
-<div class="flex flex-col items-center mt-4 p-6 h-screen">
-  <img src={logo} alt="ltd" class="w-8 h-auto mb-2" />
+<div class="mt-4 flex h-screen flex-col items-center p-6">
+  <img src={logo} alt="ltd" class="mb-2 h-auto w-8" />
   <div class="flex-grow">
     <form
-      class="text-neutral-800 space-y-2 m-4 text-center"
+      class="m-4 space-y-2 text-center text-neutral-800"
       id="login-form"
       method="post"
       action="api/ldaplogin"
@@ -31,7 +31,7 @@
         />
       </div>
       <p>
-        <button class="text-2xl text-slate-200 m-2" type="submit"
+        <button class="m-2 text-2xl text-slate-200" type="submit"
           ><i class="ri-login-circle-line" /></button
         >
       </p>
