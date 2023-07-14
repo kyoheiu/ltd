@@ -45,7 +45,7 @@
       <hr class="my-4 border-neutral-800" />
       <!-- svelte-ignore a11y-autofocus -->
       <button
-        class="rounded-md border-2 border-neutral-800 px-1 text-sm hover:bg-neutral-800 hover:text-slate-100"
+        class="rounded-md border border-neutral-800 px-1 text-sm hover:bg-neutral-800 hover:text-slate-100"
         on:click={() => dialog.close()}>close</button
       >
     </div>
