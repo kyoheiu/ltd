@@ -39,7 +39,7 @@ struct Items {
     items: VecDeque<Item>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone, Serialize, Deserialize)]
 struct Item {
     id: String,
     value: String,
@@ -198,17 +198,41 @@ async fn sort_item(
     cookies: Cookies,
     State(core): State<Core>,
     Json(payload): Json<Items>,
-) -> Result<(), Error> {
+) -> Result<impl IntoResponse, Error> {
     if let Ok(name) = is_valid(cookies, &core.decoding_key) {
         let ou = to_ou(&name)?;
-        save_json(
-            Items {
-                items: payload.items,
-            },
-            &ou,
-        )?;
-        println!("Sorted.");
-        Ok(())
+        let mut new_items = payload.items.clone();
+        let old_items = read_json(&ou)?.items;
+        // Check if sorted items ignore newer items
+        if old_items.len() > new_items.len() {
+            let new_set: std::collections::BTreeSet<Item> = new_items.clone().into_iter().collect();
+            let mut to_be_added = VecDeque::new();
+            for item in old_items {
+                if !new_set.contains(&item) {
+                    to_be_added.push_back(item);
+                }
+            }
+            println!(
+                "{} item(s) to be saved: Sorted items will be saved after adding them.",
+                to_be_added.len()
+            );
+            for item in to_be_added.iter().rev() {
+                new_items.push_front(item.clone());
+            }
+            println!("New items added.");
+            save_json(Items { items: new_items }, &ou)?;
+            println!("Sorted items Saved.");
+            Ok(Json(to_be_added).into_response())
+        } else {
+            save_json(
+                Items {
+                    items: payload.items,
+                },
+                &ou,
+            )?;
+            println!("Sorted items saved.");
+            Ok(().into_response())
+        }
     } else {
         Err(Error::NotVerified)
     }
