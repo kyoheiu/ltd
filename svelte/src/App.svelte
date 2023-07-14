@@ -118,7 +118,7 @@
 
   const sortItems = async () => {
     const arr = items.concat(archived);
-    const _res = await fetch("/api/item/sort", {
+    const res = await fetch("/api/item/sort", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -127,6 +127,7 @@
         items: arr,
       }),
     });
+    return res;
   };
 
   const dotColor = (dot: number): string => {
@@ -231,7 +232,16 @@
     const newTodo: Item[] = event.detail;
     items = newTodo;
 
-    sortItems();
+    const res = await sortItems();
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+      const json = await res.json();
+      if (json) {
+        items = json.concat(items);
+      }
+    } else {
+      return;
+    }
   };
 
   const getItemById = (id: string) => {
