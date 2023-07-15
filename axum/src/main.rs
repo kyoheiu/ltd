@@ -14,6 +14,7 @@ use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, 
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, VecDeque};
 use std::env;
+use std::time::UNIX_EPOCH;
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
 use tower_http::services::ServeDir;
 
@@ -37,6 +38,17 @@ impl Core {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Items {
     items: VecDeque<Item>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct ItemsWithModifiedTime {
+    items: VecDeque<Item>,
+    modified: u128,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct ModifiedTime {
+    modified: u128,
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone, Serialize, Deserialize)]
@@ -73,6 +85,7 @@ async fn main() -> Result<(), Error> {
     let app = Router::new()
         .route("/health", get(health))
         .route("/api/item", get(read_item).post(update_item))
+        .route("/api/check", get(check_update))
         .route("/api/item/sort", post(sort_item))
         .route("/api/ldaplogin", post(ldaplogin))
         .route("/api/logout", post(logout))
@@ -96,8 +109,23 @@ async fn health() -> Html<&'static str> {
 #[debug_handler]
 async fn read_item(cookies: Cookies, State(core): State<Core>) -> Result<impl IntoResponse, Error> {
     if let Ok(name) = is_valid(cookies, &core.decoding_key) {
-        let items = read_json(&to_ou(&name)?)?;
-        Ok(Json(items.items))
+        let ou = to_ou(&name)?;
+        let items = read_json(&ou)?;
+        let modified = check_modified_time(&ou)?;
+        Ok(Json(ItemsWithModifiedTime {
+            items: items.items,
+            modified,
+        }))
+    } else {
+        Err(Error::NotVerified)
+    }
+}
+
+#[debug_handler]
+async fn check_update(cookies: Cookies, State(core): State<Core>) -> Result<Json<ModifiedTime>, Error> {
+    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
+        let ou = to_ou(&name)?;
+        Ok(Json(ModifiedTime { modified: check_modified_time(&ou)?}))
     } else {
         Err(Error::NotVerified)
     }
@@ -345,6 +373,13 @@ fn read_json(ou: &str) -> Result<Items, Error> {
 
 fn save_json(items: Items, ou: &str) -> Result<(), Error> {
     let json = serde_json::to_string(&items)?;
-    std::fs::write(format!("items/{}.json", ou), json)?;
+    let path = format!("items/{}.json", ou);
+    std::fs::write(path, json)?;
     Ok(())
+}
+
+fn check_modified_time(ou: &str) -> Result<u128, Error> {
+    let path = format!("items/{}.json", ou);
+    let metadata = std::fs::metadata(path)?;
+    Ok(metadata.modified()?.duration_since(UNIX_EPOCH)?.as_millis())
 }

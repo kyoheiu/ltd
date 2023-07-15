@@ -11,6 +11,7 @@ pub enum Error {
     Jwt(String),
     Json(String),
     ParseInt(String),
+    SystemTime,
     Header,
     NotVerified,
     OrganizationalUnitName,
@@ -27,6 +28,7 @@ impl std::fmt::Display for Error {
             Error::Jwt(s) => s,
             Error::Json(s) => s,
             Error::ParseInt(s) => s,
+            Error::SystemTime => "SystemTimeError.",
             Error::Header => "Token not found.",
             Error::NotVerified => "Not verified.",
             Error::OrganizationalUnitName => "OrganizationalUnitName not found.",
@@ -77,6 +79,12 @@ impl From<std::num::ParseIntError> for Error {
     }
 }
 
+impl From<std::time::SystemTimeError> for Error {
+    fn from(_err: std::time::SystemTimeError) -> Self {
+        Error::SystemTime
+    }
+}
+
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
         let body = match self {
@@ -86,6 +94,7 @@ impl IntoResponse for Error {
             Error::Jwt(s) => s,
             Error::Json(s) => s,
             Error::ParseInt(s) => s,
+            Error::SystemTime => "SystemTimeError.".to_string(),
             Error::Header => "Token not found.".to_string(),
             Error::NotVerified => "Not verified.".to_string(),
             Error::OrganizationalUnitName => "OrganizationalUnitName not found.".to_string(),
