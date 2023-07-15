@@ -191,6 +191,12 @@
         archived[i].dot += 1;
       }
       archived = archived;
+      const _res = await fetch(
+        `/api/item?toggle_dot=${archived[i].dot}&id=${id}`,
+        {
+          method: "POST",
+        }
+      );
     } else {
       i = items.findIndex((item) => item.id === id);
       if (items[i].dot === 3) {
@@ -199,10 +205,13 @@
         items[i].dot += 1;
       }
       items = items;
+      const _res = await fetch(
+        `/api/item?toggle_dot=${items[i].dot}&id=${id}`,
+        {
+          method: "POST",
+        }
+      );
     }
-    const _res = await fetch(`/api/item?toggle_dot=true&id=${id}`, {
-      method: "POST",
-    });
   };
 
   const toggleArchived = async (id: string) => {
@@ -213,24 +222,27 @@
       archived.splice(i, 1);
       items.unshift(target);
       items[0].todo = true;
+      items = items;
+      archived = archived;
+      const _res = await fetch(`/api/item?toggle_todo=1&id=${id}`, {
+        method: "POST",
+      });
     } else {
       i = items.findIndex((item) => item.id == id);
       const target2 = items[i];
       items.splice(i, 1);
       archived.unshift(target2);
       archived[0].todo = false;
+      items = items;
+      archived = archived;
+      const _res = await fetch(`/api/item?toggle_todo=0&id=${id}`, {
+        method: "POST",
+      });
     }
-    items = items;
-    archived = archived;
-
-    const _res = await fetch(`/api/item?toggle_archived=true&id=${id}`, {
-      method: "POST",
-    });
   };
 
   const itemOrderChanged = async (event) => {
     const newTodo: Item[] = event.detail;
-    items = newTodo;
 
     const res = await sortItems();
     const contentType = res.headers.get("content-type");
@@ -240,7 +252,7 @@
         items = json.concat(items);
       }
     } else {
-      return;
+      items = newTodo;
     }
   };
 

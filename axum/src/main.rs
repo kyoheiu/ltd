@@ -124,18 +124,28 @@ async fn update_item(
                 dot,
             });
             println!("Add: id {} value {} dot {}", id, value, dot);
-        } else if params.contains_key("toggle_archived") {
+        } else if params.contains_key("toggle_todo") {
             let id = params.get("id").unwrap();
             if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
-                target.todo = !target.todo;
-                println!("Toggle archived: id {}", id);
+                if params.get("toggle_todo").unwrap() == "0" {
+                    target.todo = false;
+                    println!("Archived: id {}", id);
+                } else {
+                    target.todo = true;
+                    println!("Unarchived: id {}", id);
+                }
             } else {
                 eprintln!("ID not found.");
             }
         } else if params.contains_key("toggle_dot") {
             let id = params.get("id").unwrap();
             if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
-                target.dot = if target.dot == 3 { 0 } else { target.dot + 1 };
+                match params.get("toggle_dot").unwrap().as_str() {
+                    "1" => target.dot = 1,
+                    "2" => target.dot = 2,
+                    "3" => target.dot = 3,
+                    _ => target.dot = 0,
+                }
                 println!("Toggle dot color: id {}", id);
             } else {
                 eprintln!("ID not found.");
