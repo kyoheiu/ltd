@@ -277,8 +277,10 @@
       return;
     } else {
       const newTodo: Item[] = event.detail;
-      await sortItems();
       items = newTodo;
+      const res = await sortItems();
+      const j = await res.json();
+      modified = j.modified;
     }
   };
 
