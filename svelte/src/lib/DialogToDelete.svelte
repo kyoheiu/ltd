@@ -8,7 +8,7 @@
       method: "POST",
     });
     dialog.close();
-    window.location.reload();
+    window.location.assign("/");
   };
 
   $: if (dialog && showDialog) dialog.showModal();
