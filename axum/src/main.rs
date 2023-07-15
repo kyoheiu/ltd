@@ -122,10 +122,15 @@ async fn read_item(cookies: Cookies, State(core): State<Core>) -> Result<impl In
 }
 
 #[debug_handler]
-async fn check_update(cookies: Cookies, State(core): State<Core>) -> Result<Json<ModifiedTime>, Error> {
+async fn check_update(
+    cookies: Cookies,
+    State(core): State<Core>,
+) -> Result<Json<ModifiedTime>, Error> {
     if let Ok(name) = is_valid(cookies, &core.decoding_key) {
         let ou = to_ou(&name)?;
-        Ok(Json(ModifiedTime { modified: check_modified_time(&ou)?}))
+        Ok(Json(ModifiedTime {
+            modified: check_modified_time(&ou)?,
+        }))
     } else {
         Err(Error::NotVerified)
     }
@@ -198,8 +203,8 @@ async fn update_item(
             return Ok(Redirect::to("/").into_response());
         }
 
-        save_json(items, &ou)?;
-        Ok(().into_response())
+        let modified = save_json(items, &ou)?;
+        Ok(Json(ModifiedTime { modified }).into_response())
     } else {
         Err(Error::NotVerified)
     }
@@ -239,38 +244,14 @@ async fn sort_item(
 ) -> Result<impl IntoResponse, Error> {
     if let Ok(name) = is_valid(cookies, &core.decoding_key) {
         let ou = to_ou(&name)?;
-        let mut new_items = payload.items.clone();
-        let old_items = read_json(&ou)?.items;
-        // Check if sorted items ignore newer items
-        if old_items.len() > new_items.len() {
-            let new_set: std::collections::BTreeSet<Item> = new_items.clone().into_iter().collect();
-            let mut to_be_added = VecDeque::new();
-            for item in old_items {
-                if !new_set.contains(&item) {
-                    to_be_added.push_back(item);
-                }
-            }
-            println!(
-                "{} item(s) to be saved: Sorted items will be saved after adding them.",
-                to_be_added.len()
-            );
-            for item in to_be_added.iter().rev() {
-                new_items.push_front(item.clone());
-            }
-            println!("New items added.");
-            save_json(Items { items: new_items }, &ou)?;
-            println!("Sorted items Saved.");
-            Ok(Json(to_be_added).into_response())
-        } else {
-            save_json(
-                Items {
-                    items: payload.items,
-                },
-                &ou,
-            )?;
-            println!("Sorted items saved.");
-            Ok(().into_response())
-        }
+        let modified = save_json(
+            Items {
+                items: payload.items,
+            },
+            &ou,
+        )?;
+        println!("Sorted items saved.");
+        Ok(Json(ModifiedTime { modified }).into_response())
     } else {
         Err(Error::NotVerified)
     }
@@ -371,11 +352,11 @@ fn read_json(ou: &str) -> Result<Items, Error> {
     }
 }
 
-fn save_json(items: Items, ou: &str) -> Result<(), Error> {
+fn save_json(items: Items, ou: &str) -> Result<u128, Error> {
     let json = serde_json::to_string(&items)?;
     let path = format!("items/{}.json", ou);
     std::fs::write(path, json)?;
-    Ok(())
+    Ok(check_modified_time(ou)?)
 }
 
 fn check_modified_time(ou: &str) -> Result<u128, Error> {

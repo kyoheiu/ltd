@@ -16,28 +16,28 @@
     archivedColor,
   } from "./lib/Color.ts";
   import { State } from "./lib/types.ts";
-  import type { Item, ItemsWithModified } from "./lib/types.ts";
+  import type { Item, ItemsWithModifiedTime } from "./lib/types.ts";
   import Nav from "./lib/Nav.svelte";
   import DialogToDelete from "./lib/DialogToDelete.svelte";
   import { quintOut } from "svelte/easing";
   import { crossfade } from "svelte/transition";
   import { flip } from "svelte/animate";
   import Footer from "./lib/Footer.svelte";
-  import { SvelteToast, toast } from '@zerodevx/svelte-toast'
+  import { SvelteToast, toast } from "@zerodevx/svelte-toast";
 
   // Optionally set default options here
   const options = {
-      theme: {
-    '--toastColor': "#24273A",
-    '--toastBackground': '#e2e8f0',
-    '--toastBarHeight': 0
-  },
-  reversed: true,
-  intro: {y: 40}
-  }
-  
+    theme: {
+      "--toastColor": "#24273A",
+      "--toastBackground": "#e2e8f0",
+      "--toastBarHeight": 0,
+    },
+    reversed: true,
+    intro: { y: 40 },
+  };
+
   const urlParams = new URLSearchParams(window.location.search);
-  const reloadForced = urlParams.has('forced');
+  const reloadForced = urlParams.has("forced");
 
   // Animation when adding/archiving/unarchiving item
   const [_send, receive] = crossfade({
@@ -72,7 +72,7 @@
       state = State.NotLoggedIn;
     } else {
       state = State.All;
-      const j: ItemsWithModified = await res.json();
+      const j: ItemsWithModifiedTime = await res.json();
       for (let i = 0; i < j.items.length; i++) {
         if (j.items[i].todo) {
           items.push(j.items[i]);
@@ -194,12 +194,14 @@
 
     items = items;
 
-    const _res = await fetch(
+    const res = await fetch(
       `/api/item?add=true&id=${id}&value=${value}&dot=${dot}`,
       {
         method: "POST",
       }
     );
+    const j = await res.json();
+    modified = j.modified;
   };
 
   const changeColor = async (id: string) => {
@@ -212,12 +214,14 @@
         archived[i].dot += 1;
       }
       archived = archived;
-      const _res = await fetch(
+      const res = await fetch(
         `/api/item?toggle_dot=${archived[i].dot}&id=${id}`,
         {
           method: "POST",
         }
       );
+      const j = await res.json();
+      modified = j.modified;
     } else {
       i = items.findIndex((item) => item.id === id);
       if (items[i].dot === 3) {
@@ -226,12 +230,11 @@
         items[i].dot += 1;
       }
       items = items;
-      const _res = await fetch(
-        `/api/item?toggle_dot=${items[i].dot}&id=${id}`,
-        {
-          method: "POST",
-        }
-      );
+      const res = await fetch(`/api/item?toggle_dot=${items[i].dot}&id=${id}`, {
+        method: "POST",
+      });
+      const j = await res.json();
+      modified = j.modified;
     }
   };
 
@@ -245,9 +248,11 @@
       items[0].todo = true;
       items = items;
       archived = archived;
-      const _res = await fetch(`/api/item?toggle_todo=1&id=${id}`, {
+      const res = await fetch(`/api/item?toggle_todo=1&id=${id}`, {
         method: "POST",
       });
+      const j = await res.json();
+      modified = j.modified;
     } else {
       i = items.findIndex((item) => item.id == id);
       const target2 = items[i];
@@ -256,31 +261,24 @@
       archived[0].todo = false;
       items = items;
       archived = archived;
-      const _res = await fetch(`/api/item?toggle_todo=0&id=${id}`, {
+      const res = await fetch(`/api/item?toggle_todo=0&id=${id}`, {
         method: "POST",
       });
+      const j = await res.json();
+      modified = j.modified;
     }
   };
 
   const itemOrderChanged = async (event) => {
     const resForModifiedTime = await fetch("/api/check");
     const j = await resForModifiedTime.json();
-    const modifiedBackend = j.modified;
-    if (modified !== modifiedBackend) {
+    if (modified !== j.modified) {
       window.location.assign("/?forced");
       return;
     } else {
-    const newTodo: Item[] = event.detail;
-      const res = await sortItems();
-      const contentType = res.headers.get("content-type");
-      if (contentType && contentType.indexOf("application/json") !== -1) {
-        const json = await res.json();
-        if (json) {
-          items = json.concat(items);
-        }
-      } else {
-        items = newTodo;
-      }
+      const newTodo: Item[] = event.detail;
+      await sortItems();
+      items = newTodo;
     }
   };
 

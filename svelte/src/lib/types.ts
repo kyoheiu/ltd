@@ -15,3 +15,8 @@ export interface Item {
   dot: number;
   showModal: boolean;
 }
+
+export interface ItemsWithModifiedTime {
+  items: Item[];
+  modified: number;
+}
