@@ -16,13 +16,28 @@
     archivedColor,
   } from "./lib/Color.ts";
   import { State } from "./lib/types.ts";
-  import type { Item } from "./lib/types.ts";
+  import type { Item, ItemsWithModified } from "./lib/types.ts";
   import Nav from "./lib/Nav.svelte";
   import DialogToDelete from "./lib/DialogToDelete.svelte";
   import { quintOut } from "svelte/easing";
   import { crossfade } from "svelte/transition";
   import { flip } from "svelte/animate";
   import Footer from "./lib/Footer.svelte";
+  import { SvelteToast, toast } from '@zerodevx/svelte-toast'
+
+  // Optionally set default options here
+  const options = {
+      theme: {
+    '--toastColor': "#24273A",
+    '--toastBackground': '#e2e8f0',
+    '--toastBarHeight': 0
+  },
+  reversed: true,
+  intro: {y: 40}
+  }
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  const reloadForced = urlParams.has('forced');
 
   // Animation when adding/archiving/unarchiving item
   const [_send, receive] = crossfade({
@@ -44,6 +59,7 @@
   });
 
   let state = State.All;
+  let modified = 0;
   let items = [];
   let archived = [];
   let newItem = "";
@@ -56,16 +72,21 @@
       state = State.NotLoggedIn;
     } else {
       state = State.All;
-      const j: Item[] = await res.json();
-      for (let i = 0; i < j.length; i++) {
-        if (j[i].todo) {
-          items.push(j[i]);
+      const j: ItemsWithModified = await res.json();
+      for (let i = 0; i < j.items.length; i++) {
+        if (j.items[i].todo) {
+          items.push(j.items[i]);
         } else {
-          archived.push(j[i]);
+          archived.push(j.items[i]);
         }
       }
       items = items;
       archived = archived;
+      modified = j.modified;
+
+      if (reloadForced) {
+        toast.push("Item list reloaded: Must be up-to-date to sort.");
+      }
     }
   });
 
@@ -242,17 +263,24 @@
   };
 
   const itemOrderChanged = async (event) => {
-    const newTodo: Item[] = event.detail;
-
-    const res = await sortItems();
-    const contentType = res.headers.get("content-type");
-    if (contentType && contentType.indexOf("application/json") !== -1) {
-      const json = await res.json();
-      if (json) {
-        items = json.concat(items);
-      }
+    const resForModifiedTime = await fetch("/api/check");
+    const j = await resForModifiedTime.json();
+    const modifiedBackend = j.modified;
+    if (modified !== modifiedBackend) {
+      window.location.assign("/?forced");
+      return;
     } else {
-      items = newTodo;
+    const newTodo: Item[] = event.detail;
+      const res = await sortItems();
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        const json = await res.json();
+        if (json) {
+          items = json.concat(items);
+        }
+      } else {
+        items = newTodo;
+      }
     }
   };
 
@@ -267,6 +295,7 @@
   };
 </script>
 
+<SvelteToast {options} />
 <div class="wrap" />
 <main>
   {#if state == State.NotLoggedIn}
