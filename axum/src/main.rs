@@ -12,6 +12,7 @@ use axum::{
 use error::Error;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
+use tracing::{debug, warn, info};
 use std::collections::{BTreeMap, VecDeque};
 use std::env;
 use std::time::UNIX_EPOCH;
@@ -79,6 +80,8 @@ struct Claims {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    tracing_subscriber::fmt().init();
+    info!("Server started.");
     let core = Core::default()?;
 
     // build our application with a single route
@@ -156,19 +159,19 @@ async fn update_item(
                 todo: true,
                 dot,
             });
-            println!("Add: id {} value {} dot {}", id, value, dot);
+            info!("Add: id {} value {} dot {}", id, value, dot);
         } else if params.contains_key("toggle_todo") {
             let id = params.get("id").unwrap();
             if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
                 if params.get("toggle_todo").unwrap() == "0" {
                     target.todo = false;
-                    println!("Archived: id {}", id);
+                    info!("Archived: id {}", id);
                 } else {
                     target.todo = true;
-                    println!("Unarchived: id {}", id);
+                    info!("Unarchived: id {}", id);
                 }
             } else {
-                eprintln!("ID not found.");
+                warn!("ID not found.");
             }
         } else if params.contains_key("toggle_dot") {
             let id = params.get("id").unwrap();
@@ -179,18 +182,18 @@ async fn update_item(
                     "3" => target.dot = 3,
                     _ => target.dot = 0,
                 }
-                println!("Toggle dot color: id {}", id);
+                info!("Toggle dot color: id {}", id);
             } else {
-                eprintln!("ID not found.");
+                warn!("ID not found.");
             }
         } else if params.contains_key("rename") {
             let id = params.get("id").unwrap();
             let value = params.get("value").unwrap();
             if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
-                println!("Rename: {} -> {}", target.value, value);
+                info!("Rename: {} -> {}", target.value, value);
                 target.value = value.to_string();
             } else {
-                eprintln!("ID not found.");
+                warn!("ID not found.");
             }
             save_json(items, &ou)?;
             return Ok(Redirect::to("/").into_response());
@@ -198,7 +201,7 @@ async fn update_item(
             let filtered: VecDeque<Item> =
                 items.items.clone().into_iter().filter(|x| x.todo).collect();
             items.items = filtered;
-            println!("Deleted Archived items.");
+            info!("Deleted Archived items.");
             save_json(items, &ou)?;
             return Ok(Redirect::to("/").into_response());
         }
@@ -225,13 +228,13 @@ async fn post_item(headers: HeaderMap, Json(payload): Json<Value>) -> Result<(),
                 dot: 0,
             });
             save_json(items, &ou)?;
-            Ok(println!("Add(via API): id {} value {} dot 0", id, value))
+            Ok(info!("Add(via API): id {} value {} dot 0", id, value))
         } else {
-            eprintln!("Invalid token.");
+            warn!("Invalid token.");
             Err(Error::NotVerified)
         }
     } else {
-        eprintln!("No header.");
+        warn!("No header.");
         Err(Error::Header)
     }
 }
@@ -250,7 +253,7 @@ async fn sort_item(
             },
             &ou,
         )?;
-        println!("Sorted items saved.");
+        info!("Sorted items saved.");
         Ok(Json(ModifiedTime { modified }).into_response())
     } else {
         Err(Error::NotVerified)
@@ -267,9 +270,8 @@ async fn ldaplogin(
     let password = log_in.password.trim();
     let (con, mut ldap) = ldap3::LdapConnAsync::new(&env::var("LTD_NETWORK")?).await?;
     ldap3::drive!(con);
-    println!("LDAP server connected.");
+    info!("LDAP server connected.");
     if let Ok(_result) = ldap.simple_bind(username, password).await?.success() {
-        println!("{}", username);
         let my_claims = Claims {
             sub: username.to_string(),
             exp: 2000000000,
@@ -286,7 +288,7 @@ async fn ldaplogin(
         cookies.add(cookie);
         Ok(Redirect::to("/").into_response())
     } else {
-        eprintln!("Logging in failed.");
+        warn!("Logging in failed.");
         Ok(Redirect::to("/").into_response())
     }
 }
@@ -303,7 +305,7 @@ async fn logout(cookies: Cookies) -> Result<impl IntoResponse, Error> {
             .http_only(true)
             .finish();
         cookies.add(cookie);
-        println!("Cookie removed.");
+        info!("Cookie removed.");
     }
     Ok(Redirect::to("/").into_response())
 }
@@ -334,7 +336,7 @@ fn read_json(ou: &str) -> Result<Items, Error> {
     let json = std::fs::read_to_string(format!("items/{}.json", ou));
     match json {
         Err(_) => {
-            println!("Json file not found: Will create a new one.");
+            info!("Json file not found: Will create a new one.");
             if !std::path::Path::new("items").exists() {
                 std::fs::create_dir("items")?;
             }
@@ -356,7 +358,7 @@ fn save_json(items: Items, ou: &str) -> Result<u128, Error> {
     let json = serde_json::to_string(&items)?;
     let path = format!("items/{}.json", ou);
     std::fs::write(path, json)?;
-    Ok(check_modified_time(ou)?)
+    check_modified_time(ou)
 }
 
 fn check_modified_time(ou: &str) -> Result<u128, Error> {
