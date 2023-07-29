@@ -45,13 +45,13 @@ impl From<std::io::Error> for Error {
 
 impl From<ldap3::LdapError> for Error {
     fn from(err: ldap3::LdapError) -> Self {
-        Error::Io(err.to_string())
+        Error::Ldap(err.to_string())
     }
 }
 
 impl From<std::env::VarError> for Error {
     fn from(err: std::env::VarError) -> Self {
-        Error::Io(err.to_string())
+        Error::Env(err.to_string())
     }
 }
 
@@ -63,13 +63,13 @@ impl From<http::header::ToStrError> for Error {
 
 impl From<serde_json::Error> for Error {
     fn from(err: serde_json::Error) -> Self {
-        Error::Io(err.to_string())
+        Error::Json(err.to_string())
     }
 }
 
 impl From<jsonwebtoken::errors::Error> for Error {
     fn from(err: jsonwebtoken::errors::Error) -> Self {
-        Error::Io(err.to_string())
+        Error::Jwt(err.to_string())
     }
 }
 
