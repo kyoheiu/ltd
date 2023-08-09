@@ -15,7 +15,8 @@ export default {
       "green": "#A6DA95",
       "yellow": "#EED49F",
       "red": "#ED8796",
-      "archived": "#A5ADCB",
+      "archived": "#A5ADCB", 
+      "background": "#24273A"
     }
   },
   plugins: [],

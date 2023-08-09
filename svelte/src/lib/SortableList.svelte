@@ -52,11 +52,7 @@
 
 <ul bind:this={listElement} class={ulClass}>
   {#each items as item (item[idKey])}
-    <li
-      class={typeof liClass === "function" ? liClass(item) : liClass}
-      data-id={item[idKey]}
-      animate:flip={{ duration: 100 }}
-    >
+    <li class={liClass} data-id={item[idKey]} animate:flip={{ duration: 100 }}>
       <slot {item}>{item}</slot>
     </li>
   {/each}

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import {
     defaultColor,
     greenColor,
@@ -6,102 +6,111 @@
     redColor,
     archivedColor,
   } from "./Color.ts";
-  import { State } from "./types.ts";
+  import { Page } from "./types.ts";
+  import { state } from "./stores.ts";
+  import { get } from "svelte/store";
 
-  export let state;
-  export let changeState;
+  const changeState = async (newPage: Page) => {
+    console.log(get(state).items);
+    state.update((s) => {
+      return {
+        ...s,
+        page: newPage,
+      };
+    });
+  };
 </script>
 
 <nav class="flex justify-center space-x-4">
-  {#if state == State.All}
+  {#if $state.page == Page.All}
     <button
       class="button-filter border-b border-slate-200 text-slate-200"
-      on:click={() => changeState(State.All)}
+      on:click={() => changeState(Page.All)}
       ><i class="ri-checkbox-blank-circle-line" /></button
     >
   {:else}
     <button
       class="button-filter text-slate-200"
-      on:click={() => changeState(State.All)}
+      on:click={() => changeState(Page.All)}
       ><i class="ri-checkbox-blank-circle-line" /></button
     >
   {/if}
-  {#if state == State.Default}
+  {#if $state.page == Page.Default}
     <button
       class="button-filter border-b border-slate-200"
-      on:click={() => changeState(State.Default)}
+      on:click={() => changeState(Page.Default)}
       ><i
         class="ri-checkbox-blank-circle-fill"
         style="color: {defaultColor}"
       /></button
     >
   {:else}
-    <button class="button-filter" on:click={() => changeState(State.Default)}
+    <button class="button-filter" on:click={() => changeState(Page.Default)}
       ><i
         class="ri-checkbox-blank-circle-fill"
         style="color: {defaultColor}"
       /></button
     >
   {/if}
-  {#if state == State.Green}
+  {#if $state.page == Page.Green}
     <button
       class="button-filter border-b border-slate-200"
-      on:click={() => changeState(State.Green)}
+      on:click={() => changeState(Page.Green)}
       ><i
         class="ri-checkbox-blank-circle-fill"
         style="color: {greenColor}"
       /></button
     >
   {:else}
-    <button class="button-filter" on:click={() => changeState(State.Green)}
+    <button class="button-filter" on:click={() => changeState(Page.Green)}
       ><i
         class="ri-checkbox-blank-circle-fill"
         style="color: {greenColor}"
       /></button
     >
   {/if}
-  {#if state == State.Yellow}
+  {#if $state.page == Page.Yellow}
     <button
       class="button-filter border-b border-slate-200"
-      on:click={() => changeState(State.Yellow)}
+      on:click={() => changeState(Page.Yellow)}
       ><i
         class="ri-checkbox-blank-circle-fill"
         style="color: {yellowColor}"
       /></button
     >
   {:else}
-    <button class="button-filter" on:click={() => changeState(State.Yellow)}
+    <button class="button-filter" on:click={() => changeState(Page.Yellow)}
       ><i
         class="ri-checkbox-blank-circle-fill"
         style="color: {yellowColor}"
       /></button
     >
   {/if}
-  {#if state == State.Red}
+  {#if $state.page == Page.Red}
     <button
       class="button-filter border-b border-slate-200"
-      on:click={() => changeState(State.Red)}
+      on:click={() => changeState(Page.Red)}
       ><i
         class="ri-checkbox-blank-circle-fill"
         style="color: {redColor}"
       /></button
     >
   {:else}
-    <button class="button-filter" on:click={() => changeState(State.Red)}
+    <button class="button-filter" on:click={() => changeState(Page.Red)}
       ><i
         class="ri-checkbox-blank-circle-fill"
         style="color: {redColor}"
       /></button
     >
   {/if}
-  {#if state == State.Archived}
+  {#if $state.page == Page.Archived}
     <button
       class="button-filter border-b border-slate-200"
-      on:click={() => changeState(State.Archived)}
+      on:click={() => changeState(Page.Archived)}
       ><i class="ri-archive-fill" style="color: {archivedColor}" /></button
     >
   {:else}
-    <button class="button-filter" on:click={() => changeState(State.Archived)}
+    <button class="button-filter" on:click={() => changeState(Page.Archived)}
       ><i class="ri-archive-fill" style="color: {archivedColor}" /></button
     >
   {/if}

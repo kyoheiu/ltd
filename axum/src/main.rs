@@ -12,7 +12,7 @@ use axum::{
 use error::Error;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use tracing::{debug, warn, info};
+use tracing::{warn, info};
 use std::collections::{BTreeMap, VecDeque};
 use std::env;
 use std::time::UNIX_EPOCH;
@@ -81,7 +81,7 @@ struct Claims {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     tracing_subscriber::fmt().init();
-    info!("Server started.");
+    info!("Initialized logger.");
     let core = Core::default()?;
 
     // build our application with a single route

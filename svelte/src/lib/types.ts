@@ -1,4 +1,4 @@
-export enum State {
+export enum Page {
   All,
   Default,
   Green,
