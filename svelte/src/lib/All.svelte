@@ -2,27 +2,33 @@
   import { get } from "svelte/store";
   import Footer from "./Footer.svelte";
   import ItemRenamable from "./ItemRenamable.svelte";
-  import SortableList from "./SortableList.svelte";
+  import { SortableList } from "@jhubbardsf/svelte-sortablejs";
   import { state } from "./stores";
-  import type { Item } from "./types";
+  import type { ItemsWithModifiedTime } from "./types";
   import { receive } from "./Animation";
-  import { changeColor, toggleArchived } from "./Toggle";
+  import { changeColor, dotColor, toggleArchived } from "./Toggle";
+  import { flip } from "svelte/animate";
 
-  const sortItems = async () => {
-    const items = get(state).items;
-    const archived = get(state).archived;
-
-    const arr = items.concat(archived);
+  const sortItems = async (oldIndex: number, newIndex: number) => {
     const res = await fetch("/api/item/sort", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        items: arr,
+        old: oldIndex,
+        new: newIndex,
       }),
     });
-    return res;
+    const j: ItemsWithModifiedTime = await res.json();
+
+    state.update((s) => {
+      return {
+        ...s,
+        items: j.items,
+        modified: j.modified,
+      };
+    });
   };
 
   const itemOrderChanged = async (event) => {
@@ -32,65 +38,40 @@
       window.location.reload();
       return;
     } else {
-      const newTodo: Item[] = event.detail;
-      const res = await sortItems();
-      const j = await res.json();
-
-      state.update((s) => {
-        return {
-          ...s,
-          items: newTodo,
-          modified: j.modified,
-        };
-      });
+      await sortItems(event.oldIndex, event.newIndex);
     }
   };
-
-  const getItemById = (id: string) => {
-    return get(state).items.find((item) => item.id === id);
-  };
-
-  const sortableOptions = {
-    store: {
-      group: "items",
-      animation: 100,
-      easing: "cubic-bezier(1, 0, 0, 1)",
-    },
-  };
-
-  let items = get(state).items;
-
-  function dotColor(dot: any) {
-    throw new Error("Function not implemented.");
-  }
 </script>
 
 <div class="flex-grow">
   <SortableList
-    {sortableOptions}
-    on:orderChanged={itemOrderChanged}
-    bind:items
-    let:item
-    idKey="id"
-    {getItemById}
-    ulClass="flex flex-col space-y-2"
+    class="flex flex-col space-y-2"
+    ghostClass="invisible"
+    dragClass="opacity-100"
+    animation={100}
+    easing="cubic-bezier(1, 0, 0, 1)"
+    onUpdate={itemOrderChanged}
   >
-    <label
-      in:receive={{ key: item.id }}
-      class="m-auto flex w-5/6 items-center space-x-2 rounded-md border-2 border-slate-200 p-2 text-slate-200"
-    >
-      <button on:click={() => !item.showModal && toggleArchived(item.id)}
-        ><i class="ri-checkbox-blank-fill" /></button
+    {#each $state.items as item, index (item)}
+      <label
+        id={item.id}
+        in:receive={{ key: item.id }}
+        animate:flip={{ duration: 100 }}
+        class="m-auto flex w-5/6 items-center space-x-2 rounded-md border-2 border-slate-200 p-2 text-slate-200"
       >
-      <ItemRenamable {item} />
-      <i class="ri-drag-move-fill" style="margin-left: auto; cursor: move" />
-      &nbsp;
-      <button
-        style="color: {dotColor(item.dot)}"
-        on:click={() => changeColor(item.id)}
-        ><i class="ri-checkbox-blank-circle-fill" /></button
-      >
-    </label>
+        <button on:click={() => !item.showModal && toggleArchived(item.id)}
+          ><i class="ri-checkbox-blank-fill" /></button
+        >
+        <ItemRenamable {item} />
+        <i class="ri-drag-move-fill" style="margin-left: auto; cursor: move" />
+        &nbsp;
+        <button
+          style="color: {dotColor(item.dot)}"
+          on:click={() => changeColor(item.id)}
+          ><i class="ri-checkbox-blank-circle-fill" /></button
+        >
+      </label>
+    {/each}
   </SortableList>
 </div>
 <div class="flex justify-center">

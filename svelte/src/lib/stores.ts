@@ -34,11 +34,11 @@ export const readItem = async () => {
     });
   } else {
     const j: ItemsWithModifiedTime = await res.json();
-    let item = [];
+    let items = [];
     let archived = [];
     for (let i = 0; i < j.items.length; i++) {
       if (j.items[i].todo) {
-        item.push(j.items[i]);
+        items.push(j.items[i]);
       } else {
         archived.push(j.items[i]);
       }
@@ -47,7 +47,7 @@ export const readItem = async () => {
       return {
         ...s,
         state: Page.All,
-        items: item,
+        items: items,
         archived: archived,
         modified: j.modified,
       };

@@ -6,7 +6,8 @@ export default {
   content: ["./src/**/*.{html,js,svelte,ts}"],
   theme: {
     extend: {},
-    // color scheme: catppuccin macchiato
+    // Color scheme based on Catppuccin Macchiato.
+    // https://github.com/catppuccin/kitty
     colors: {
       slate: colors.slate,
       neutral: colors.neutral,
@@ -16,7 +17,6 @@ export default {
       "yellow": "#EED49F",
       "red": "#ED8796",
       "archived": "#A5ADCB", 
-      "background": "#24273A"
     }
   },
   plugins: [],

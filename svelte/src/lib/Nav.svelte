@@ -7,11 +7,10 @@
     archivedColor,
   } from "./Color.ts";
   import { Page } from "./types.ts";
-  import { state } from "./stores.ts";
+  import { readItem, state } from "./stores.ts";
   import { get } from "svelte/store";
 
   const changeState = async (newPage: Page) => {
-    console.log(get(state).items);
     state.update((s) => {
       return {
         ...s,
