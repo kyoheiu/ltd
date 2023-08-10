@@ -1,5 +1,6 @@
 lint:
 	cd svelte && npm run lint:fix
+	cd axum && cargo fmt
 
 dev:
 	cd svelte && npm run build
