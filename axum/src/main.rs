@@ -12,12 +12,12 @@ use axum::{
 use error::Error;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use tracing::{warn, info};
 use std::collections::{BTreeMap, VecDeque};
 use std::env;
 use std::time::UNIX_EPOCH;
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
 use tower_http::services::ServeDir;
+use tracing::{info, warn};
 
 const COOKIE_NAME: &str = "ltd_auth";
 
@@ -70,6 +70,12 @@ struct Value {
 struct LogIn {
     username: String,
     password: String,
+}
+
+#[derive(Deserialize)]
+struct Sorted {
+    old: usize,
+    new: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -243,18 +249,30 @@ async fn post_item(headers: HeaderMap, Json(payload): Json<Value>) -> Result<(),
 async fn sort_item(
     cookies: Cookies,
     State(core): State<Core>,
-    Json(payload): Json<Items>,
+    Json(payload): Json<Sorted>,
 ) -> Result<impl IntoResponse, Error> {
     if let Ok(name) = is_valid(cookies, &core.decoding_key) {
         let ou = to_ou(&name)?;
+        let mut items: VecDeque<Item> = read_json(&ou)?
+            .items
+            .into_iter()
+            .filter(|x| x.todo)
+            .collect();
+        if let Some(moved) = items.remove(payload.old) {
+            items.insert(payload.new, moved);
+        }
+
         let modified = save_json(
             Items {
-                items: payload.items,
+                items: items.clone(),
             },
             &ou,
         )?;
         info!("Sorted items saved.");
-        Ok(Json(ModifiedTime { modified }).into_response())
+        Ok(Json(ItemsWithModifiedTime {
+            items: items,
+            modified,
+        }))
     } else {
         Err(Error::NotVerified)
     }
