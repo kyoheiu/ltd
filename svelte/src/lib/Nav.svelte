@@ -37,11 +37,11 @@
       class="button-filter border-b border-foreground"
       on:click={() => changeState(Page.Default)}
     >
-      <IconSpadeFilled class="text-default" size={ICON_SIZE: SYMBOL_SIZE} />
+      <IconSpadeFilled class="text-default" size={SYMBOL_SIZE} />
     </button>
   {:else}
     <button class="button-filter" on:click={() => changeState(Page.Default)}>
-      <IconSpadeFilled class="text-default" size={ICON_SIZE: SYMBOL_SIZE} />
+      <IconSpadeFilled class="text-default" size={SYMBOL_SIZE} />
     </button>
   {/if}
   {#if $state.page == Page.Green}
@@ -49,11 +49,11 @@
       class="button-filter border-b border-foreground"
       on:click={() => changeState(Page.Green)}
     >
-      <IconHeartFilled class="text-green" size={ICON_SIZE: SYMBOL_SIZE} />
+      <IconHeartFilled class="text-green" size={SYMBOL_SIZE} />
     </button>
   {:else}
     <button class="button-filter" on:click={() => changeState(Page.Green)}>
-      <IconHeartFilled class="text-green" size={ICON_SIZE: SYMBOL_SIZE} />
+      <IconHeartFilled class="text-green" size={SYMBOL_SIZE} />
     </button>
   {/if}
   {#if $state.page == Page.Yellow}
@@ -61,11 +61,11 @@
       class="button-filter border-b border-foreground"
       on:click={() => changeState(Page.Yellow)}
     >
-      <IconClubsFilled class="text-yellow" size={ICON_SIZE: SYMBOL_SIZE} />
+      <IconClubsFilled class="text-yellow" size={SYMBOL_SIZE} />
     </button>
   {:else}
     <button class="button-filter" on:click={() => changeState(Page.Yellow)}>
-      <IconClubsFilled class="text-yellow" size={ICON_SIZE: SYMBOL_SIZE} />
+      <IconClubsFilled class="text-yellow" size={SYMBOL_SIZE} />
     </button>
   {/if}
   {#if $state.page == Page.Red}
@@ -73,11 +73,11 @@
       class="button-filter border-b border-foreground"
       on:click={() => changeState(Page.Red)}
     >
-      <IconDiamondsFilled class="text-red" size={ICON_SIZE: SYMBOL_SIZE} />
+      <IconDiamondsFilled class="text-red" size={SYMBOL_SIZE} />
     </button>
   {:else}
     <button class="button-filter" on:click={() => changeState(Page.Red)}>
-      <IconDiamondsFilled class="text-red" size={ICON_SIZE: SYMBOL_SIZE} />
+      <IconDiamondsFilled class="text-red" size={SYMBOL_SIZE} />
     </button>
   {/if}
   {#if $state.page == Page.Archived}
