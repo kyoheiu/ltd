@@ -61,7 +61,7 @@
 
   <input
     id="submit-form"
-    class="mx-2 rounded-full bg-foreground px-4 py-1 text-background"
+    class="mx-2 w-52 rounded-full bg-foreground px-4 py-1 text-background sm:w-80"
     type="text"
     bind:value={$state.newItem}
     on:keydown={(e) => e.key === "Enter" && addItem()}
