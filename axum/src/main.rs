@@ -253,24 +253,23 @@ async fn sort_item(
 ) -> Result<impl IntoResponse, Error> {
     if let Ok(name) = is_valid(cookies, &core.decoding_key) {
         let ou = to_ou(&name)?;
-        let mut items: VecDeque<Item> = read_json(&ou)?
-            .items
-            .into_iter()
-            .filter(|x| x.todo)
-            .collect();
-        if let Some(moved) = items.remove(payload.old) {
-            items.insert(payload.new, moved);
+        let items = read_json(&ou)?.items;
+        let mut todo: VecDeque<Item> = items.clone().into_iter().filter(|x| x.todo).collect();
+        let mut done: VecDeque<Item> = items.into_iter().filter(|x| !x.todo).collect();
+        if let Some(moved) = todo.remove(payload.old) {
+            todo.insert(payload.new, moved);
         }
 
+        todo.append(&mut done);
         let modified = save_json(
             Items {
-                items: items.clone(),
+                items: todo.clone(),
             },
             &ou,
         )?;
         info!("Sorted items saved.");
         Ok(Json(ItemsWithModifiedTime {
-            items: items,
+            items: todo,
             modified,
         }))
     } else {
