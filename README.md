@@ -4,9 +4,6 @@ Lightweight self-hostable to-do lists app with LDAP authentication.
 
 ![screenshot.png](screenshot.png)
 
-Demo site is [here](https://ltd-cdd.pages.dev/).  
-(No persistent data. Reloading, or deleting archived items, will reset the state)
-
 ## features
 - Store items as single JSON file for each `ou` in `items` directory, which is mounted to the Docker container.
 - No tags, no categories. Just colored symbol. Click/tap the symbol on the right to change the color of the item. (`default -> green -> yellow -> red -> default`)
