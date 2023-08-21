@@ -1,5 +1,5 @@
-lint:
-	cd svelte && npm run lint:fix
+fmt:
+	cd svelte && npm run fmt
 	cd axum && cargo fmt
 
 dev:
