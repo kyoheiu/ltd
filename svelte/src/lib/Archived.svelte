@@ -26,7 +26,7 @@
       <li
         in:receive={{ key: item.id }}
         animate:flip={{ duration: 100 }}
-        class="w-52 sm:w-80 m-auto flex items-center space-x-2 rounded-md border-2 border-foreground p-2 text-foreground"
+        class="m-auto flex w-52 items-center space-x-2 rounded-md border-2 border-foreground p-2 text-sm text-foreground sm:w-80"
       >
         <button on:click={() => toggleArchived(item.id)}><IconSquare /></button>
         <div class="line-clamp-2 flex-auto break-all">{item.value}</div>

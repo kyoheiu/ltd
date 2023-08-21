@@ -7,7 +7,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="line-clamp-2 flex-auto cursor-pointer break-all"
+  class="line-clamp-2 flex-auto cursor-pointer break-all text-sm"
   on:click={() => (item.showModal = true)}
 >
   {item.value}

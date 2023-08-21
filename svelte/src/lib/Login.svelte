@@ -15,7 +15,7 @@
     >
       <div>
         <input
-          class="rounded-full text-sm bg-foreground px-4 py-1"
+          class="rounded-full bg-foreground px-4 py-1 text-sm"
           type="text"
           name="username"
           placeholder="DN"
@@ -24,7 +24,7 @@
       </div>
       <div>
         <input
-          class="rounded-full text-sm bg-foreground px-4 py-1"
+          class="rounded-full bg-foreground px-4 py-1 text-sm"
           type="password"
           name="password"
           placeholder="PASSWORD"
@@ -32,9 +32,7 @@
         />
       </div>
       <p>
-        <button class="m-2 text-foreground" type="submit"
-          ><IconLogin /></button
-        >
+        <button class="m-2 text-foreground" type="submit"><IconLogin /></button>
       </p>
     </form>
   </div>

@@ -4,7 +4,7 @@
   import IconClubsFilled from "@tabler/icons-svelte/dist/svelte/icons/IconClubsFilled.svelte";
   import IconDiamondsFilled from "@tabler/icons-svelte/dist/svelte/icons/IconDiamondsFilled.svelte";
   import { changeColor } from "./Toggle";
-  import type { Item } from "./types";
+  import { ICON_SIZE, type Item } from "./types";
 
   export let item: Item;
 </script>
@@ -15,7 +15,7 @@
     title="Click / tap to toggle item category"
     on:click={() => changeColor(item.id)}
   >
-    <IconSpadeFilled />
+    <IconSpadeFilled size={ICON_SIZE} />
   </button>
 {:else if item.dot === 1}
   <button
@@ -23,7 +23,7 @@
     title="Click / tap to toggle item category"
     on:click={() => changeColor(item.id)}
   >
-    <IconHeartFilled />
+    <IconHeartFilled size={ICON_SIZE} />
   </button>
 {:else if item.dot === 2}
   <button
@@ -31,7 +31,7 @@
     title="Click / tap to toggle item category"
     on:click={() => changeColor(item.id)}
   >
-    <IconClubsFilled />
+    <IconClubsFilled size={ICON_SIZE} />
   </button>
 {:else}
   <button
@@ -39,6 +39,6 @@
     title="Click / tap to toggle item category"
     on:click={() => changeColor(item.id)}
   >
-    <IconDiamondsFilled />
+    <IconDiamondsFilled size={ICON_SIZE} />
   </button>
 {/if}

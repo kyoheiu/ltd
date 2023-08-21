@@ -68,7 +68,7 @@
   {#if $state.page == Page.NotLoggedIn}
     <Login />
   {:else}
-    <div class="flex h-screen flex-col m-auto">
+    <div class="m-auto flex h-screen flex-col">
       <Header />
       {#if $state.page == Page.All}
         <All />

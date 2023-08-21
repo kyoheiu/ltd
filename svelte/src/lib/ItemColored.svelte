@@ -15,14 +15,14 @@
       <label
         in:receive={{ key: item.id }}
         animate:flip={{ duration: 100 }}
-        class="w-52 sm:w-80 m-auto flex items-center space-x-2 rounded-md border-2 border-foreground p-2 text-foreground"
+        class="m-auto flex w-52 items-center space-x-2 rounded-md border-2 border-foreground p-2 text-foreground sm:w-80"
       >
         <button on:click={() => !item.showModal && toggleArchived(item.id)}
           ><IconSquare /></button
         >
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
-          class="line-clamp-2 flex-auto cursor-pointer break-all"
+          class="line-clamp-2 flex-auto cursor-pointer break-all text-sm"
           on:click={() => (item.showModal = true)}
         >
           {item.value}

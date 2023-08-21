@@ -1,3 +1,5 @@
+export const ICON_SIZE = 20;
+
 export enum Page {
   All,
   Default,
