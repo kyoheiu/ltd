@@ -25,40 +25,53 @@
     readItem();
   });
 
-  // for testing
+  // for demo
   // onMount(() => {
-  //   items = [
+  //   const items = [
   //     {
   //       id: "1",
   //       value: "milk",
   //       todo: true,
   //       dot: 0,
+  //       showModal: false,
   //     },
   //     {
   //       id: "2",
   //       value: "orange",
   //       todo: true,
   //       dot: 0,
+  //       showModal: false,
   //     },
   //     {
   //       id: "3",
   //       value: "banana",
   //       todo: true,
   //       dot: 0,
+  //       showModal: false,
   //     },
   //     {
   //       id: "4",
   //       value: "apple",
   //       todo: true,
   //       dot: 0,
+  //       showModal: false,
   //     },
   //     {
   //       id: "5",
   //       value: "watermelon",
   //       todo: true,
   //       dot: 0,
+  //       showModal: false,
   //     },
   //   ];
+
+  //   state.update((s) => {
+  //     return {
+  //       ...new State(),
+  //       page: Page.All,
+  //       items: items,
+  //     };
+  //   });
   // });
 </script>
 
