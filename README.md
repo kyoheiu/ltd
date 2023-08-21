@@ -4,7 +4,7 @@ Lightweight self-hostable to-do lists app with LDAP authentication.
 
 ![screenshot.png](screenshot.png)
 
-Demo site is [here](https://ltd-cdd.pages.dev/).  
+Demo site is [here](https://de58ec73.ltd-cdd.pages.dev/).  
 (No persistent data. Reloading, or deleting archived items, will reset the state)
 
 ## features
