@@ -4,8 +4,6 @@
 
 @layer base {
   body {
-    @apply w-4/5 max-w-sm m-auto;
-    color: #e2e8f0;
-    background-color: #24273A;
+    @apply w-52 sm:w-80 m-auto text-foreground bg-background;
   }
 }

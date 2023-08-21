@@ -1,6 +1,5 @@
 <script lang="ts">
   import "./app.css";
-  import "remixicon/fonts/remixicon.css";
   import { onMount } from "svelte";
   import Login from "./lib/Login.svelte";
   import { Page } from "./lib/types.ts";
@@ -8,7 +7,7 @@
   import { readItem, state } from "./lib/stores.ts";
   import Header from "./lib/Header.svelte";
   import All from "./lib/All.svelte";
-  import Colored from "./lib/Colored.svelte";
+  import ItemColored from "./lib/ItemColored.svelte";
   import Archived from "./lib/Archived.svelte";
 
   // Optionally set default options here
@@ -69,12 +68,12 @@
   {#if $state.page == Page.NotLoggedIn}
     <Login />
   {:else}
-    <div class="flex h-screen flex-col">
+    <div class="flex h-screen flex-col m-auto">
       <Header />
       {#if $state.page == Page.All}
         <All />
       {:else if $state.page != Page.Archived}
-        <Colored />
+        <ItemColored />
       {:else}
         <Archived />
       {/if}

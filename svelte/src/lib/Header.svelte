@@ -5,6 +5,7 @@
   import { ulid } from "ulid";
   import Nav from "./Nav.svelte";
   import { Page } from "./types";
+  import IconLogout from "@tabler/icons-svelte/dist/svelte/icons/IconLogout.svelte";
 
   const addItem = async () => {
     const currentState = get(state);
@@ -50,24 +51,21 @@
   };
 </script>
 
-<div class="mx-6 mb-4 mt-4 flex flex-col space-y-4">
-  <div class="flex items-center justify-between">
+<div class="mb-4 mt-6 flex flex-col justify-center space-y-4">
+  <div class="flex justify-between">
     <a href="/"><img src={logo} alt="ltd" class="h-auto w-5" /></a>
-    <button on:click={logout}
-      ><i class="ri-logout-circle-r-line text-slate-200" /></button
-    >
+    <button on:click={logout}><IconLogout /></button>
   </div>
 
-  <div class="mx-2 flex items-center justify-center space-x-2">
+  <div class="mx-2">
     <input
       id="submit-form"
-      class="w-full rounded-full bg-slate-200 px-2 py-1 text-slate-800"
+      class="w-full rounded-full bg-foreground px-4 py-1 text-background"
       type="text"
       bind:value={$state.newItem}
       on:keydown={(e) => e.key === "Enter" && addItem()}
       placeholder="+"
     />
   </div>
-
   <Nav />
 </div>

@@ -1,13 +1,6 @@
 import { get } from "svelte/store";
 import { state } from "./stores";
 import { Page } from "./types";
-import {
-  archivedColor,
-  defaultColor,
-  greenColor,
-  redColor,
-  yellowColor,
-} from "./Color";
 
 export const toggleArchived = async (id: string) => {
   let i: number;
@@ -53,28 +46,6 @@ export const toggleArchived = async (id: string) => {
       };
     });
   }
-};
-
-export const dotColor = (dot: number): string => {
-  let color = "";
-  switch (dot) {
-    case 1:
-      color = greenColor;
-      break;
-    case 2:
-      color = yellowColor;
-      break;
-    case 3:
-      color = redColor;
-      break;
-    case 4:
-      color = archivedColor;
-      break;
-    default:
-      color = defaultColor;
-      break;
-  }
-  return color;
 };
 
 export const changeColor = async (id: string) => {

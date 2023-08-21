@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "prettier --check 'src/**/*.{html,js,ts,svelte}'",
-    "lint:fix": "prettier --write 'src/**/*.{html,js,ts,svelte}'",
+    "fmt": "prettier --write 'src/**/*.{html,js,ts,svelte}'",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
@@ -30,7 +29,7 @@
     "vite": "^4.3.9"
   },
   "dependencies": {
-    "remixicon": "^3.4.0",
+    "@tabler/icons-svelte": "^2.31.0",
     "svelte-drag-drop-touch": "^0.1.9",
     "ulid": "^2.3.0"
   }

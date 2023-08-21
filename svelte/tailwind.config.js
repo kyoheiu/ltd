@@ -9,14 +9,14 @@ export default {
     // Color scheme based on Catppuccin Macchiato.
     // https://github.com/catppuccin/kitty
     colors: {
-      slate: colors.slate,
-      neutral: colors.neutral,
-      rose: colors.rose,
+      "foreground": "#f8fafc",
+      "background": "#0f172a",
       "default": "#A5ADCB",
       "green": "#A6DA95",
       "yellow": "#EED49F",
       "red": "#ED8796",
-      "archived": "#A5ADCB", 
+      "warning": "#f43f5e",
+      "further": "#94a3b8",
     }
   },
   plugins: [],

@@ -3,9 +3,11 @@
   import { receive } from "./Animation";
   import DialogToDelete from "./DialogToDelete.svelte";
   import Footer from "./Footer.svelte";
-  import { toggleArchived, dotColor, changeColor } from "./Toggle";
+  import { toggleArchived } from "./Toggle";
   import { state } from "./stores";
   import { get } from "svelte/store";
+  import Dot from "./Dot.svelte";
+  import IconSquare from "@tabler/icons-svelte/dist/svelte/icons/IconSquare.svelte";
 
   let showDialog = get(state).showDialog;
 </script>
@@ -13,7 +15,7 @@
 <div class="flex-grow">
   <div class="mb-4 flex flex-col">
     <button
-      class="m-auto rounded-full border border-rose-500 px-2 text-sm text-rose-500 hover:bg-rose-500 hover:text-slate-200"
+      class="m-auto rounded-full border bg-warning px-2 text-sm text-foreground"
       on:click={() => (showDialog = true)}
       ><i class="ri-delete-bin-2-fill" /> Delete all archived items</button
     >
@@ -24,17 +26,11 @@
       <li
         in:receive={{ key: item.id }}
         animate:flip={{ duration: 100 }}
-        class="m-auto flex w-5/6 space-x-2 rounded-md border-2 border-slate-200 p-2 text-slate-200"
+        class="w-52 sm:w-80 m-auto flex items-center space-x-2 rounded-md border-2 border-foreground p-2 text-foreground"
       >
-        <button on:click={() => toggleArchived(item.id)}
-          ><i class="ri-checkbox-fill" /></button
-        >
+        <button on:click={() => toggleArchived(item.id)}><IconSquare /></button>
         <div class="line-clamp-2 flex-auto break-all">{item.value}</div>
-        <button
-          style="color: {dotColor(item.dot)}; margin-left: auto"
-          on:click={() => changeColor(item.id)}
-          ><i class="ri-checkbox-blank-circle-fill" /></button
-        >
+        <Dot {item} />
       </li>
     {/each}
   </ul>

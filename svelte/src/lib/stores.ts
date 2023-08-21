@@ -1,4 +1,4 @@
-import { get, writable, type Writable } from "svelte/store";
+import { writable, type Writable } from "svelte/store";
 import type { Item, ItemsWithModifiedTime } from "./types";
 import { Page } from "./types";
 
