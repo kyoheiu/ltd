@@ -2,6 +2,7 @@
   import logo from "../assets/logo.png";
   import Footer from "./Footer.svelte";
   import IconLogin from "@tabler/icons-svelte/dist/svelte/icons/IconLogin.svelte";
+  import { SYMBOL_SIZE } from "./types";
 </script>
 
 <div class="mt-4 flex h-screen flex-col items-center p-6">
@@ -32,7 +33,9 @@
         />
       </div>
       <p>
-        <button class="m-2 text-foreground" type="submit"><IconLogin /></button>
+        <button class="m-2 text-foreground" type="submit"
+          ><IconLogin size={SYMBOL_SIZE} /></button
+        >
       </p>
     </form>
   </div>

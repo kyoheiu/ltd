@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ICON_SIZE, Page } from "./types.ts";
+  import { SYMBOL_SIZE, Page } from "./types.ts";
   import { state } from "./stores.ts";
   import IconCircle from "@tabler/icons-svelte/dist/svelte/icons/IconCircle.svelte";
   import IconSpadeFilled from "@tabler/icons-svelte/dist/svelte/icons/IconSpadeFilled.svelte";
@@ -23,13 +23,13 @@
     <button
       class="button-filter border-b border-foreground text-xs text-foreground"
       on:click={() => changeState(Page.All)}
-      ><IconCircle size={ICON_SIZE} /></button
+      ><IconCircle size={SYMBOL_SIZE} /></button
     >
   {:else}
     <button
       class="button-filter text-foreground"
       on:click={() => changeState(Page.All)}
-      ><IconCircle size={ICON_SIZE} /></button
+      ><IconCircle size={SYMBOL_SIZE} /></button
     >
   {/if}
   {#if $state.page == Page.Default}
@@ -37,11 +37,11 @@
       class="button-filter border-b border-foreground"
       on:click={() => changeState(Page.Default)}
     >
-      <IconSpadeFilled class="text-default" size={ICON_SIZE} />
+      <IconSpadeFilled class="text-default" size={ICON_SIZE: SYMBOL_SIZE} />
     </button>
   {:else}
     <button class="button-filter" on:click={() => changeState(Page.Default)}>
-      <IconSpadeFilled class="text-default" size={ICON_SIZE} />
+      <IconSpadeFilled class="text-default" size={ICON_SIZE: SYMBOL_SIZE} />
     </button>
   {/if}
   {#if $state.page == Page.Green}
@@ -49,11 +49,11 @@
       class="button-filter border-b border-foreground"
       on:click={() => changeState(Page.Green)}
     >
-      <IconHeartFilled class="text-green" size={ICON_SIZE} />
+      <IconHeartFilled class="text-green" size={ICON_SIZE: SYMBOL_SIZE} />
     </button>
   {:else}
     <button class="button-filter" on:click={() => changeState(Page.Green)}>
-      <IconHeartFilled class="text-green" size={ICON_SIZE} />
+      <IconHeartFilled class="text-green" size={ICON_SIZE: SYMBOL_SIZE} />
     </button>
   {/if}
   {#if $state.page == Page.Yellow}
@@ -61,11 +61,11 @@
       class="button-filter border-b border-foreground"
       on:click={() => changeState(Page.Yellow)}
     >
-      <IconClubsFilled class="text-yellow" size={ICON_SIZE} />
+      <IconClubsFilled class="text-yellow" size={ICON_SIZE: SYMBOL_SIZE} />
     </button>
   {:else}
     <button class="button-filter" on:click={() => changeState(Page.Yellow)}>
-      <IconClubsFilled class="text-yellow" size={ICON_SIZE} />
+      <IconClubsFilled class="text-yellow" size={ICON_SIZE: SYMBOL_SIZE} />
     </button>
   {/if}
   {#if $state.page == Page.Red}
@@ -73,11 +73,11 @@
       class="button-filter border-b border-foreground"
       on:click={() => changeState(Page.Red)}
     >
-      <IconDiamondsFilled class="text-red" size={ICON_SIZE} />
+      <IconDiamondsFilled class="text-red" size={ICON_SIZE: SYMBOL_SIZE} />
     </button>
   {:else}
     <button class="button-filter" on:click={() => changeState(Page.Red)}>
-      <IconDiamondsFilled class="text-red" size={ICON_SIZE} />
+      <IconDiamondsFilled class="text-red" size={ICON_SIZE: SYMBOL_SIZE} />
     </button>
   {/if}
   {#if $state.page == Page.Archived}
@@ -85,11 +85,11 @@
       class="button-filter border-b border-foreground"
       on:click={() => changeState(Page.Archived)}
     >
-      <IconArchiveFilled size={ICON_SIZE} />
+      <IconArchiveFilled size={SYMBOL_SIZE} />
     </button>
   {:else}
     <button class="button-filter" on:click={() => changeState(Page.Archived)}>
-      <IconArchiveFilled size={ICON_SIZE} />
+      <IconArchiveFilled size={SYMBOL_SIZE} />
     </button>
   {/if}
 </nav>

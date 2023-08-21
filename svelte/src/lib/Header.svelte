@@ -4,7 +4,7 @@
   import logo from "../assets/logo.png";
   import { ulid } from "ulid";
   import Nav from "./Nav.svelte";
-  import { ICON_SIZE, Page } from "./types";
+  import { SYMBOL_SIZE, Page } from "./types";
   import IconLogout from "@tabler/icons-svelte/dist/svelte/icons/IconLogout.svelte";
 
   const addItem = async () => {
@@ -55,7 +55,7 @@
   <div class="flex w-52 items-center justify-between sm:w-80">
     <a href="/"><img src={logo} alt="ltd" class="h-auto w-5" /></a>
     <button on:click={logout} class="ml-auto"
-      ><IconLogout size={ICON_SIZE} /></button
+      ><IconLogout size={SYMBOL_SIZE} /></button
     >
   </div>
 
