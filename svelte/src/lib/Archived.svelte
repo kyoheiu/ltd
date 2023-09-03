@@ -8,6 +8,7 @@
   import { get } from "svelte/store";
   import Dot from "./Dot.svelte";
   import IconSquare from "@tabler/icons-svelte/dist/svelte/icons/IconSquare.svelte";
+  import IconSquareCheck from "@tabler/icons-svelte/dist/svelte/icons/IconSquareCheck.svelte";
 
   let showDialog = get(state).showDialog;
 </script>
@@ -28,7 +29,7 @@
         animate:flip={{ duration: 100 }}
         class="m-auto flex w-52 items-center space-x-2 rounded-md border-2 border-foreground p-2 text-sm text-foreground sm:w-80"
       >
-        <button on:click={() => toggleArchived(item.id)}><IconSquare /></button>
+        <button on:click={() => toggleArchived(item.id)}><IconSquareCheck /></button>
         <div class="line-clamp-2 flex-auto break-all">{item.value}</div>
         <Dot {item} />
       </li>
