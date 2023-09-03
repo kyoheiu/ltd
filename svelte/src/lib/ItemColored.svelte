@@ -12,12 +12,12 @@
 <div class="flex-grow">
   <ul class="flex flex-col space-y-2">
     {#each $state.items.filter((x) => x.dot === $state.page - 1) as item, index (item)}
-      <label
+      <li
         in:receive={{ key: item.id }}
         animate:flip={{ duration: 100 }}
         class="m-auto flex w-52 items-center space-x-2 rounded-md border-2 border-foreground p-2 text-foreground sm:w-80"
       >
-        <button on:click={() => !item.showModal && toggleArchived(item.id)}
+        <button on:click={() => toggleArchived(item.id)}
           ><IconSquare /></button
         >
         <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -30,7 +30,7 @@
         <DialogToRename bind:item bind:showModal={item.showModal} />
 
         <Dot {item} />
-      </label>
+      </li>
     {/each}
   </ul>
 </div>

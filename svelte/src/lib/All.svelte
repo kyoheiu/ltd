@@ -10,6 +10,7 @@
   import { flip } from "svelte/animate";
   import Dot from "./Dot.svelte";
   import IconSquare from "@tabler/icons-svelte/dist/svelte/icons/IconSquare.svelte";
+  import IconGripVertical from "@tabler/icons-svelte/dist/svelte/icons/IconGripVertical.svelte";
 
   const sortItems = async (oldIndex: number, newIndex: number) => {
     const res = await fetch("/api/item/sort", {
@@ -65,7 +66,7 @@
     onUpdate={itemOrderChanged}
   >
     {#each $state.items as item, index (item)}
-      <label
+      <li
         id={item.id}
         in:receive={{ key: item.id }}
         animate:flip={{ duration: 100 }}
@@ -75,10 +76,10 @@
           ><IconSquare /></button
         >
         <ItemRenamable {item} />
-        <i class="ri-drag-move-fill" style="margin-left: auto; cursor: move" />
+        <IconGripVertical class="ml-auto cursor-move" />
         &nbsp;
         <Dot {item} />
-      </label>
+      </li>
     {/each}
   </SortableList>
 </div>
