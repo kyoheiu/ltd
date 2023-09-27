@@ -3,23 +3,11 @@
   import { onMount } from "svelte";
   import Login from "./lib/Login.svelte";
   import { Page } from "./lib/types.ts";
-  import { SvelteToast } from "@zerodevx/svelte-toast";
   import { readItem, state } from "./lib/stores.ts";
   import Header from "./lib/Header.svelte";
   import All from "./lib/All.svelte";
   import ItemColored from "./lib/ItemColored.svelte";
   import Archived from "./lib/Archived.svelte";
-
-  // Optionally set default options here
-  const options = {
-    theme: {
-      "--toastColor": "#24273A",
-      "--toastBackground": "#e2e8f0",
-      "--toastBarHeight": 0,
-    },
-    reversed: true,
-    intro: { y: 40 },
-  };
 
   onMount(async () => {
     readItem();
@@ -75,7 +63,6 @@
   // });
 </script>
 
-<SvelteToast {options} />
 <div class="wrap" />
 <main>
   {#if $state.page == Page.NotLoggedIn}
@@ -93,12 +80,3 @@
     </div>
   {/if}
 </main>
-
-<style>
-  :root {
-    --toastContainerTop: auto;
-    --toastContainerRight: auto;
-    --toastContainerBottom: 2rem;
-    --toastContainerLeft: calc(50vw - 8rem);
-  }
-</style>
