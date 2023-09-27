@@ -87,7 +87,7 @@ struct Claims {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     tracing_subscriber::fmt().init();
-    info!("Initialized logger.");
+    info!("Initialized logger; listening on port 8080.");
     let core = Core::default()?;
 
     // build our application with a single route
