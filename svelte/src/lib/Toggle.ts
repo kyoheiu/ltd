@@ -13,16 +13,32 @@ export const toggleArchived = async (id: string) => {
     archived.splice(i, 1);
     items.unshift(target);
     items[0].todo = true;
-    const res = await fetch(`/api/item?toggle_todo=1&id=${id}`, {
-      method: "POST",
-    });
-    const j = await res.json();
-
     state.update((s) => {
       return {
         ...s,
         items: items,
         archived: archived,
+      };
+    });
+    const res = await fetch(`/api/item?toggle_todo=1&id=${id}`, {
+      method: "POST",
+    });
+    if (!res.ok) {
+      archived.splice(i, 0, target);
+      items.shift();
+      state.update((s) => {
+        return {
+          ...s,
+          items: items,
+          archived: archived,
+        };
+      });
+      return;
+    }
+    const j = await res.json();
+    state.update((s) => {
+      return {
+        ...s,
         modified: j.modified,
       };
     });
@@ -32,16 +48,32 @@ export const toggleArchived = async (id: string) => {
     items.splice(i, 1);
     archived.unshift(target2);
     archived[0].todo = false;
-    const res = await fetch(`/api/item?toggle_todo=0&id=${id}`, {
-      method: "POST",
-    });
-    const j = await res.json();
-
     state.update((s) => {
       return {
         ...s,
         items: items,
         archived: archived,
+      };
+    });
+    const res = await fetch(`/api/item?toggle_todo=0&id=${id}`, {
+      method: "POST",
+    });
+    if (!res.ok) {
+      items.splice(i, 0, target2);
+      archived.shift();
+      state.update((s) => {
+        return {
+          ...s,
+          items: items,
+          archived: archived,
+        };
+      });
+      return;
+    }
+    const j = await res.json();
+    state.update((s) => {
+      return {
+        ...s,
         modified: j.modified,
       };
     });
@@ -60,18 +92,38 @@ export const changeColor = async (id: string) => {
       archived[i].dot += 1;
     }
 
+    state.update((s) => {
+      return {
+        ...s,
+        archived: archived,
+      };
+    });
+
     const res = await fetch(
       `/api/item?toggle_dot=${archived[i].dot}&id=${id}`,
       {
         method: "POST",
       }
     );
+    if (!res.ok) {
+      if (archived[i].dot === 0) {
+        archived[i].dot = 3;
+      } else {
+        archived[i].dot -= 1;
+      }
+      state.update((s) => {
+        return {
+          ...s,
+          archived: archived,
+        };
+      });
+      return;
+    }
     const j = await res.json();
 
     state.update((s) => {
       return {
         ...s,
-        archived: archived,
         modified: j.modified,
       };
     });
@@ -84,15 +136,35 @@ export const changeColor = async (id: string) => {
       items[i].dot += 1;
     }
 
+    state.update((s) => {
+      return {
+        ...s,
+        items: items,
+      };
+    });
+
     const res = await fetch(`/api/item?toggle_dot=${items[i].dot}&id=${id}`, {
       method: "POST",
     });
+    if (!res.ok) {
+      if (items[i].dot === 0) {
+        items[i].dot = 3;
+      } else {
+        items[i].dot -= 1;
+      }
+      state.update((s) => {
+        return {
+          ...s,
+          items: items,
+        };
+      });
+      return;
+    }
     const j = await res.json();
 
     state.update((s) => {
       return {
         ...s,
-        items: items,
         modified: j.modified,
       };
     });
