@@ -17,9 +17,7 @@
         animate:flip={{ duration: 100 }}
         class="m-auto flex w-52 items-center space-x-2 rounded-md border-2 border-foreground p-2 text-foreground sm:w-80"
       >
-        <button on:click={() => toggleArchived(item.id)}
-          ><IconSquare /></button
-        >
+        <button on:click={() => toggleArchived(item.id)}><IconSquare /></button>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="line-clamp-2 flex-auto cursor-pointer break-all text-sm"

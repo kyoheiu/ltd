@@ -29,7 +29,9 @@
         animate:flip={{ duration: 100 }}
         class="m-auto flex w-52 items-center space-x-2 rounded-md border-2 border-foreground p-2 text-sm text-foreground sm:w-80"
       >
-        <button on:click={() => toggleArchived(item.id)}><IconSquareCheck /></button>
+        <button on:click={() => toggleArchived(item.id)}
+          ><IconSquareCheck /></button
+        >
         <div class="line-clamp-2 flex-auto break-all">{item.value}</div>
         <Dot {item} />
       </li>
