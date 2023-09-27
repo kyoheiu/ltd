@@ -8,6 +8,7 @@
   import All from "./lib/All.svelte";
   import ItemColored from "./lib/ItemColored.svelte";
   import Archived from "./lib/Archived.svelte";
+  import { Toaster } from "svelte-french-toast";
 
   onMount(async () => {
     readItem();
@@ -63,6 +64,7 @@
   // });
 </script>
 
+<Toaster />
 <div class="wrap" />
 <main>
   {#if $state.page == Page.NotLoggedIn}

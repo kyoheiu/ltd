@@ -1,6 +1,7 @@
 import { get } from "svelte/store";
 import { state } from "./stores";
 import { Page } from "./types";
+import { toastError } from "./toast";
 
 export const toggleArchived = async (id: string) => {
   let i: number;
@@ -33,6 +34,7 @@ export const toggleArchived = async (id: string) => {
           archived: archived,
         };
       });
+      toastError(res.statusText);
       return;
     }
     const j = await res.json();
@@ -68,6 +70,7 @@ export const toggleArchived = async (id: string) => {
           archived: archived,
         };
       });
+      toastError(res.statusText);
       return;
     }
     const j = await res.json();
@@ -117,6 +120,7 @@ export const changeColor = async (id: string) => {
           archived: archived,
         };
       });
+      toastError(res.statusText);
       return;
     }
     const j = await res.json();
@@ -158,6 +162,7 @@ export const changeColor = async (id: string) => {
           items: items,
         };
       });
+      toastError(res.statusText);
       return;
     }
     const j = await res.json();
