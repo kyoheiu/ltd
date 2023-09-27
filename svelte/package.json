@@ -31,6 +31,7 @@
   "dependencies": {
     "@tabler/icons-svelte": "^2.31.0",
     "svelte-drag-drop-touch": "^0.1.9",
+    "svelte-french-toast": "^1.2.0",
     "ulid": "^2.3.0"
   }
 }
