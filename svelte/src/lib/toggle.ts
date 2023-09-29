@@ -2,6 +2,11 @@ import { get } from "svelte/store";
 import { state } from "./stores";
 import { Page } from "./types";
 import { toast } from "./toast";
+import Toastify from "toastify-js";
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export const toggleArchived = async (id: string) => {
   let i: number;
@@ -57,6 +62,39 @@ export const toggleArchived = async (id: string) => {
         archived: archived,
       };
     });
+
+    // If the toast is clicked before dismissed, archiving will be cancelled.
+    var aborted = false;
+    var t = Toastify({
+      text: `Archived ${target2.value}. Click here to cancel`,
+      className: "!bg-none !bg-foreground !text-none !text-background",
+      duration: 2000,
+      gravity: "bottom",
+      position: "center",
+      stopOnFocus: true,
+      style: {
+        border: "1px solid #333",
+      },
+      onClick: () => {
+        items.splice(i, 0, target2);
+        archived.shift();
+        state.update((s) => {
+          return {
+            ...s,
+            items: items,
+            archived: archived,
+          };
+        });
+        aborted = true;
+        t.hideToast();
+      },
+    });
+    t.showToast();
+    await sleep(2000);
+    if (aborted) {
+      return;
+    }
+
     const res = await fetch(`/api/item?toggle_todo=0&id=${id}`, {
       method: "POST",
     });
@@ -147,7 +185,7 @@ export const changeColor = async (id: string) => {
       };
     });
 
-    const res = await fetch(`/api/itemwrong?toggle_dot=${items[i].dot}&id=${id}`, {
+    const res = await fetch(`/api/item?toggle_dot=${items[i].dot}&id=${id}`, {
       method: "POST",
     });
     if (!res.ok) {
