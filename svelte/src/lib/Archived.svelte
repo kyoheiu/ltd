@@ -3,7 +3,7 @@
   import { receive } from "./Animation";
   import DialogToDelete from "./DialogToDelete.svelte";
   import Footer from "./Footer.svelte";
-  import { toggleArchived } from "./Toggle";
+  import { toggleArchived } from "./toggle";
   import { state } from "./stores";
   import { get } from "svelte/store";
   import Dot from "./Dot.svelte";

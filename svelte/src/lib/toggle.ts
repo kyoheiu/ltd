@@ -2,6 +2,8 @@ import { get } from "svelte/store";
 import { state } from "./stores";
 import { Page } from "./types";
 import { toastError } from "./toast";
+import toast from "svelte-french-toast";
+import Undo from "./Undo.svelte";
 
 export const toggleArchived = async (id: string) => {
   let i: number;
@@ -80,6 +82,7 @@ export const toggleArchived = async (id: string) => {
         modified: j.modified,
       };
     });
+    toast(Undo,  {props: {value: target2.value}, position: "bottom-center"})
   }
 };
 

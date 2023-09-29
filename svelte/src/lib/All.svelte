@@ -6,7 +6,7 @@
   import { state } from "./stores";
   import type { ItemsWithModifiedTime } from "./types";
   import { receive } from "./Animation";
-  import { toggleArchived } from "./Toggle";
+  import { toggleArchived } from "./toggle";
   import { flip } from "svelte/animate";
   import Dot from "./Dot.svelte";
   import IconSquare from "@tabler/icons-svelte/dist/svelte/icons/IconSquare.svelte";

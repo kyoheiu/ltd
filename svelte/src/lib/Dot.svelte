@@ -3,7 +3,7 @@
   import IconHeartFilled from "@tabler/icons-svelte/dist/svelte/icons/IconHeartFilled.svelte";
   import IconClubsFilled from "@tabler/icons-svelte/dist/svelte/icons/IconClubsFilled.svelte";
   import IconDiamondsFilled from "@tabler/icons-svelte/dist/svelte/icons/IconDiamondsFilled.svelte";
-  import { changeColor } from "./Toggle";
+  import { changeColor } from "./toggle";
   import { SYMBOL_SIZE, type Item } from "./types";
 
   export let item: Item;

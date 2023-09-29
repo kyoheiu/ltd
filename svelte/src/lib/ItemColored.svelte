@@ -4,7 +4,7 @@
   import { state } from "./stores";
   import DialogToRename from "./DialogToRename.svelte";
   import Footer from "./Footer.svelte";
-  import { toggleArchived } from "./Toggle";
+  import { toggleArchived } from "./toggle";
   import IconSquare from "@tabler/icons-svelte/dist/svelte/icons/IconSquare.svelte";
   import Dot from "./Dot.svelte";
 </script>
