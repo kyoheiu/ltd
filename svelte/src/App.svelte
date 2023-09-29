@@ -1,5 +1,6 @@
 <script lang="ts">
   import "./app.css";
+  import "toastify-js/src/toastify.css";
   import { onMount } from "svelte";
   import Login from "./lib/Login.svelte";
   import { Page } from "./lib/types.ts";
@@ -8,7 +9,6 @@
   import All from "./lib/All.svelte";
   import ItemColored from "./lib/ItemColored.svelte";
   import Archived from "./lib/Archived.svelte";
-  import { Toaster } from "svelte-french-toast";
 
   onMount(async () => {
     readItem();
@@ -64,7 +64,6 @@
   // });
 </script>
 
-<Toaster />
 <div class="wrap" />
 <main>
   {#if $state.page == Page.NotLoggedIn}

@@ -1,9 +1,7 @@
 import { get } from "svelte/store";
 import { state } from "./stores";
 import { Page } from "./types";
-import { toastError } from "./toast";
-import toast from "svelte-french-toast";
-import Undo from "./Undo.svelte";
+import { toast } from "./toast";
 
 export const toggleArchived = async (id: string) => {
   let i: number;
@@ -36,7 +34,7 @@ export const toggleArchived = async (id: string) => {
           archived: archived,
         };
       });
-      toastError(res.statusText);
+      toast(res.statusText);
       return;
     }
     const j = await res.json();
@@ -72,7 +70,7 @@ export const toggleArchived = async (id: string) => {
           archived: archived,
         };
       });
-      toastError(res.statusText);
+      toast(res.statusText);
       return;
     }
     const j = await res.json();
@@ -82,7 +80,6 @@ export const toggleArchived = async (id: string) => {
         modified: j.modified,
       };
     });
-    toast(Undo,  {props: {value: target2.value}, position: "bottom-center"})
   }
 };
 
@@ -123,7 +120,7 @@ export const changeColor = async (id: string) => {
           archived: archived,
         };
       });
-      toastError(res.statusText);
+      toast(res.statusText);
       return;
     }
     const j = await res.json();
@@ -150,7 +147,7 @@ export const changeColor = async (id: string) => {
       };
     });
 
-    const res = await fetch(`/api/item?toggle_dot=${items[i].dot}&id=${id}`, {
+    const res = await fetch(`/api/itemwrong?toggle_dot=${items[i].dot}&id=${id}`, {
       method: "POST",
     });
     if (!res.ok) {
@@ -165,7 +162,7 @@ export const changeColor = async (id: string) => {
           items: items,
         };
       });
-      toastError(res.statusText);
+      toast(res.statusText);
       return;
     }
     const j = await res.json();

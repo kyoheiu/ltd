@@ -1,7 +1,12 @@
-import toast from "svelte-french-toast";
+import Toastify from "toastify-js";
 
-export const toastError = (msg: string) => {
-  toast.error(msg, {
-    position: "bottom-center",
-  });
+export const toast = (msg: string) => {
+  Toastify({
+    text: msg,
+    className: "!bg-none !bg-foreground !text-none !text-background",
+    duration: 2000,
+    gravity: "bottom",
+    position: "center",
+    stopOnFocus: true
+  }).showToast();
 };
