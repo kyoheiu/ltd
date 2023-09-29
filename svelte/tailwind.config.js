@@ -17,6 +17,7 @@ export default {
       "red": "#ED8796",
       "warning": "#f43f5e",
       "further": "#94a3b8",
+      "ok": "#06b6d4",
     }
   },
   plugins: [],

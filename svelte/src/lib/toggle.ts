@@ -1,7 +1,7 @@
 import { get } from "svelte/store";
 import { state } from "./stores";
 import { Page } from "./types";
-import { toast } from "./toast";
+import { toastError } from "./toast";
 import Toastify from "toastify-js";
 
 function sleep(ms: number) {
@@ -39,7 +39,7 @@ export const toggleArchived = async (id: string) => {
           archived: archived,
         };
       });
-      toast(res.statusText);
+      toastError(res.statusText);
       return;
     }
     const j = await res.json();
@@ -66,15 +66,14 @@ export const toggleArchived = async (id: string) => {
     // If the toast is clicked before dismissed, archiving will be cancelled.
     var aborted = false;
     var t = Toastify({
-      text: `Archived ${target2.value}. Click here to cancel`,
-      className: "!bg-none !bg-foreground !text-none !text-background",
+      text: `Archived ${target2.value}. &nbsp;<u>Cancel</u>`,
+      escapeMarkup: false,
+      className:
+        "!border-l-8 !border-ok !bg-none !bg-foreground !text-none !text-background",
       duration: 2000,
       gravity: "bottom",
       position: "center",
       stopOnFocus: true,
-      style: {
-        border: "1px solid #333",
-      },
       onClick: () => {
         items.splice(i, 0, target2);
         archived.shift();
@@ -108,7 +107,7 @@ export const toggleArchived = async (id: string) => {
           archived: archived,
         };
       });
-      toast(res.statusText);
+      toastError(res.statusText);
       return;
     }
     const j = await res.json();
@@ -158,7 +157,7 @@ export const changeColor = async (id: string) => {
           archived: archived,
         };
       });
-      toast(res.statusText);
+      toastError(res.statusText);
       return;
     }
     const j = await res.json();
@@ -200,7 +199,7 @@ export const changeColor = async (id: string) => {
           items: items,
         };
       });
-      toast(res.statusText);
+      toastError(res.statusText);
       return;
     }
     const j = await res.json();
