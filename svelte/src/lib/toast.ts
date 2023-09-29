@@ -7,6 +7,6 @@ export const toast = (msg: string) => {
     duration: 2000,
     gravity: "bottom",
     position: "center",
-    stopOnFocus: true
+    stopOnFocus: true,
   }).showToast();
 };
