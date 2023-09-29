@@ -1,4 +1,4 @@
-FROM node:slim AS frontend-builder
+FROM node:alpine3.18 AS frontend-builder
 WORKDIR /svelte
 COPY ./svelte/package.json ./
 COPY ./svelte/package-lock.json ./
@@ -6,12 +6,12 @@ RUN npm install
 COPY ./svelte ./
 RUN npm run build
 
-FROM rust:1.70.0-slim-bookworm as backend-builder
+FROM rust:1-alpine3.18 as backend-builder
 WORKDIR /axum
 COPY ./axum ./
-RUN cargo build --release
+RUN apk update && apk add --no-cache musl-dev && cargo build --release
 
-FROM debian:bookworm-slim
+FROM alpine:3.18
 WORKDIR /ltd
 COPY --from=frontend-builder /svelte/dist /ltd/static
 COPY --from=backend-builder /axum/target/release/ltd .
