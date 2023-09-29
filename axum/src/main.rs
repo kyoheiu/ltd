@@ -165,16 +165,16 @@ async fn update_item(
                 todo: true,
                 dot,
             });
-            info!("Add: id {} value {} dot {}", id, value, dot);
+            info!("Added: id {} value {} dot {}", id, value, dot);
         } else if params.contains_key("toggle_todo") {
             let id = params.get("id").unwrap();
             if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
                 if params.get("toggle_todo").unwrap() == "0" {
                     target.todo = false;
-                    info!("Archived: id {}", id);
+                    info!("Archived: {}", target.value);
                 } else {
                     target.todo = true;
-                    info!("Unarchived: id {}", id);
+                    info!("Unarchived: {}", target.value);
                 }
             } else {
                 warn!("ID not found.");
@@ -188,7 +188,7 @@ async fn update_item(
                     "3" => target.dot = 3,
                     _ => target.dot = 0,
                 }
-                info!("Toggle dot color: id {}", id);
+                info!("Toggled dot color: {}", target.value);
             } else {
                 warn!("ID not found.");
             }
@@ -196,7 +196,7 @@ async fn update_item(
             let id = params.get("id").unwrap();
             let value = params.get("value").unwrap();
             if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
-                info!("Rename: {} -> {}", target.value, value);
+                info!("Renamed: {} -> {}", target.value, value);
                 target.value = value.to_string();
             } else {
                 warn!("ID not found.");
@@ -234,7 +234,7 @@ async fn post_item(headers: HeaderMap, Json(payload): Json<Value>) -> Result<(),
                 dot: 0,
             });
             save_json(items, &ou)?;
-            Ok(info!("Add(via API): id {} value {} dot 0", id, value))
+            Ok(info!("Added(via API): id {} value {} dot 0", id, value))
         } else {
             warn!("Invalid token.");
             Err(Error::NotVerified)
@@ -305,7 +305,7 @@ async fn ldaplogin(
         cookies.add(cookie);
         Ok(Redirect::to("/").into_response())
     } else {
-        warn!("Logging in failed.");
+        warn!("Failed to log in.");
         Ok(Redirect::to("/").into_response())
     }
 }
