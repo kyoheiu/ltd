@@ -65,7 +65,7 @@
     easing="cubic-bezier(1, 0, 0, 1)"
     onUpdate={itemOrderChanged}
   >
-    {#each $state.items as item, index (item)}
+    {#each $state.items as item, _index (item)}
       <li
         id={item.id}
         in:receive={{ key: item.id }}
@@ -76,7 +76,9 @@
           ><IconSquare /></button
         >
         <ItemRenamable {item} />
-        <IconGripVertical class="ml-auto cursor-move" />
+        <div class="w-4">
+          <IconGripVertical class="ml-auto cursor-move" />
+        </div>
         &nbsp;
         <Dot {item} />
       </li>
