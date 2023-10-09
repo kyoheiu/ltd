@@ -33,7 +33,7 @@
       <div class="flex justify-between">
         <button class="text-sm" on:click={() => dialog.close()}>cancel</button>
         <button
-          class="rounded-md bg-warning px-2 py-1 text-sm text-foreground"
+          class="rounded-md bg-warning px-2 pt-1 text-sm text-foreground"
           on:click={() => deleteArchived()}>delete</button
         >
       </div>

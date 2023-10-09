@@ -4,6 +4,6 @@
 
 @layer base {
   body {
-    @apply w-52 sm:w-80 m-auto text-foreground bg-background;
+    @apply w-full sm:w-80 m-auto text-foreground bg-background;
   }
 }
