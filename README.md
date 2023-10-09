@@ -21,7 +21,7 @@ LTD_API_TOKEN=SECRET_KEY_TO_POST_ITEM_VIA_API
 ```
 
 2. 
-`sudo docker run -d -v /path/to/items:/ltd/items --env-file /path/to/.env --network="ldap_docker_network_name_if_needed" --name ltd -p 8080:8080 kyoheiudev/ltd:1.4.0`
+`sudo docker run -d -v /path/to/items:/ltd/items --env-file /path/to/.env --network="ldap_docker_network_name_if_needed" --name ltd -p 8080:8080 kyoheiudev/ltd:1.4.2`
 
 ## API
 To post an item via API, use HTTP `POST` request:
