@@ -2,7 +2,6 @@
   import { get } from "svelte/store";
   import Footer from "./Footer.svelte";
   import ItemRenamable from "./ItemRenamable.svelte";
-  import { SortableList } from "@jhubbardsf/svelte-sortablejs";
   import { state } from "./stores";
   import type { ItemsWithModifiedTime } from "./types";
   import { receive } from "./Animation";
@@ -11,6 +10,8 @@
   import Dot from "./Dot.svelte";
   import IconSquare from "@tabler/icons-svelte/dist/svelte/icons/IconSquare.svelte";
   import IconGripVertical from "@tabler/icons-svelte/dist/svelte/icons/IconGripVertical.svelte";
+  import Sortable from "sortablejs";
+  import { onMount } from "svelte";
 
   const sortItems = async (oldIndex: number, newIndex: number) => {
     const res = await fetch("/api/item/sort", {
@@ -54,17 +55,21 @@
       await sortItems(event.oldIndex, event.newIndex);
     }
   };
+  onMount(() => {
+    const el = window.document.getElementById("items");
+    Sortable.create(el, {
+      animation: 100,
+      delay: 100,
+      ghostClass: "invisible",
+      dragClass: "opacity-100",
+      easing: "cubic-bezier(1, 0, 0, 1)",
+      onUpdate: itemOrderChanged,
+    });
+  });
 </script>
 
 <div class="flex-grow">
-  <SortableList
-    class="flex flex-col space-y-2"
-    ghostClass="invisible"
-    dragClass="opacity-100"
-    animation={100}
-    easing="cubic-bezier(1, 0, 0, 1)"
-    onUpdate={itemOrderChanged}
-  >
+  <ul class="flex flex-col space-y-2" id="items">
     {#each $state.items as item, _index (item)}
       <li
         id={item.id}
@@ -83,7 +88,7 @@
         <Dot {item} />
       </li>
     {/each}
-  </SortableList>
+  </ul>
 </div>
 <div class="flex justify-center">
   <Footer />
