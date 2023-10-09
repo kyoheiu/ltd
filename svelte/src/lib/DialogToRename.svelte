@@ -42,9 +42,8 @@
         on:keydown={(e) => e.key === "Enter" && rename()}
       />
 
-      <button
-        class="rounded-md text-sm"
-        on:click={() => dialog.close()}>close</button
+      <button class="rounded-md text-sm" on:click={() => dialog.close()}
+        >close</button
       >
     </div>
   </dialog>
