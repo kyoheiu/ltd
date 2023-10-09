@@ -1,7 +1,7 @@
 {
   "name": "ltd",
   "private": true,
-  "version": "1.4.1",
+  "version": "1.4.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,7 +11,6 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
-    "@jhubbardsf/svelte-sortablejs": "^1.1.0",
     "@sveltejs/vite-plugin-svelte": "^2.0.4",
     "@tsconfig/svelte": "^4.0.1",
     "autoprefixer": "^10.4.14",
@@ -29,6 +28,7 @@
   },
   "dependencies": {
     "@tabler/icons-svelte": "^2.31.0",
+    "sortablejs": "^1.15.0",
     "svelte-drag-drop-touch": "^0.1.9",
     "toastify-js": "^1.12.0",
     "ulid": "^2.3.0"
