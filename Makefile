@@ -8,6 +8,8 @@ dev:
 	cd axum && LTD_SECRET_KEY=test LTD_DOMAIN=localhost LTD_NETWORK=ldap://localhost:3890 RUST_LOG=debug cargo run
 
 build:
+	cd svelte && npm install --package-lock-only
+	cd axum && cargo generate-lockfile
 	sudo docker build --tag=kyoheiudev/ltd:$(VER) .
 
 push:
