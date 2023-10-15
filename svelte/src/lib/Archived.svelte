@@ -27,7 +27,7 @@
       <li
         in:receive={{ key: item.id }}
         animate:flip={{ duration: 100 }}
-        class="m-auto flex w-4/5 items-center space-x-2 rounded-md border-2 border-foreground p-2 text-sm text-foreground sm:w-80"
+        class="m-auto flex w-4/5 items-center space-x-2 rounded-md border-2 border-foreground p-2 text-foreground sm:w-80"
       >
         <button on:click={() => toggleArchived(item.id)}
           ><IconSquareCheck /></button
