@@ -66,7 +66,7 @@ export const toggleArchived = async (id: string) => {
     // If the toast is clicked before dismissed, archiving will be cancelled.
     var aborted = false;
     var t = Toastify({
-      text: `Archived ${target2.value}. &nbsp;<u>Cancel</u>`,
+      text: `Archiving ${target2.value}. &nbsp;<u>Cancel</u>`,
       escapeMarkup: false,
       className:
         "!border-l-8 !border-ok !bg-none !bg-foreground !text-none !text-background",
