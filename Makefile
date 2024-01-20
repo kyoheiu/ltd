@@ -1,15 +1,10 @@
-fmt:
-	cd svelte && npm run fmt
-	cd axum && cargo fmt
-
 dev:
-	cd svelte && npm run build
-	cp -r ./svelte/dist/* ./axum/static
-	cd axum && LTD_SECRET_KEY=test LTD_DOMAIN=localhost LTD_NETWORK=ldap://localhost:3890 RUST_LOG=debug cargo run
+	cd client && npm i && npm run build && rm -rf ../server/static && mkdir ../server/static && cp -r ./dist/* ../server/static
+	cd server && LTD_SECRET_KEY=test LTD_DOMAIN=localhost LTD_NETWORK=ldap://localhost:3890 RUST_LOG=debug cargo run
 
 build:
-	cd svelte && npm install --package-lock-only
-	cd axum && cargo generate-lockfile
+	cd client && npm install --package-lock-only
+	cd server && cargo generate-lockfile
 	sudo docker build --tag=kyoheiudev/ltd:$(VER) .
 
 push:
