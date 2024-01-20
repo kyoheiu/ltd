@@ -1,4 +1,4 @@
-export interface Item {
+export type Item = {
   id: string;
   value: string;
   todo: boolean;
@@ -6,8 +6,16 @@ export interface Item {
   showModal: boolean;
 }
 
-export interface ItemsWithModifiedTime {
+export type ItemsWithModifiedTime = {
   items: Item[];
   modified: number;
 }
 
+export enum Category {
+  All,
+  Default,
+  Green,
+  Yellow,
+  Red,
+  Archived,
+}
