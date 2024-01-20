@@ -10,15 +10,15 @@ const ItemsContext = createContext<CtxValue | null>(null);
 export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = useState<ItemsWithModifiedTime | null>(null);
 
-  const readItem = async () => {
-    const res = await fetch("/api/item");
-    if (!res.ok) {
-      console.log("Not verified: login form will appear.");
-    } else {
-      const j: ItemsWithModifiedTime = await res.json();
-      setState(() => j);
-    }
-  };
+  // const readItem = async () => {
+  //   const res = await fetch("/api/item");
+  //   if (!res.ok) {
+  //     console.log("Not verified: login form will appear.");
+  //   } else {
+  //     const j: ItemsWithModifiedTime = await res.json();
+  //     setState(() => j);
+  //   }
+  // };
 
   const _readItem = async () => {
     const items = [
