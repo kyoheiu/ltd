@@ -19,3 +19,10 @@ export enum Category {
   Red,
   Archived,
 }
+
+export enum Dot {
+  Default,
+  Green,
+  Yellow,
+  Red,
+}
