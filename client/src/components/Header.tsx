@@ -17,12 +17,14 @@ export const Header: React.FC = () => {
           </button>
         </div>
 
-        <input
-          id="submit-form"
-          type="text"
-          onKeyDown={() => {}}
-          placeholder="+"
-        />
+        <form>
+          <input
+            id="submit-form"
+            type="text"
+            onChange={() => {}}
+            placeholder="+"
+          />
+        </form>
       </div>
       <Outlet />
     </>

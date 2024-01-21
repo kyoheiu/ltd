@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { ItemsWithModifiedTime } from "../types";
+import { Dot, ItemsWithModifiedTime } from "../types";
 import React from "react";
+import { ulid } from "ulid";
 
 type CtxValue = {
   state: ItemsWithModifiedTime | null;
@@ -62,6 +63,35 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
       items,
       modified: 0,
     });
+  };
+
+  const addItem = async (value: string, dot: Dot) => {
+    const id = ulid();
+    const newItem = {
+      id,
+      value,
+      todo: true,
+      dot,
+      showModal: false,
+    };
+    const res = await fetch(`/api/item/add`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newItem),
+    });
+    if (!res.ok) {
+      console.error("Failed to add new item.");
+    } else {
+      setState((prev) => ({
+        items: [
+          { id: ulid(), value, todo: true, dot, showModal: false },
+          ...(prev ? prev.items : []),
+        ],
+        modified: 0,
+      }));
+    }
   };
 
   useEffect(() => {

@@ -90,17 +90,20 @@ async fn main() -> Result<(), Error> {
     info!("Initialized logger; listening on port 8080.");
     let core = Core::default()?;
 
+    let static_dir = ServeDir::new("static");
     // build our application with a single route
     let app = Router::new()
         .route("/health", get(health))
         .route("/api/item", get(read_item).post(update_item))
+        .route("/api/item/add", post(add_item))
         .route("/api/check", get(check_update))
         .route("/api/item/sort", post(sort_item))
         .route("/api/ldaplogin", post(ldaplogin))
         .route("/api/logout", post(logout))
         .route("/api/post", post(post_item))
         .layer(CookieManagerLayer::new())
-        .nest_service("/", ServeDir::new("static"))
+        .nest_service("/", static_dir.clone())
+        .nest_service("/login", static_dir)
         .with_state(core);
 
     axum::Server::bind(&"0.0.0.0:8080".parse().unwrap())
@@ -214,6 +217,30 @@ async fn update_item(
 
         let modified = save_json(items, &ou)?;
         Ok(Json(ModifiedTime { modified }).into_response())
+    } else {
+        Err(Error::NotVerified)
+    }
+}
+
+#[debug_handler]
+async fn add_item(
+    cookies: Cookies,
+    State(core): State<Core>,
+    Json(payload): Json<Item>,
+) -> Result<impl IntoResponse, Error> {
+    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
+        let ou = to_ou(&name)?;
+        let mut items = read_json(&ou)?;
+
+        items.items.push_front(Item {
+            id: payload.id,
+            value: payload.value.clone(),
+            todo: payload.todo,
+            dot: payload.dot,
+        });
+        let modified: u128 = save_json(items, &ou)?;
+        info!("Added: {}", payload.value);
+        Ok(Json(ModifiedTime { modified }))
     } else {
         Err(Error::NotVerified)
     }
