@@ -1,10 +1,26 @@
 import { IconLogout } from "@tabler/icons-react";
 import logo from "../../logo.png";
 import { Outlet } from "react-router-dom";
+import { useItems } from "../contexts/ItemsProvider";
+import { useCallback, useState } from "react";
+import { Dot } from "../types";
 
 export const SYMBOL_SIZE = 18;
 
 export const Header: React.FC = () => {
+  const { addItem } = useItems();
+  const [value, setValue] = useState("");
+
+  const onSubmitNewItem = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      console.log(value);
+      addItem(value, Dot.Default);
+      setValue("");
+    },
+    [value, addItem]
+  );
+
   return (
     <>
       <div>
@@ -12,16 +28,19 @@ export const Header: React.FC = () => {
           <a href="/">
             <img src={logo} alt="ltd" />
           </a>
-          <button onClick={() => {}}>
+          <button>
             <IconLogout size={SYMBOL_SIZE} />
           </button>
         </div>
 
-        <form>
+        <form onSubmit={onSubmitNewItem}>
           <input
             id="submit-form"
             type="text"
-            onChange={() => {}}
+            value={value}
+            onChange={(e) => {
+              setValue(e.target.value);
+            }}
             placeholder="+"
           />
         </form>

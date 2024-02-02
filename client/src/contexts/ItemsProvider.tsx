@@ -1,10 +1,17 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Dot, ItemsWithModifiedTime } from "../types";
 import React from "react";
 import { ulid } from "ulid";
 
 type CtxValue = {
   state: ItemsWithModifiedTime | null;
+  addItem: (value: string, dot: Dot) => Promise<void>;
 };
 
 const ItemsContext = createContext<CtxValue | null>(null);
@@ -12,14 +19,20 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = useState<ItemsWithModifiedTime | null>(null);
 
   // const readItem = async () => {
+  //   console.log("read");
   //   const res = await fetch("/api/item");
   //   if (!res.ok) {
   //     console.log("Not verified: login form will appear.");
+  //     navigate("/login");
   //   } else {
   //     const j: ItemsWithModifiedTime = await res.json();
   //     setState(() => j);
   //   }
   // };
+
+  useEffect(() => {
+    _readItem();
+  }, []);
 
   const _readItem = async () => {
     const items = [
@@ -65,14 +78,13 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
-  const addItem = async (value: string, dot: Dot) => {
+  const addItem = useCallback(async (value: string, dot: Dot) => {
     const id = ulid();
     const newItem = {
       id,
       value,
       todo: true,
       dot,
-      showModal: false,
     };
     const res = await fetch(`/api/item/add`, {
       method: "POST",
@@ -85,21 +97,15 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
       console.error("Failed to add new item.");
     } else {
       setState((prev) => ({
-        items: [
-          { id: ulid(), value, todo: true, dot, showModal: false },
-          ...(prev ? prev.items : []),
-        ],
+        items: [{ ...newItem, showModal: false }, ...(prev ? prev.items : [])],
         modified: 0,
       }));
     }
-  };
-
-  useEffect(() => {
-    _readItem();
   }, []);
 
   const ctxValue: CtxValue = {
     state,
+    addItem,
   };
 
   return (
@@ -110,7 +116,7 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
 export const useItems = () => {
   const ctx = useContext(ItemsContext);
   if (!ctx) {
-    throw Error("Cannot access to the items context");
+    throw Error("Cannot access to the items context.");
   }
   return ctx;
 };
