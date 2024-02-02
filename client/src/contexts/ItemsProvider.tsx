@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useState } from "react";
-import { Dot, ItemsWithModifiedTime } from "../types";
+import { Suit, ItemsWithModifiedTime } from "../types";
 import React from "react";
 import { ulid } from "ulid";
 
@@ -7,7 +7,7 @@ type CtxValue = {
   state: ItemsWithModifiedTime | null;
   setState: React.Dispatch<React.SetStateAction<ItemsWithModifiedTime | null>>;
   readItem: () => Promise<ItemsWithModifiedTime | null>;
-  addItem: (value: string, dot: Dot) => Promise<void>;
+  addItem: (value: string, dot: Suit) => Promise<void>;
 };
 
 const ItemsContext = createContext<CtxValue | null>(null);
@@ -67,13 +67,13 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
   //   });
   // };
 
-  const addItem = useCallback(async (value: string, dot: Dot) => {
+  const addItem = useCallback(async (value: string, suit: Suit) => {
     const id = ulid();
     const newItem = {
       id,
       value,
       todo: true,
-      dot,
+      suit,
     };
     const res = await fetch(`/api/item/add`, {
       method: "POST",

@@ -57,7 +57,7 @@ struct Item {
     id: String,
     value: String,
     todo: bool,
-    dot: usize,
+    suit: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -161,14 +161,14 @@ async fn update_item(
         if params.contains_key("add") {
             let id = params.get("id").unwrap();
             let value = params.get("value").unwrap();
-            let dot: usize = params.get("dot").unwrap().parse()?;
+            let suit: usize = params.get("suit").unwrap().parse()?;
             items.items.push_front(Item {
                 id: id.to_string(),
                 value: value.to_string(),
                 todo: true,
-                dot,
+                suit,
             });
-            info!("Added: id {} value {} dot {}", id, value, dot);
+            info!("Added: id {} value {} suit {}", id, value, suit);
         } else if params.contains_key("toggle_todo") {
             let id = params.get("id").unwrap();
             if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
@@ -182,16 +182,16 @@ async fn update_item(
             } else {
                 warn!("ID not found.");
             }
-        } else if params.contains_key("toggle_dot") {
+        } else if params.contains_key("toggle_suit") {
             let id = params.get("id").unwrap();
             if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
-                match params.get("toggle_dot").unwrap().as_str() {
-                    "1" => target.dot = 1,
-                    "2" => target.dot = 2,
-                    "3" => target.dot = 3,
-                    _ => target.dot = 0,
+                match params.get("toggle_suit").unwrap().as_str() {
+                    "1" => target.suit = 1,
+                    "2" => target.suit = 2,
+                    "3" => target.suit = 3,
+                    _ => target.suit = 0,
                 }
-                info!("Toggled dot color: {}", target.value);
+                info!("Toggled suit color: {}", target.value);
             } else {
                 warn!("ID not found.");
             }
@@ -236,7 +236,7 @@ async fn add_item(
             id: payload.id,
             value: payload.value.clone(),
             todo: payload.todo,
-            dot: payload.dot,
+            suit: payload.suit,
         });
         let modified: u128 = save_json(items, &ou)?;
         info!("Added: {}", payload.value);
@@ -258,10 +258,10 @@ async fn post_item(headers: HeaderMap, Json(payload): Json<Value>) -> Result<(),
                 id: id.clone(),
                 value: value.clone(),
                 todo: true,
-                dot: 0,
+                suit: 0,
             });
             save_json(items, &ou)?;
-            Ok(info!("Added(via API): id {} value {} dot 0", id, value))
+            Ok(info!("Added(via API): id {} value {} suit 0", id, value))
         } else {
             warn!("Invalid token.");
             Err(Error::NotVerified)

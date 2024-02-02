@@ -2,7 +2,7 @@ export type Item = {
   id: string;
   value: string;
   todo: boolean;
-  dot: number;
+  suit: number;
   showModal: boolean;
 }
 
@@ -14,15 +14,15 @@ export type ItemsWithModifiedTime = {
 export enum Category {
   All,
   Default,
-  Green,
-  Yellow,
-  Red,
-  Archived,
+  Spade,
+  Heart,
+  Club,
+  Diamond,
 }
 
-export enum Dot {
-  Default,
-  Green,
-  Yellow,
-  Red,
+export enum Suit {
+  Spade,
+  Heart,
+  Club,
+  Diamond,
 }

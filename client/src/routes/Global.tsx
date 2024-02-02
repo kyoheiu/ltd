@@ -3,6 +3,7 @@ import { Item } from "../types";
 import { useItems } from "../contexts/ItemsProvider";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { ItemCmp } from "../components/ItemCmp";
 
 export const Global = () => {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export const Global = () => {
   return (
     <>
       {state.items.map((item: Item) => (
-        <div>{item.value}</div>
+        <ItemCmp item={item} />
       ))}
     </>
   );

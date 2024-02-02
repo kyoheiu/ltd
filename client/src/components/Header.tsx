@@ -3,7 +3,7 @@ import logo from "../../logo.png";
 import { Outlet } from "react-router-dom";
 import { useItems } from "../contexts/ItemsProvider";
 import { useCallback, useState } from "react";
-import { Dot } from "../types";
+import { Suit } from "../types";
 
 export const SYMBOL_SIZE = 18;
 
@@ -14,8 +14,7 @@ export const Header: React.FC = () => {
   const onSubmitNewItem = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
-      console.log(value);
-      addItem(value, Dot.Default);
+      addItem(value, Suit.Spade);
       setValue("");
     },
     [value, addItem]
