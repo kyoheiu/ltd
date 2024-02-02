@@ -1,9 +1,24 @@
 import "../App.css";
 import { Item } from "../types";
 import { useItems } from "../contexts/ItemsProvider";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export const Global = () => {
-  const { state } = useItems();
+  const navigate = useNavigate();
+  const { state, setState, readItem } = useItems();
+
+  useEffect(() => {
+    const _readItem = async () => {
+      const items = await readItem();
+      if (!items) {
+        navigate("/login");
+      } else {
+        setState(() => items);
+      }
+    };
+    _readItem();
+  }, []);
 
   if (!state) return null;
   return (

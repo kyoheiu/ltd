@@ -1,16 +1,12 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useState } from "react";
 import { Dot, ItemsWithModifiedTime } from "../types";
 import React from "react";
 import { ulid } from "ulid";
 
 type CtxValue = {
   state: ItemsWithModifiedTime | null;
+  setState: React.Dispatch<React.SetStateAction<ItemsWithModifiedTime | null>>;
+  readItem: () => Promise<ItemsWithModifiedTime | null>;
   addItem: (value: string, dot: Dot) => Promise<void>;
 };
 
@@ -18,65 +14,58 @@ const ItemsContext = createContext<CtxValue | null>(null);
 export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = useState<ItemsWithModifiedTime | null>(null);
 
-  // const readItem = async () => {
-  //   console.log("read");
-  //   const res = await fetch("/api/item");
-  //   if (!res.ok) {
-  //     console.log("Not verified: login form will appear.");
-  //     navigate("/login");
-  //   } else {
-  //     const j: ItemsWithModifiedTime = await res.json();
-  //     setState(() => j);
-  //   }
-  // };
-
-  useEffect(() => {
-    _readItem();
-  }, []);
-
-  const _readItem = async () => {
-    const items = [
-      {
-        id: "1",
-        value: "milk",
-        todo: true,
-        dot: 0,
-        showModal: false,
-      },
-      {
-        id: "2",
-        value: "orange",
-        todo: true,
-        dot: 0,
-        showModal: false,
-      },
-      {
-        id: "3",
-        value: "banana",
-        todo: true,
-        dot: 0,
-        showModal: false,
-      },
-      {
-        id: "4",
-        value: "apple",
-        todo: true,
-        dot: 0,
-        showModal: false,
-      },
-      {
-        id: "5",
-        value: "watermelon",
-        todo: true,
-        dot: 0,
-        showModal: false,
-      },
-    ];
-    setState({
-      items,
-      modified: 0,
-    });
+  const readItem = async (): Promise<ItemsWithModifiedTime | null> => {
+    const res = await fetch("/api/item");
+    if (!res.ok) {
+      return null;
+    } else {
+      return await res.json();
+    }
   };
+
+  // const _readItem = async () => {
+  //   const items = [
+  //     {
+  //       id: "1",
+  //       value: "milk",
+  //       todo: true,
+  //       dot: 0,
+  //       showModal: false,
+  //     },
+  //     {
+  //       id: "2",
+  //       value: "orange",
+  //       todo: true,
+  //       dot: 0,
+  //       showModal: false,
+  //     },
+  //     {
+  //       id: "3",
+  //       value: "banana",
+  //       todo: true,
+  //       dot: 0,
+  //       showModal: false,
+  //     },
+  //     {
+  //       id: "4",
+  //       value: "apple",
+  //       todo: true,
+  //       dot: 0,
+  //       showModal: false,
+  //     },
+  //     {
+  //       id: "5",
+  //       value: "watermelon",
+  //       todo: true,
+  //       dot: 0,
+  //       showModal: false,
+  //     },
+  //   ];
+  //   setState({
+  //     items,
+  //     modified: 0,
+  //   });
+  // };
 
   const addItem = useCallback(async (value: string, dot: Dot) => {
     const id = ulid();
@@ -105,6 +94,8 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
 
   const ctxValue: CtxValue = {
     state,
+    setState,
+    readItem,
     addItem,
   };
 
