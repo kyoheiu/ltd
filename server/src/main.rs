@@ -1,7 +1,7 @@
 mod error;
 
 use axum::debug_handler;
-use axum::extract::{Json, Query, State};
+use axum::extract::{Json, State};
 use axum::http::HeaderMap;
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::Form;
@@ -12,7 +12,7 @@ use axum::{
 use error::Error;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, VecDeque};
+use std::collections::VecDeque;
 use std::env;
 use std::time::UNIX_EPOCH;
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
@@ -94,10 +94,13 @@ async fn main() -> Result<(), Error> {
     // build our application with a single route
     let app = Router::new()
         .route("/health", get(health))
-        .route("/api/item", get(read_item).post(update_item))
-        .route("/api/item/add", post(add_item))
         .route("/api/check", get(check_update))
+        .route("/api/item", get(read_item).post(add_item))
+        .route("/api/item/rename", post(rename_item))
+        .route("/api/item/todo", post(toggle_todo))
+        .route("/api/item/suit", post(toggle_suit))
         .route("/api/item/sort", post(sort_item))
+        .route("/api/item/delete_archived", post(delete_archived))
         .route("/api/ldaplogin", post(ldaplogin))
         .route("/api/logout", post(logout))
         .route("/api/post", post(post_item))
@@ -149,80 +152,6 @@ async fn check_update(
 }
 
 #[debug_handler]
-async fn update_item(
-    cookies: Cookies,
-    State(core): State<Core>,
-    Query(params): Query<BTreeMap<String, String>>,
-) -> Result<impl IntoResponse, Error> {
-    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
-        let ou = to_ou(&name)?;
-        let mut items = read_json(&ou)?;
-
-        if params.contains_key("add") {
-            let id = params.get("id").unwrap();
-            let value = params.get("value").unwrap();
-            let suit: usize = params.get("suit").unwrap().parse()?;
-            items.items.push_front(Item {
-                id: id.to_string(),
-                value: value.to_string(),
-                todo: true,
-                suit,
-            });
-            info!("Added: id {} value {} suit {}", id, value, suit);
-        } else if params.contains_key("toggle_todo") {
-            let id = params.get("id").unwrap();
-            if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
-                if params.get("toggle_todo").unwrap() == "0" {
-                    target.todo = false;
-                    info!("Archived: {}", target.value);
-                } else {
-                    target.todo = true;
-                    info!("Unarchived: {}", target.value);
-                }
-            } else {
-                warn!("ID not found.");
-            }
-        } else if params.contains_key("toggle_suit") {
-            let id = params.get("id").unwrap();
-            if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
-                match params.get("toggle_suit").unwrap().as_str() {
-                    "1" => target.suit = 1,
-                    "2" => target.suit = 2,
-                    "3" => target.suit = 3,
-                    _ => target.suit = 0,
-                }
-                info!("Toggled suit color: {}", target.value);
-            } else {
-                warn!("ID not found.");
-            }
-        } else if params.contains_key("rename") {
-            let id = params.get("id").unwrap();
-            let value = params.get("value").unwrap();
-            if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
-                info!("Renamed: {} -> {}", target.value, value);
-                target.value = value.to_string();
-            } else {
-                warn!("ID not found.");
-            }
-            save_json(items, &ou)?;
-            return Ok(Redirect::to("/").into_response());
-        } else if params.contains_key("delete_archived") {
-            let filtered: VecDeque<Item> =
-                items.items.clone().into_iter().filter(|x| x.todo).collect();
-            items.items = filtered;
-            info!("Deleted Archived items.");
-            save_json(items, &ou)?;
-            return Ok(Redirect::to("/").into_response());
-        }
-
-        let modified = save_json(items, &ou)?;
-        Ok(Json(ModifiedTime { modified }).into_response())
-    } else {
-        Err(Error::NotVerified)
-    }
-}
-
-#[debug_handler]
 async fn add_item(
     cookies: Cookies,
     State(core): State<Core>,
@@ -241,6 +170,103 @@ async fn add_item(
         let modified: u128 = save_json(items, &ou)?;
         info!("Added: {}", payload.value);
         Ok(Json(ModifiedTime { modified }))
+    } else {
+        Err(Error::NotVerified)
+    }
+}
+
+#[debug_handler]
+async fn toggle_todo(
+    cookies: Cookies,
+    State(core): State<Core>,
+    Json(payload): Json<Item>,
+) -> Result<impl IntoResponse, Error> {
+    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
+        let ou = to_ou(&name)?;
+        let mut items = read_json(&ou)?;
+        if let Some(target) = items.items.iter_mut().find(|x| x.id == payload.id) {
+            match payload.todo {
+                true => {
+                    target.todo = false;
+                    info!("Archived: {}", target.value);
+                }
+                false => {
+                    target.todo = true;
+                    info!("Unarchived: {}", target.value);
+                }
+            }
+        } else {
+            return Err(Error::MissingId);
+        }
+        let modified = save_json(items, &ou)?;
+        Ok(Json(ModifiedTime { modified }).into_response())
+    } else {
+        Err(Error::NotVerified)
+    }
+}
+
+#[debug_handler]
+async fn toggle_suit(
+    cookies: Cookies,
+    State(core): State<Core>,
+    Json(payload): Json<Item>,
+) -> Result<impl IntoResponse, Error> {
+    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
+        let ou = to_ou(&name)?;
+        let mut items = read_json(&ou)?;
+        if let Some(target) = items.items.iter_mut().find(|x| x.id == payload.id) {
+            match payload.suit {
+                1 => target.suit = 1,
+                2 => target.suit = 2,
+                3 => target.suit = 3,
+                _ => target.suit = 0,
+            }
+            info!("Toggled suit: {}", target.value);
+        } else {
+            return Err(Error::MissingId);
+        }
+        let modified = save_json(items, &ou)?;
+        Ok(Json(ModifiedTime { modified }).into_response())
+    } else {
+        Err(Error::NotVerified)
+    }
+}
+
+#[debug_handler]
+async fn rename_item(
+    cookies: Cookies,
+    State(core): State<Core>,
+    Json(payload): Json<Item>,
+) -> Result<impl IntoResponse, Error> {
+    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
+        let ou = to_ou(&name)?;
+        let mut items = read_json(&ou)?;
+        if let Some(target) = items.items.iter_mut().find(|x| x.id == payload.id) {
+            target.value = payload.value.clone();
+            info!("Rename: {} -> {}", target.value, payload.value);
+        } else {
+            return Err(Error::MissingId);
+        }
+        let modified = save_json(items, &ou)?;
+        Ok(Json(ModifiedTime { modified }).into_response())
+    } else {
+        Err(Error::NotVerified)
+    }
+}
+
+#[debug_handler]
+async fn delete_archived(
+    cookies: Cookies,
+    State(core): State<Core>,
+) -> Result<impl IntoResponse, Error> {
+    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
+        let ou = to_ou(&name)?;
+        let mut items = read_json(&ou)?;
+        let filtered: VecDeque<Item> = items.items.clone().into_iter().filter(|x| x.todo).collect();
+        items.items = filtered;
+        info!("Deleted Archived items.");
+        let modified = save_json(items, &ou)?;
+        Ok(Json(ModifiedTime { modified }).into_response())
     } else {
         Err(Error::NotVerified)
     }
