@@ -11,6 +11,10 @@ export type ItemsWithModifiedTime = {
   modified: number;
 }
 
+export type ModifiedTime = {
+  modified: number;
+}
+
 export enum Category {
   All,
   Default,

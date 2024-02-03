@@ -1,14 +1,15 @@
 import { Item } from "../types";
-import { Suits } from "./Dots";
+import { Suits } from "./Suits";
+import { CheckBox } from "./CheckBox";
 
 export const ItemCmp: React.FC<{
   item: Item;
 }> = ({ item }: { item: Item }) => {
   return (
     <li>
-      <input type="checkbox" />
+      <CheckBox item={item} />
       {item.value}
-      <Suits suit={item.suit} />
+      <Suits item={item} />
     </li>
   );
 };

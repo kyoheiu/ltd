@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useState } from "react";
-import { Suit, ItemsWithModifiedTime } from "../types";
+import { Suit, ItemsWithModifiedTime, Item, ModifiedTime } from "../types";
 import React from "react";
 import { ulid } from "ulid";
 
@@ -8,6 +8,10 @@ type CtxValue = {
   setState: React.Dispatch<React.SetStateAction<ItemsWithModifiedTime | null>>;
   readItem: () => Promise<ItemsWithModifiedTime | null>;
   addItem: (value: string, dot: Suit) => Promise<void>;
+  renameItem: (item: Item) => Promise<void>;
+  toggleTodo: (item: Item) => Promise<void>;
+  toggleSuit: (item: Item) => Promise<void>;
+  deleteArchived: () => Promise<void>;
 };
 
 const ItemsContext = createContext<CtxValue | null>(null);
@@ -75,7 +79,7 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
       todo: true,
       suit,
     };
-    const res = await fetch(`/api/item/add`, {
+    const res = await fetch(`/api/item`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -85,9 +89,109 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
     if (!res.ok) {
       console.error("Failed to add new item.");
     } else {
+      const j: ModifiedTime = await res.json();
       setState((prev) => ({
         items: [{ ...newItem, showModal: false }, ...(prev ? prev.items : [])],
-        modified: 0,
+        modified: j.modified,
+      }));
+    }
+  }, []);
+
+  const renameItem = useCallback(async (item: Item) => {
+    const newItem = {
+      ...item,
+      value: item.value,
+    };
+    const res = await fetch(`/api/item/rename`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newItem),
+    });
+    if (!res.ok) {
+      console.error("Failed.");
+    } else {
+      const j: ModifiedTime = await res.json();
+      setState((prev) => ({
+        items: prev
+          ? prev.items.map((el) =>
+              el.id === item.id ? { ...el, value: item.value } : el
+            )
+          : [],
+        modified: j.modified,
+      }));
+    }
+  }, []);
+
+  const toggleTodo = useCallback(async (item: Item) => {
+    const newItem = {
+      ...item,
+      todo: !item.todo,
+    };
+    const res = await fetch(`/api/item/todo`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newItem),
+    });
+    if (!res.ok) {
+      console.error("Failed.");
+    } else {
+      const j: ModifiedTime = await res.json();
+      setState((prev) => ({
+        items: prev
+          ? prev.items.map((el) =>
+              el.id === item.id ? { ...el, todo: !el.todo } : el
+            )
+          : [],
+        modified: j.modified,
+      }));
+    }
+  }, []);
+
+  const toggleSuit = useCallback(async (item: Item) => {
+    const newItem = {
+      ...item,
+      suit: item.suit === 3 ? 0 : item.suit + 1,
+    };
+    const res = await fetch(`/api/item/suit`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newItem),
+    });
+    if (!res.ok) {
+      console.error("Failed.");
+    } else {
+      const j: ModifiedTime = await res.json();
+      setState((prev) => ({
+        items: prev
+          ? prev.items.map((el) =>
+              el.id === item.id ? { ...el, suit: (el.suit + 1) % 4 } : el
+            )
+          : [],
+        modified: j.modified,
+      }));
+    }
+  }, []);
+
+  const deleteArchived = useCallback(async () => {
+    const res = await fetch(`/api/item/delete_archived`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (!res.ok) {
+      console.error("Failed.");
+    } else {
+      const j: ModifiedTime = await res.json();
+      setState((prev) => ({
+        items: prev ? prev.items.filter((el) => el.todo) : [],
+        modified: j.modified,
       }));
     }
   }, []);
@@ -97,6 +201,10 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
     setState,
     readItem,
     addItem,
+    renameItem,
+    toggleTodo,
+    toggleSuit,
+    deleteArchived,
   };
 
   return (
