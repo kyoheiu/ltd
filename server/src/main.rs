@@ -186,11 +186,11 @@ async fn toggle_todo(
         let mut items = read_json(&ou)?;
         if let Some(target) = items.items.iter_mut().find(|x| x.id == payload.id) {
             match payload.todo {
-                true => {
+                false => {
                     target.todo = false;
                     info!("Archived: {}", target.value);
                 }
-                false => {
+                true => {
                     target.todo = true;
                     info!("Unarchived: {}", target.value);
                 }
@@ -215,12 +215,7 @@ async fn toggle_suit(
         let ou = to_ou(&name)?;
         let mut items = read_json(&ou)?;
         if let Some(target) = items.items.iter_mut().find(|x| x.id == payload.id) {
-            match payload.suit {
-                1 => target.suit = 1,
-                2 => target.suit = 2,
-                3 => target.suit = 3,
-                _ => target.suit = 0,
-            }
+            target.suit = payload.suit;
             info!("Toggled suit: {}", target.value);
         } else {
             return Err(Error::MissingId);
