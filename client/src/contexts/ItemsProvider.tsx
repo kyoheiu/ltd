@@ -11,6 +11,7 @@ import { ulid } from "ulid";
 
 type CtxValue = {
   state: ItemsWithModifiedTime | null;
+  setState: React.Dispatch<React.SetStateAction<ItemsWithModifiedTime | null>>;
   readItem: () => Promise<ItemsWithModifiedTime | null>;
   addItem: (value: string, dot: Suit) => Promise<void>;
   renameItem: (item: Item) => Promise<void>;
@@ -214,6 +215,7 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
 
   const ctxValue: CtxValue = {
     state,
+    setState,
     readItem,
     addItem,
     renameItem,
