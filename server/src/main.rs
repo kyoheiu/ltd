@@ -130,9 +130,10 @@ async fn read_item(cookies: Cookies, State(core): State<Core>) -> Result<impl In
         Ok(Json(ItemsWithModifiedTime {
             items: items.items,
             modified,
-        }))
+        })
+        .into_response())
     } else {
-        Err(Error::NotVerified)
+        Ok(Redirect::temporary("/login").into_response())
     }
 }
 
