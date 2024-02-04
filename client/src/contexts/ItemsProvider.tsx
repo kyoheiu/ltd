@@ -1,11 +1,16 @@
-import { createContext, useCallback, useContext, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Suit, ItemsWithModifiedTime, Item, ModifiedTime } from "../types";
 import React from "react";
 import { ulid } from "ulid";
 
 type CtxValue = {
   state: ItemsWithModifiedTime | null;
-  setState: React.Dispatch<React.SetStateAction<ItemsWithModifiedTime | null>>;
   readItem: () => Promise<ItemsWithModifiedTime | null>;
   addItem: (value: string, dot: Suit) => Promise<void>;
   renameItem: (item: Item) => Promise<void>;
@@ -18,14 +23,25 @@ const ItemsContext = createContext<CtxValue | null>(null);
 export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = useState<ItemsWithModifiedTime | null>(null);
 
-  const readItem = async (): Promise<ItemsWithModifiedTime | null> => {
-    const res = await fetch("/api/item");
-    if (!res.ok) {
-      return null;
-    } else {
-      return await res.json();
-    }
-  };
+  const readItem =
+    useCallback(async (): Promise<ItemsWithModifiedTime | null> => {
+      const res = await fetch("/api/item");
+      if (!res.ok) {
+        return null;
+      } else {
+        return await res.json();
+      }
+    }, []);
+
+  useEffect(() => {
+    const _readItem = async () => {
+      const items = await readItem();
+      if (items) {
+        setState(() => items);
+      }
+    };
+    _readItem();
+  }, []);
 
   // const _readItem = async () => {
   //   const items = [
@@ -198,7 +214,6 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
 
   const ctxValue: CtxValue = {
     state,
-    setState,
     readItem,
     addItem,
     renameItem,

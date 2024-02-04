@@ -17,11 +17,11 @@ export type ModifiedTime = {
 
 export enum Category {
   All,
-  Default,
   Spade,
   Heart,
   Club,
   Diamond,
+  Archived
 }
 
 export enum Suit {
