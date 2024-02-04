@@ -34,7 +34,7 @@ export const Suits: React.FC<{ item: Item }> = ({ item }: { item: Item }) => {
   return (
     <button onClick={onClickSuit}>
       <div style={{ color: stylesAll[item.suit + 1].color }}>
-        {stylesAll[item.suit].sign}
+        {stylesAll[item.suit + 1].sign}
       </div>
     </button>
   );
