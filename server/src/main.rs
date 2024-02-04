@@ -317,10 +317,7 @@ async fn sort_item(
             &ou,
         )?;
         info!("Sorted items saved.");
-        Ok(Json(ItemsWithModifiedTime {
-            items: todo,
-            modified,
-        }))
+        Ok(Json(ModifiedTime { modified }))
     } else {
         Err(Error::NotVerified)
     }

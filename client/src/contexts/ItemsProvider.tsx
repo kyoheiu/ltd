@@ -17,6 +17,7 @@ type CtxValue = {
   renameItem: (item: Item) => Promise<void>;
   toggleTodo: (item: Item) => Promise<void>;
   toggleSuit: (item: Item) => Promise<void>;
+  sortItem: (oldIndex: number, newIndex: number) => Promise<void>;
   deleteArchived: () => Promise<void>;
 };
 
@@ -195,6 +196,32 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
+  const sortItem = useCallback(async (oldIndex: number, newIndex: number) => {
+    console.log(oldIndex, newIndex);
+    const res = await fetch(`/api/item/sort`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        old: oldIndex,
+        new: newIndex,
+      }),
+    });
+    if (!res.ok) {
+      console.error("Failed.");
+    } else {
+      const j: ModifiedTime = await res.json();
+      let newItems = [...state!.items];
+      const toBeMoved = newItems.splice(oldIndex, 1);
+      newItems.splice(newIndex, 0, toBeMoved[0]);
+      setState(() => ({
+        items: newItems,
+        modified: j.modified,
+      }));
+    }
+  }, []);
+
   const deleteArchived = useCallback(async () => {
     const res = await fetch(`/api/item/delete_archived`, {
       method: "POST",
@@ -221,6 +248,7 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
     renameItem,
     toggleTodo,
     toggleSuit,
+    sortItem,
     deleteArchived,
   };
 

@@ -2,38 +2,70 @@ import "../App.css";
 import { Category, Item } from "../types";
 import { useItems } from "../contexts/ItemsProvider";
 import { ItemCmp } from "../components/ItemCmp";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Nav } from "../components/Nav";
+import { ReactSortable, SortableEvent } from "react-sortablejs";
 
 export const Global = () => {
-  const { state } = useItems();
+  const { state, sortItem } = useItems();
   const [category, setCategory] = useState(Category.All);
+  const [itemsFiltered, setItemsFiltered] = useState<Item[] | undefined>(
+    state?.items.filter((item) => item.todo)
+  );
 
-  const itemsFiltered: Item[] | undefined = useMemo(() => {
+  useEffect(() => {
     switch (category) {
       case Category.All:
-        return state?.items.filter((item) => item.todo);
+        setItemsFiltered(state?.items.filter((item) => item.todo));
+        break;
       case Category.Spade:
-        return state?.items.filter((item) => item.todo && item.suit === 0);
+        setItemsFiltered(
+          state?.items.filter((item) => item.todo && item.suit === 0)
+        );
+        break;
       case Category.Heart:
-        return state?.items.filter((item) => item.todo && item.suit === 1);
+        setItemsFiltered(
+          state?.items.filter((item) => item.todo && item.suit === 1)
+        );
+        break;
       case Category.Club:
-        return state?.items.filter((item) => item.todo && item.suit === 2);
+        setItemsFiltered(
+          state?.items.filter((item) => item.todo && item.suit === 2)
+        );
+        break;
       case Category.Diamond:
-        return state?.items.filter((item) => item.todo && item.suit === 3);
+        setItemsFiltered(
+          state?.items.filter((item) => item.todo && item.suit === 3)
+        );
+        break;
       case Category.Archived:
-        return state?.items.filter((item) => !item.todo);
-      default:
-        return [];
+        setItemsFiltered(state?.items.filter((item) => !item.todo));
+        break;
     }
   }, [state, category]);
+
+  const onSort = async (e: SortableEvent) => {
+    if (e.oldIndex === undefined || e.newIndex === undefined) return;
+    await sortItem(e.oldIndex, e.newIndex);
+  };
 
   if (!itemsFiltered) return null;
   return (
     <>
       <Nav setCategory={setCategory} />
-      {itemsFiltered &&
-        itemsFiltered.map((item: Item) => <ItemCmp item={item} />)}
+      {category === Category.All && itemsFiltered ? (
+        <ReactSortable
+          list={itemsFiltered}
+          setList={setItemsFiltered}
+          onEnd={onSort}
+        >
+          {itemsFiltered.map((item: Item) => (
+            <ItemCmp key={item.id} item={item} />
+          ))}
+        </ReactSortable>
+      ) : (
+        itemsFiltered.map((item: Item) => <ItemCmp item={item} />)
+      )}
     </>
   );
 };
