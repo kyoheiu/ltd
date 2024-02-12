@@ -1,0 +1,26 @@
+.headerWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.topWrapper {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.logo {
+  width: 32px;
+}
+
+.logOut {
+  color: var(--main-fg-color);
+}
+
+.input {
+  border-radius: 8px;
+  padding: 3px 6px;
+}

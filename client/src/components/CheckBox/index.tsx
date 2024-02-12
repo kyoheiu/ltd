@@ -1,6 +1,6 @@
 import { useCallback } from "react";
-import { useItems } from "../contexts/ItemsProvider";
-import { Item } from "../types";
+import { useItems } from "../../contexts/ItemsProvider";
+import { Item } from "../../types";
 
 export const CheckBox: React.FC<{ item: Item }> = ({
   item,

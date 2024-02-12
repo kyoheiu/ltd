@@ -8,10 +8,12 @@ import {
 import { Suit, ItemsWithModifiedTime, Item, ModifiedTime } from "../types";
 import React from "react";
 import { ulid } from "ulid";
+import { useNavigate } from "react-router-dom";
 
 type CtxValue = {
   state: ItemsWithModifiedTime | null;
   setState: React.Dispatch<React.SetStateAction<ItemsWithModifiedTime | null>>;
+  isLoadedItem: boolean;
   readItem: () => Promise<ItemsWithModifiedTime | null>;
   addItem: (value: string, dot: Suit) => Promise<void>;
   renameItem: (item: Item) => Promise<void>;
@@ -24,70 +26,73 @@ type CtxValue = {
 const ItemsContext = createContext<CtxValue | null>(null);
 export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = useState<ItemsWithModifiedTime | null>(null);
+  const [isLoadedItem, setIsLoadedItem] = useState(false);
 
-  const readItem =
-    useCallback(async (): Promise<ItemsWithModifiedTime | null> => {
-      const res = await fetch("/api/item");
-      if (!res.ok) {
-        return null;
-      } else {
-        return await res.json();
-      }
-    }, []);
+  // const readItem =
+  //   useCallback(async (): Promise<ItemsWithModifiedTime | null> => {
+  //     const res = await fetch("/api/item");
+  //     if (!res.ok) {
+  //       return null;
+  //     } else {
+  //       return await res.json();
+  //     }
+  //   }, []);
 
   useEffect(() => {
     const _readItem = async () => {
       const items = await readItem();
       if (items) {
         setState(() => items);
+      } else {
+        setState(() => null);
       }
     };
     _readItem();
+    setIsLoadedItem(true);
   }, []);
 
-  // const _readItem = async () => {
-  //   const items = [
-  //     {
-  //       id: "1",
-  //       value: "milk",
-  //       todo: true,
-  //       dot: 0,
-  //       showModal: false,
-  //     },
-  //     {
-  //       id: "2",
-  //       value: "orange",
-  //       todo: true,
-  //       dot: 0,
-  //       showModal: false,
-  //     },
-  //     {
-  //       id: "3",
-  //       value: "banana",
-  //       todo: true,
-  //       dot: 0,
-  //       showModal: false,
-  //     },
-  //     {
-  //       id: "4",
-  //       value: "apple",
-  //       todo: true,
-  //       dot: 0,
-  //       showModal: false,
-  //     },
-  //     {
-  //       id: "5",
-  //       value: "watermelon",
-  //       todo: true,
-  //       dot: 0,
-  //       showModal: false,
-  //     },
-  //   ];
-  //   setState({
-  //     items,
-  //     modified: 0,
-  //   });
-  // };
+  const readItem = async (): Promise<ItemsWithModifiedTime> => {
+    return {
+      items: [
+        {
+          id: "1",
+          value: "milk",
+          todo: true,
+          suit: 0,
+          showModal: false,
+        },
+        {
+          id: "2",
+          value: "orange",
+          todo: true,
+          suit: 0,
+          showModal: false,
+        },
+        {
+          id: "3",
+          value: "banana",
+          todo: true,
+          suit: 0,
+          showModal: false,
+        },
+        {
+          id: "4",
+          value: "apple",
+          todo: true,
+          suit: 0,
+          showModal: false,
+        },
+        {
+          id: "5",
+          value: "watermelon",
+          todo: true,
+          suit: 0,
+          showModal: false,
+        },
+      ],
+      modified: 0,
+    };
+  };
 
   const addItem = useCallback(async (value: string, suit: Suit) => {
     const id = ulid();
@@ -243,6 +248,7 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
   const ctxValue: CtxValue = {
     state,
     setState,
+    isLoadedItem,
     readItem,
     addItem,
     renameItem,

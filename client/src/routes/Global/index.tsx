@@ -1,17 +1,20 @@
-import "../App.css";
-import { Category, Item } from "../types";
-import { useItems } from "../contexts/ItemsProvider";
-import { ItemCmp } from "../components/ItemCmp";
+import "../../App.css";
+import { Category, Item } from "../../types";
+import { useItems } from "../../contexts/ItemsProvider";
+import { ItemCmp } from "../../components/ItemCmp";
 import { useEffect, useState } from "react";
-import { Nav } from "../components/Nav";
+import { Nav } from "../../components/Nav";
 import { ReactSortable, SortableEvent } from "react-sortablejs";
+import { useNavigate } from "react-router-dom";
+import styles from "./index.module.css";
 
 export const Global = () => {
-  const { state, sortItem } = useItems();
+  const { state, isLoadedItem, sortItem } = useItems();
   const [category, setCategory] = useState(Category.All);
   const [itemsFiltered, setItemsFiltered] = useState<Item[] | undefined>(
     state?.items.filter((item) => item.todo)
   );
+  const navigate = useNavigate();
 
   useEffect(() => {
     switch (category) {
@@ -49,15 +52,20 @@ export const Global = () => {
     await sortItem(e.oldIndex, e.newIndex);
   };
 
+  // if (isLoadedItem && !state) {
+  //   navigate("/login");
+  // }
   if (!itemsFiltered) return null;
   return (
-    <>
+    <div className={styles.globalWrapper}>
       <Nav setCategory={setCategory} />
-      {category === Category.All && itemsFiltered ? (
+      {category === Category.All ? (
         <ReactSortable
           list={itemsFiltered}
           setList={setItemsFiltered}
           onEnd={onSort}
+          delayOnTouchOnly={true}
+          delay={500}
         >
           {itemsFiltered.map((item: Item) => (
             <ItemCmp key={item.id} item={item} />
@@ -66,6 +74,6 @@ export const Global = () => {
       ) : (
         itemsFiltered.map((item: Item) => <ItemCmp item={item} />)
       )}
-    </>
+    </div>
   );
 };

@@ -1,0 +1,11 @@
+.itemWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: auto;
+}
+
+.checkBoxAndNameWrapper {
+  display: flex;
+  gap: 4px;
+}

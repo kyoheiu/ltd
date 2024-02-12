@@ -1,0 +1,7 @@
+.navWrapper {
+  display: flex;
+  justify-content: space-around;
+  gap: 6px;
+  margin: auto;
+  margin-bottom: 12px;
+}

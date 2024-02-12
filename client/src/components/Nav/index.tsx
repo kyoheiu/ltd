@@ -1,5 +1,6 @@
-import { Category } from "../types";
-import { stylesAll } from "./Suits";
+import { Category } from "../../types";
+import { stylesAll } from "../Suits";
+import styles from "./index.module.css";
 
 export const Nav = ({
   setCategory,
@@ -11,7 +12,7 @@ export const Nav = ({
   };
 
   return (
-    <div>
+    <div className={styles.navWrapper}>
       {stylesAll.map((style, index) => (
         <button
           onClick={(e) => onClickNav(e, index)}

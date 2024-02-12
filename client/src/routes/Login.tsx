@@ -1,9 +1,15 @@
 import { IconLogin } from "@tabler/icons-react";
 import logo from "../../logo.png";
+import { useItems } from "../contexts/ItemsProvider";
+import { useNavigate } from "react-router-dom";
 
 const SYMBOL_SIZE = 18;
 
 export const Login = () => {
+  const { state, isLoadedItem } = useItems();
+  const navigate = useNavigate();
+
+  if (isLoadedItem && !!state) navigate("/");
   return (
     <div>
       <img src={logo} alt="ltd" />
