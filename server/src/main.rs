@@ -133,7 +133,7 @@ async fn read_item(cookies: Cookies, State(core): State<Core>) -> Result<impl In
         })
         .into_response())
     } else {
-        Ok(Redirect::temporary("/login").into_response())
+        Err(Error::NotVerified)
     }
 }
 
