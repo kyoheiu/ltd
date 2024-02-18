@@ -3,8 +3,10 @@ import { stylesAll } from "../Suits";
 import styles from "./index.module.css";
 
 export const Nav = ({
+  category,
   setCategory,
 }: {
+  category: Category;
   setCategory: React.Dispatch<React.SetStateAction<Category>>;
 }) => {
   const onClickNav = (_e: React.MouseEvent, index: number) => {
@@ -17,7 +19,10 @@ export const Nav = ({
         <button
           onClick={(e) => onClickNav(e, index)}
           key={`nav-${index}`}
-          style={{ color: style.color }}
+          style={{
+            color: style.color,
+            borderBottom: category === index ? "1px solid" : "none",
+          }}
         >
           {style.sign}
         </button>

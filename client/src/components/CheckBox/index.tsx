@@ -1,6 +1,8 @@
 import { useCallback } from "react";
 import { useItems } from "../../contexts/ItemsProvider";
 import { Item } from "../../types";
+import { IconSquare, IconSquareCheck } from "@tabler/icons-react";
+import styles from "./index.module.css";
 
 export const CheckBox: React.FC<{ item: Item }> = ({
   item,
@@ -14,7 +16,13 @@ export const CheckBox: React.FC<{ item: Item }> = ({
     [item]
   );
 
-  return (
-    <input type="checkbox" checked={!item.todo} onClick={onClickCheckBox} />
+  return item.todo ? (
+    <button onClick={onClickCheckBox}>
+      <IconSquare className={styles.checkBox} />
+    </button>
+  ) : (
+    <button onClick={onClickCheckBox}>
+      <IconSquareCheck className={styles.checkBox} />
+    </button>
   );
 };

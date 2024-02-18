@@ -1,7 +1,6 @@
 :root {
   --main-bg-color: #0f172a;
   --main-fg-color: #f8fafc;
-  --screen-width: 500px;
 }
 
 body {
@@ -11,19 +10,11 @@ body {
 }
 
 .container {
-  width: var(--screen-width);
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: auto;
   margin-top: 10px;
-  width: var(--screen-width);
-}
-
-@media only screen and (max-width: 640px) {
-  .container {
-    width: 95%;
-  }
 }
 
 button {

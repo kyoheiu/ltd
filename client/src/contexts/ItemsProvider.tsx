@@ -13,6 +13,8 @@ import { useNavigate } from "react-router-dom";
 type CtxValue = {
   state: ItemsWithModifiedTime | null;
   setState: React.Dispatch<React.SetStateAction<ItemsWithModifiedTime | null>>;
+  selectedItem: Item | null;
+  setSelectedItem: React.Dispatch<React.SetStateAction<Item | null>>;
   isLoadedItem: boolean;
   readItem: () => Promise<ItemsWithModifiedTime | null>;
   addItem: (value: string, dot: Suit) => Promise<void>;
@@ -27,6 +29,7 @@ const ItemsContext = createContext<CtxValue | null>(null);
 export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = useState<ItemsWithModifiedTime | null>(null);
   const [isLoadedItem, setIsLoadedItem] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
   // const readItem =
   //   useCallback(async (): Promise<ItemsWithModifiedTime | null> => {
@@ -59,35 +62,30 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
           value: "milk",
           todo: true,
           suit: 0,
-          showModal: false,
         },
         {
           id: "2",
           value: "orange",
           todo: true,
-          suit: 0,
-          showModal: false,
+          suit: 1,
         },
         {
           id: "3",
           value: "banana",
           todo: true,
-          suit: 0,
-          showModal: false,
+          suit: 2,
         },
         {
           id: "4",
           value: "apple",
           todo: true,
-          suit: 0,
-          showModal: false,
+          suit: 3,
         },
         {
           id: "5",
           value: "watermelon",
           todo: true,
           suit: 0,
-          showModal: false,
         },
       ],
       modified: 0,
@@ -248,6 +246,8 @@ export const ItemsProvider = ({ children }: { children: React.ReactNode }) => {
   const ctxValue: CtxValue = {
     state,
     setState,
+    selectedItem,
+    setSelectedItem,
     isLoadedItem,
     readItem,
     addItem,

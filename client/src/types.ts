@@ -3,7 +3,6 @@ export type Item = {
   value: string;
   todo: boolean;
   suit: number;
-  showModal: boolean;
 }
 
 export type ItemsWithModifiedTime = {

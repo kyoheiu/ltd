@@ -3,6 +3,9 @@
   align-items: center;
   justify-content: space-between;
   margin: auto;
+  margin-bottom: 15px;
+  border-bottom: 1px solid;
+  padding-bottom: 8px;
 }
 
 .checkBoxAndNameWrapper {
