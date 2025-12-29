@@ -26,9 +26,12 @@ export const toggleArchived = async (id: string) => {
         archived: archived,
       };
     });
-    const res = await fetch(`/api/item?toggle_todo=1&id=${id}`, {
-      method: "POST",
-    });
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/item?toggle_todo=1&id=${id}`,
+      {
+        method: "POST",
+      }
+    );
     if (!res.ok) {
       archived.splice(i, 0, target);
       items.shift();
@@ -94,9 +97,12 @@ export const toggleArchived = async (id: string) => {
       return;
     }
 
-    const res = await fetch(`/api/item?toggle_todo=0&id=${id}`, {
-      method: "POST",
-    });
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/item?toggle_todo=0&id=${id}`,
+      {
+        method: "POST",
+      }
+    );
     if (!res.ok) {
       items.splice(i, 0, target2);
       archived.shift();
@@ -140,7 +146,9 @@ export const changeColor = async (id: string) => {
     });
 
     const res = await fetch(
-      `/api/item?toggle_dot=${archived[i].dot}&id=${id}`,
+      `${import.meta.env.VITE_API_URL}/item?toggle_dot=${
+        archived[i].dot
+      }&id=${id}`,
       {
         method: "POST",
       }
@@ -184,9 +192,14 @@ export const changeColor = async (id: string) => {
       };
     });
 
-    const res = await fetch(`/api/item?toggle_dot=${items[i].dot}&id=${id}`, {
-      method: "POST",
-    });
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/item?toggle_dot=${
+        items[i].dot
+      }&id=${id}`,
+      {
+        method: "POST",
+      }
+    );
     if (!res.ok) {
       if (items[i].dot === 0) {
         items[i].dot = 3;

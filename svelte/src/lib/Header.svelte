@@ -27,7 +27,9 @@
     });
 
     const res = await fetch(
-      `/api/item?add=true&id=${id}&value=${currentState.newItem}&dot=${dot}`,
+      `${import.meta.env.VITE_API_URL}/item?add=true&id=${id}&value=${
+        currentState.newItem
+      }&dot=${dot}`,
       {
         method: "POST",
       }
@@ -44,7 +46,7 @@
     });
   };
   const logout = async () => {
-    const res = await fetch("/api/logout", {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/logout`, {
       method: "POST",
     });
     window.location.reload();

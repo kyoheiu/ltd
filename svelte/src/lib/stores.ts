@@ -23,7 +23,7 @@ export class State {
 export const state: Writable<State> = writable(new State());
 
 export const readItem = async () => {
-  const res = await fetch("/api/item");
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/item`);
   if (!res.ok) {
     console.log("Not verified: login form will appear.");
     state.update(() => {

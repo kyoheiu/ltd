@@ -65,6 +65,23 @@
       easing: "cubic-bezier(1, 0, 0, 1)",
       onUpdate: itemOrderChanged,
     });
+    const ws = new WebSocket("http://localhost:8080/ws");
+    // Connection opened
+    ws.addEventListener("open", (event) => {
+      console.log("Connected to echo server");
+
+      // Send a test message
+      ws.send("Hello, WebSocket Echo Server!");
+
+      // Send JSON data
+      ws.send(
+        JSON.stringify({
+          type: "test",
+          timestamp: Date.now(),
+          message: "Testing echo functionality",
+        })
+      );
+    });
   });
 </script>
 

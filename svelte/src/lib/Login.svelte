@@ -3,6 +3,8 @@
   import Footer from "./Footer.svelte";
   import IconLogin from "@tabler/icons-svelte/dist/svelte/icons/IconLogin.svelte";
   import { SYMBOL_SIZE } from "./types";
+
+  const actionURL = `${import.meta.env.VITE_API_URL}/ldaplogin`;
 </script>
 
 <div class="mt-4 flex h-screen flex-col items-center p-6">
@@ -12,7 +14,7 @@
       class="m-4 space-y-2 text-center text-background"
       id="login-form"
       method="post"
-      action="api/ldaplogin"
+      action="${actionURL}"
     >
       <div>
         <input

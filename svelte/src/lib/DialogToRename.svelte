@@ -10,7 +10,9 @@
 
   const rename = async () => {
     const _res = await fetch(
-      `/api/item?rename=true&id=${item.id}&value=${newValue}`,
+      `${import.meta.env.VITE_API_URL}/item?rename=true&id=${
+        item.id
+      }&value=${newValue}`,
       {
         method: "POST",
       }
