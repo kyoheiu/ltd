@@ -1,0 +1,15 @@
+:root {
+  --color-default: #a5adcb;
+  --color-green: #a6da95;
+  --color-yellow: #eed49f;
+  --color-red: #ed8796;
+  --color-warning: #f43f5e;
+  --color-further: #94a3b8;
+  --color-ok: #06b6d4;
+  --color-text: #f8fafc;
+  --color-background: #0f172a;
+
+  color: var(--color-text);
+  background-color: var(--color-background);
+  font-family: "Arial", "Helvetica", sans-serif;
+}
