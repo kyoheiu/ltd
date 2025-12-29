@@ -3,9 +3,14 @@ fmt:
 	cd axum && cargo fmt
 
 dev:
+	@echo "🛠️  Starting LDAP infrastructure..."
+	@(cd ldap && sudo docker-compose up -d)
+	@echo "✅ LDAP started."
+	@echo "🚀 Starting Axum (Backend) and Svelte (Frontend)..."
+	@trap 'kill 0' EXIT; \
 	(cd svelte && npm run dev) & \
-	(cd ldap && sudo docker-compose up -d) && \
-	(cd axum && LTD_SECRET_KEY=test LTD_DOMAIN=localhost LTD_NETWORK=ldap://localhost:3890 RUST_LOG=debug cargo run)
+	(cd axum && LTD_SECRET_KEY=test LTD_DOMAIN=localhost LTD_NETWORK=ldap://localhost:3890 RUST_LOG=debug cargo run) & \
+	wait
 
 build:
 	cd svelte && npm install --package-lock-only
