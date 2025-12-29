@@ -1,12 +1,13 @@
 mod error;
 
 use axum::debug_handler;
+use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
 use axum::extract::{Json, Query, State};
 use axum::http::HeaderMap;
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::Form;
 use axum::{
-    routing::{get, post},
+    routing::{any, get, post},
     Router,
 };
 use error::Error;
@@ -99,6 +100,7 @@ async fn main() -> Result<(), Error> {
         .route("/api/ldaplogin", post(ldaplogin))
         .route("/api/logout", post(logout))
         .route("/api/post", post(post_item))
+        .route("/ws", any(ws_handler))
         .layer(CookieManagerLayer::new())
         .nest_service("/", ServeDir::new("static"))
         .with_state(core);
@@ -325,6 +327,29 @@ async fn logout(cookies: Cookies) -> Result<impl IntoResponse, Error> {
         info!("Cookie removed.");
     }
     Ok(Redirect::to("/").into_response())
+}
+
+#[debug_handler]
+async fn ws_handler(ws: WebSocketUpgrade) -> Result<impl IntoResponse, Error> {
+    Ok(ws.on_upgrade(handle_socket))
+}
+
+async fn handle_socket(mut socket: WebSocket) {
+    while let Some(msg) = socket.recv().await {
+        let msg = if let Ok(msg) = msg {
+            msg
+        } else {
+            return;
+        };
+        match msg {
+            Message::Text(text) => println!("{}", text),
+            _ => {}
+        }
+        let msg = Message::Text("hello from ws".to_string());
+        if socket.send(msg).await.is_err() {
+            return;
+        }
+    }
 }
 
 fn is_valid(cookies: Cookies, key: &DecodingKey) -> Result<String, Error> {

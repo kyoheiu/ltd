@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = { version = "0.6.18", features = ["macros"] }
+axum = { version = "0.6.18", features = ["macros", "ws"] }
 cookie = "0.17.0"
 jsonwebtoken = { version = "8.3.0", default-features = false }
 serde = { version = "1.0.163", features = ["derive"] }
