@@ -2,3 +2,4 @@
 ./axum/items
 ./axum/.env
 ./svelte/node_modules
+./ldap/data/*.db
