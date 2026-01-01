@@ -7,14 +7,14 @@ COPY ./svelte ./
 RUN npm run build
 
 FROM rust:1-alpine3.18 as backend-builder
-WORKDIR /axum
-COPY ./axum ./
+WORKDIR /server
+COPY ./server ./
 RUN apk update && apk add --no-cache musl-dev && cargo build --release
 
 FROM alpine:3.18
 WORKDIR /ltd
 COPY --from=frontend-builder /svelte/dist /ltd/static
-COPY --from=backend-builder /axum/target/release/ltd .
+COPY --from=backend-builder /server/target/release/ltd .
 ENV RUST_LOG info
 EXPOSE 8080
 ENTRYPOINT [ "./ltd" ]

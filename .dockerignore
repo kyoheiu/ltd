@@ -1,5 +1,5 @@
-./axum/target
-./axum/items
-./axum/.env
+./server/target
+./server/items
+./server/.env
 ./svelte/node_modules
-./ldap/data/*.db
+./ldap
