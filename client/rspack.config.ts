@@ -45,6 +45,11 @@ export default defineConfig({
         ],
       },
     ],
+    parser: {
+      'css/auto': {
+        namedExports: false,
+      },
+    },
   },
   plugins: [
     new rspack.HtmlRspackPlugin({

@@ -1,5 +1,8 @@
 import { useRef } from 'react';
 import { useData } from '../../providers/DataProvider';
+import { ItemComponent } from '../ItemComponent';
+
+import styles from './index.module.css';
 
 export const List = () => {
   const { items, createItem, handleLogout } = useData();
@@ -9,7 +12,7 @@ export const List = () => {
     return null;
   }
   return (
-    <div>
+    <div className={styles.wrapper}>
       <form>
         <input type="text" ref={inputRef} />
         <button
@@ -33,7 +36,9 @@ export const List = () => {
         log out
       </button>
       {items.map((item) => (
-        <div key={item.id}>{item.value}</div>
+        <div key={item.id}>
+          <ItemComponent item={item} />
+        </div>
       ))}
     </div>
   );
