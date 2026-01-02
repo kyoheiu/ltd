@@ -1,14 +1,12 @@
-import { List } from './components/List';
-import { LogInForm } from './components/LoginForm';
+import { Auth } from './components/Auth';
 import './index.css';
-import { DataProvider, useData } from './providers/DataProvider';
+import { DataProvider } from './providers/DataProvider';
 
 function App() {
-  const { items } = useData();
-  console.log("items:", items)
-
   return (
-    <DataProvider>{items ? <List /> : <LogInForm />}</DataProvider>
+    <DataProvider>
+      <Auth />
+    </DataProvider>
   );
 }
 

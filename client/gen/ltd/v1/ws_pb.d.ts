@@ -2,11 +2,7 @@
 // @generated from file ltd/v1/ws.proto (package ltd.v1, syntax proto3)
 /* eslint-disable */
 
-import type {
-  GenEnum,
-  GenFile,
-  GenMessage,
-} from '@bufbuild/protobuf/codegenv2';
+import type { GenFile, GenMessage } from '@bufbuild/protobuf/codegenv2';
 import type { Message } from '@bufbuild/protobuf';
 
 /**
@@ -98,14 +94,19 @@ export declare type Update = Message<'ltd.v1.Update'> & {
   id: string;
 
   /**
-   * @generated from field: optional string value = 2;
+   * @generated from field: string value = 2;
    */
-  value?: string;
+  value: string;
 
   /**
-   * @generated from field: ltd.v1.Toggle toggle_category = 3;
+   * @generated from field: bool todo = 3;
    */
-  toggleCategory: Toggle;
+  todo: boolean;
+
+  /**
+   * @generated from field: int32 dot = 4;
+   */
+  dot: number;
 };
 
 /**
@@ -199,28 +200,3 @@ export declare type Request = Message<'ltd.v1.Request'> & {
  * Use `create(RequestSchema)` to create a new message.
  */
 export declare const RequestSchema: GenMessage<Request>;
-
-/**
- * @generated from enum ltd.v1.Toggle
- */
-export enum Toggle {
-  /**
-   * @generated from enum value: TOGGLE_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
-
-  /**
-   * @generated from enum value: TOGGLE_DOT = 1;
-   */
-  DOT = 1,
-
-  /**
-   * @generated from enum value: TOGGLE_ARCHIVED = 2;
-   */
-  ARCHIVED = 2,
-}
-
-/**
- * Describes the enum ltd.v1.Toggle.
- */
-export declare const ToggleSchema: GenEnum<Toggle>;

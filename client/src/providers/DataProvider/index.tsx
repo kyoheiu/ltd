@@ -1,29 +1,27 @@
-import { createContext, useActionState, useContext, useMemo } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import type { Item } from '../../../gen/ltd/v1/ws_pb';
 import { useWebSocket } from '../../hooks/useWebSocket';
 
 const dataContext = createContext<{
   items: Item[] | null;
   createItem: (value: string) => void;
-  isLoggedIn: boolean;
-  formAction: () => void;
+  handleLogin: (formData: FormData) => Promise<void>;
+  handleLogout: () => Promise<void>;
 }>({} as never);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [isLoggedIn, formAction] = useActionState<boolean>(() => true, false);
-
-  const { items, createItem } = useWebSocket();
+  const { items, handleLogin, handleLogout, createItem } = useWebSocket();
 
   const ctxValue = useMemo(
     () => ({
       items,
+      handleLogin,
+      handleLogout,
       createItem,
-      isLoggedIn,
-      formAction,
     }),
-    [items, isLoggedIn, createItem, formAction],
+    [items, handleLogin, handleLogout, createItem],
   );
 
   return (

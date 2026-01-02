@@ -1,10 +1,10 @@
 import { useData } from '../../providers/DataProvider';
 
-export const LogInForm = () => {
-  const { formAction } = useData();
+export const LoginForm = () => {
+  const { handleLogin } = useData();
 
   return (
-    <form id="login-form" method="post" action={formAction}>
+    <form id="login-form" method="post" action={handleLogin}>
       <div>
         <input type="text" name="username" placeholder="DN" required />
       </div>

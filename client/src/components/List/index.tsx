@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { useData } from '../../providers/DataProvider';
 
 export const List = () => {
-  const { items, createItem } = useData();
+  const { items, createItem, handleLogout } = useData();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   if (items === null) {
@@ -29,6 +29,9 @@ export const List = () => {
           add
         </button>
       </form>
+      <button type="button" onClick={handleLogout}>
+        log out
+      </button>
       {items.map((item) => (
         <div key={item.id}>{item.value}</div>
       ))}
