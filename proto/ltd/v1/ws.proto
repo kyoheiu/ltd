@@ -12,12 +12,6 @@ message Items {
   repeated Item items = 1;
 }
 
-enum Toggle {
-  TOGGLE_UNSPECIFIED = 0;
-  TOGGLE_DOT = 1;
-  TOGGLE_ARCHIVED = 2;
-};
-
 message Create {
   string value = 1;
 }
@@ -27,8 +21,9 @@ message Read {
 
 message Update {
   string id = 1;
-  optional string value = 2;
-  Toggle toggle_category = 3;
+  string value = 2;
+  bool todo = 3;
+  int32 dot = 4;
 }
 
 message Delete {
