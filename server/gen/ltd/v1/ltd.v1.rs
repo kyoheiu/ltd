@@ -27,10 +27,12 @@ pub struct Read {}
 pub struct Update {
     #[prost(string, tag = "1")]
     pub id: ::prost::alloc::string::String,
-    #[prost(string, optional, tag = "2")]
-    pub value: ::core::option::Option<::prost::alloc::string::String>,
-    #[prost(enumeration = "Toggle", tag = "3")]
-    pub toggle_category: i32,
+    #[prost(string, tag = "2")]
+    pub value: ::prost::alloc::string::String,
+    #[prost(bool, tag = "3")]
+    pub todo: bool,
+    #[prost(int32, tag = "4")]
+    pub dot: i32,
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct Delete {}
@@ -61,35 +63,6 @@ pub mod request {
         Delete(super::Delete),
         #[prost(message, tag = "5")]
         Post(super::Post),
-    }
-}
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
-#[repr(i32)]
-pub enum Toggle {
-    Unspecified = 0,
-    Dot = 1,
-    Archived = 2,
-}
-impl Toggle {
-    /// String value of the enum field names used in the ProtoBuf definition.
-    ///
-    /// The values are not transformed in any way and thus are considered stable
-    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
-    pub fn as_str_name(&self) -> &'static str {
-        match self {
-            Self::Unspecified => "TOGGLE_UNSPECIFIED",
-            Self::Dot => "TOGGLE_DOT",
-            Self::Archived => "TOGGLE_ARCHIVED",
-        }
-    }
-    /// Creates an enum from field names used in the ProtoBuf definition.
-    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
-        match value {
-            "TOGGLE_UNSPECIFIED" => Some(Self::Unspecified),
-            "TOGGLE_DOT" => Some(Self::Dot),
-            "TOGGLE_ARCHIVED" => Some(Self::Archived),
-            _ => None,
-        }
     }
 }
 // @@protoc_insertion_point(module)

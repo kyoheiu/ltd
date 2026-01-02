@@ -203,8 +203,40 @@ async fn handle_socket(socket: WebSocket, core: Arc<Core>, ou: String) -> Result
                                 };
                                 new_items = get_binary(&items);
                             }
-                            Command::Update(u) => { /* ... */ }
-                            Command::Delete(_) => { /* ... */ }
+                            Command::Update(u) => {
+                                let id = &u.id;
+                                let items = Items {
+                                    items: Vec::from(deque)
+                                        .into_iter()
+                                        .map(|item| {
+                                            if &item.id == id {
+                                                return Item {
+                                                    id: u.id.to_owned(),
+                                                    value: u.value.to_owned(),
+                                                    todo: u.todo,
+                                                    dot: u.dot,
+                                                };
+                                            } else {
+                                                item
+                                            }
+                                        })
+                                        .collect(),
+                                };
+                                if save_json(&items, &ou).is_ok() {
+                                    new_items = get_binary(&items);
+                                }
+                            }
+                            Command::Delete(_) => {
+                                let items = Items {
+                                    items: Vec::from(deque)
+                                        .into_iter()
+                                        .filter(|item| item.todo)
+                                        .collect(),
+                                };
+                                if save_json(&items, &ou).is_ok() {
+                                    new_items = get_binary(&items);
+                                }
+                            }
                             Command::Post(p) => { /* ... */ }
                         }
                     }
