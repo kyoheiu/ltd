@@ -2,18 +2,76 @@
 // @generated from file ltd/v1/ws.proto (package ltd.v1, syntax proto3)
 /* eslint-disable */
 
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
+import {
+  enumDesc,
+  fileDesc,
+  messageDesc,
+  tsEnum,
+} from '@bufbuild/protobuf/codegenv2';
 
 /**
  * Describes the file ltd/v1/ws.proto.
  */
-export const file_ltd_v1_ws = /*@__PURE__*/
-  fileDesc("Cg9sdGQvdjEvd3MucHJvdG8SBmx0ZC52MSIxCgZQZXJzb24SDAoEbmFtZRgBIAEoCRIKCgJpZBgCIAEoBRINCgVlbWFpbBgDIAEoCUJOCgpjb20ubHRkLnYxQgdXc1Byb3RvUAGiAgNMWFiqAgZMdGQuVjHKAgZMdGRcVjHiAhJMdGRcVjFcR1BCTWV0YWRhdGHqAgdMdGQ6OlYxYgZwcm90bzM");
+export const file_ltd_v1_ws =
+  /*@__PURE__*/
+  fileDesc(
+    'Cg9sdGQvdjEvd3MucHJvdG8SBmx0ZC52MSI8CgRJdGVtEgoKAmlkGAEgASgJEg0KBXZhbHVlGAIgASgJEgwKBHRvZG8YAyABKAgSCwoDZG90GAQgASgFIiQKBUl0ZW1zEhsKBWl0ZW1zGAEgAygLMgwubHRkLnYxLkl0ZW0iFwoGQ3JlYXRlEg0KBXZhbHVlGAEgASgJIgYKBFJlYWQiWwoGVXBkYXRlEgoKAmlkGAEgASgJEhIKBXZhbHVlGAIgASgJSACIAQESJwoPdG9nZ2xlX2NhdGVnb3J5GAMgASgOMg4ubHRkLnYxLlRvZ2dsZUIICgZfdmFsdWUiCAoGRGVsZXRlIiEKBFBvc3QSDQoFdmFsdWUYASABKAkSCgoCb3UYAiABKAkitgEKB1JlcXVlc3QSIAoGY3JlYXRlGAEgASgLMg4ubHRkLnYxLkNyZWF0ZUgAEhwKBHJlYWQYAiABKAsyDC5sdGQudjEuUmVhZEgAEiAKBnVwZGF0ZRgDIAEoCzIOLmx0ZC52MS5VcGRhdGVIABIgCgZkZWxldGUYBCABKAsyDi5sdGQudjEuRGVsZXRlSAASHAoEcG9zdBgFIAEoCzIMLmx0ZC52MS5Qb3N0SABCCQoHY29tbWFuZCpFCgZUb2dnbGUSFgoSVE9HR0xFX1VOU1BFQ0lGSUVEEAASDgoKVE9HR0xFX0RPVBABEhMKD1RPR0dMRV9BUkNISVZFRBACQk4KCmNvbS5sdGQudjFCB1dzUHJvdG9QAaICA0xYWKoCBkx0ZC5WMcoCBkx0ZFxWMeICEkx0ZFxWMVxHUEJNZXRhZGF0YeoCB0x0ZDo6VjFiBnByb3RvMw',
+  );
 
 /**
- * Describes the message ltd.v1.Person.
- * Use `create(PersonSchema)` to create a new message.
+ * Describes the message ltd.v1.Item.
+ * Use `create(ItemSchema)` to create a new message.
  */
-export const PersonSchema = /*@__PURE__*/
-  messageDesc(file_ltd_v1_ws, 0);
+export const ItemSchema = /*@__PURE__*/ messageDesc(file_ltd_v1_ws, 0);
 
+/**
+ * Describes the message ltd.v1.Items.
+ * Use `create(ItemsSchema)` to create a new message.
+ */
+export const ItemsSchema = /*@__PURE__*/ messageDesc(file_ltd_v1_ws, 1);
+
+/**
+ * Describes the message ltd.v1.Create.
+ * Use `create(CreateSchema)` to create a new message.
+ */
+export const CreateSchema = /*@__PURE__*/ messageDesc(file_ltd_v1_ws, 2);
+
+/**
+ * Describes the message ltd.v1.Read.
+ * Use `create(ReadSchema)` to create a new message.
+ */
+export const ReadSchema = /*@__PURE__*/ messageDesc(file_ltd_v1_ws, 3);
+
+/**
+ * Describes the message ltd.v1.Update.
+ * Use `create(UpdateSchema)` to create a new message.
+ */
+export const UpdateSchema = /*@__PURE__*/ messageDesc(file_ltd_v1_ws, 4);
+
+/**
+ * Describes the message ltd.v1.Delete.
+ * Use `create(DeleteSchema)` to create a new message.
+ */
+export const DeleteSchema = /*@__PURE__*/ messageDesc(file_ltd_v1_ws, 5);
+
+/**
+ * Describes the message ltd.v1.Post.
+ * Use `create(PostSchema)` to create a new message.
+ */
+export const PostSchema = /*@__PURE__*/ messageDesc(file_ltd_v1_ws, 6);
+
+/**
+ * Describes the message ltd.v1.Request.
+ * Use `create(RequestSchema)` to create a new message.
+ */
+export const RequestSchema = /*@__PURE__*/ messageDesc(file_ltd_v1_ws, 7);
+
+/**
+ * Describes the enum ltd.v1.Toggle.
+ */
+export const ToggleSchema = /*@__PURE__*/ enumDesc(file_ltd_v1_ws, 0);
+
+/**
+ * @generated from enum ltd.v1.Toggle
+ */
+export const Toggle = /*@__PURE__*/ tsEnum(ToggleSchema);

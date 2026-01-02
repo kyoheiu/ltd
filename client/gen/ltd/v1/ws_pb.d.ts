@@ -2,8 +2,12 @@
 // @generated from file ltd/v1/ws.proto (package ltd.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import type { Message } from "@bufbuild/protobuf";
+import type {
+  GenEnum,
+  GenFile,
+  GenMessage,
+} from '@bufbuild/protobuf/codegenv2';
+import type { Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file ltd/v1/ws.proto.
@@ -11,28 +15,212 @@ import type { Message } from "@bufbuild/protobuf";
 export declare const file_ltd_v1_ws: GenFile;
 
 /**
- * @generated from message ltd.v1.Person
+ * @generated from message ltd.v1.Item
  */
-export declare type Person = Message<"ltd.v1.Person"> & {
+export declare type Item = Message<'ltd.v1.Item'> & {
   /**
-   * @generated from field: string name = 1;
+   * @generated from field: string id = 1;
    */
-  name: string;
+  id: string;
 
   /**
-   * @generated from field: int32 id = 2;
+   * @generated from field: string value = 2;
    */
-  id: number;
+  value: string;
 
   /**
-   * @generated from field: string email = 3;
+   * @generated from field: bool todo = 3;
    */
-  email: string;
+  todo: boolean;
+
+  /**
+   * @generated from field: int32 dot = 4;
+   */
+  dot: number;
 };
 
 /**
- * Describes the message ltd.v1.Person.
- * Use `create(PersonSchema)` to create a new message.
+ * Describes the message ltd.v1.Item.
+ * Use `create(ItemSchema)` to create a new message.
  */
-export declare const PersonSchema: GenMessage<Person>;
+export declare const ItemSchema: GenMessage<Item>;
 
+/**
+ * @generated from message ltd.v1.Items
+ */
+export declare type Items = Message<'ltd.v1.Items'> & {
+  /**
+   * @generated from field: repeated ltd.v1.Item items = 1;
+   */
+  items: Item[];
+};
+
+/**
+ * Describes the message ltd.v1.Items.
+ * Use `create(ItemsSchema)` to create a new message.
+ */
+export declare const ItemsSchema: GenMessage<Items>;
+
+/**
+ * @generated from message ltd.v1.Create
+ */
+export declare type Create = Message<'ltd.v1.Create'> & {
+  /**
+   * @generated from field: string value = 1;
+   */
+  value: string;
+};
+
+/**
+ * Describes the message ltd.v1.Create.
+ * Use `create(CreateSchema)` to create a new message.
+ */
+export declare const CreateSchema: GenMessage<Create>;
+
+/**
+ * @generated from message ltd.v1.Read
+ */
+export declare type Read = Message<'ltd.v1.Read'> & {};
+
+/**
+ * Describes the message ltd.v1.Read.
+ * Use `create(ReadSchema)` to create a new message.
+ */
+export declare const ReadSchema: GenMessage<Read>;
+
+/**
+ * @generated from message ltd.v1.Update
+ */
+export declare type Update = Message<'ltd.v1.Update'> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: optional string value = 2;
+   */
+  value?: string;
+
+  /**
+   * @generated from field: ltd.v1.Toggle toggle_category = 3;
+   */
+  toggleCategory: Toggle;
+};
+
+/**
+ * Describes the message ltd.v1.Update.
+ * Use `create(UpdateSchema)` to create a new message.
+ */
+export declare const UpdateSchema: GenMessage<Update>;
+
+/**
+ * @generated from message ltd.v1.Delete
+ */
+export declare type Delete = Message<'ltd.v1.Delete'> & {};
+
+/**
+ * Describes the message ltd.v1.Delete.
+ * Use `create(DeleteSchema)` to create a new message.
+ */
+export declare const DeleteSchema: GenMessage<Delete>;
+
+/**
+ * @generated from message ltd.v1.Post
+ */
+export declare type Post = Message<'ltd.v1.Post'> & {
+  /**
+   * @generated from field: string value = 1;
+   */
+  value: string;
+
+  /**
+   * @generated from field: string ou = 2;
+   */
+  ou: string;
+};
+
+/**
+ * Describes the message ltd.v1.Post.
+ * Use `create(PostSchema)` to create a new message.
+ */
+export declare const PostSchema: GenMessage<Post>;
+
+/**
+ * 既存の定義の後に以下を追加
+ *
+ * @generated from message ltd.v1.Request
+ */
+export declare type Request = Message<'ltd.v1.Request'> & {
+  /**
+   * @generated from oneof ltd.v1.Request.command
+   */
+  command:
+    | {
+        /**
+         * @generated from field: ltd.v1.Create create = 1;
+         */
+        value: Create;
+        case: 'create';
+      }
+    | {
+        /**
+         * @generated from field: ltd.v1.Read read = 2;
+         */
+        value: Read;
+        case: 'read';
+      }
+    | {
+        /**
+         * @generated from field: ltd.v1.Update update = 3;
+         */
+        value: Update;
+        case: 'update';
+      }
+    | {
+        /**
+         * @generated from field: ltd.v1.Delete delete = 4;
+         */
+        value: Delete;
+        case: 'delete';
+      }
+    | {
+        /**
+         * @generated from field: ltd.v1.Post post = 5;
+         */
+        value: Post;
+        case: 'post';
+      }
+    | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message ltd.v1.Request.
+ * Use `create(RequestSchema)` to create a new message.
+ */
+export declare const RequestSchema: GenMessage<Request>;
+
+/**
+ * @generated from enum ltd.v1.Toggle
+ */
+export enum Toggle {
+  /**
+   * @generated from enum value: TOGGLE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: TOGGLE_DOT = 1;
+   */
+  DOT = 1,
+
+  /**
+   * @generated from enum value: TOGGLE_ARCHIVED = 2;
+   */
+  ARCHIVED = 2,
+}
+
+/**
+ * Describes the enum ltd.v1.Toggle.
+ */
+export declare const ToggleSchema: GenEnum<Toggle>;

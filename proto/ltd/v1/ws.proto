@@ -1,9 +1,51 @@
 syntax = "proto3";
 package ltd.v1;
 
+message Item {
+  string id = 1;
+  string value = 2;
+  bool todo = 3;
+  int32 dot = 4;
+}
 
-message Person {
-  string name = 1;
-  int32 id = 2;
-  string email = 3;
+message Items {
+  repeated Item items = 1;
+}
+
+enum Toggle {
+  TOGGLE_UNSPECIFIED = 0;
+  TOGGLE_DOT = 1;
+  TOGGLE_ARCHIVED = 2;
+};
+
+message Create {
+  string value = 1;
+}
+
+message Read {
+}
+
+message Update {
+  string id = 1;
+  optional string value = 2;
+  Toggle toggle_category = 3;
+}
+
+message Delete {
+}
+
+message Post {
+  string value = 1;
+  string ou = 2;
+}
+
+// 既存の定義の後に以下を追加
+message Request {
+  oneof command {
+    Create create = 1;
+    Read read = 2;
+    Update update = 3;
+    Delete delete = 4;
+    Post post = 5;
+  }
 }

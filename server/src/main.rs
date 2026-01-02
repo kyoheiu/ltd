@@ -1,9 +1,18 @@
 mod error;
+mod types;
+pub mod api {
+    pub mod v1 {
+        include!("../gen/ltd/v1/ltd.v1.rs");
+    }
+}
 
+use crate::api::v1::{
+    request::Command, Delete, Item, Items, Post, Read, Request as WSRequest, Update,
+};
+use crate::types::{Claims, LogIn};
 use axum::debug_handler;
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
-use axum::extract::{Json, Query, State};
-use axum::http::HeaderMap;
+use axum::extract::State;
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::Form;
 use axum::{
@@ -11,11 +20,13 @@ use axum::{
     Router,
 };
 use error::Error;
+use futures_util::{sink::SinkExt, stream::StreamExt};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
-use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, VecDeque};
+use prost::Message as ProstMessage;
+use std::collections::VecDeque;
 use std::env;
-use std::time::UNIX_EPOCH;
+use std::sync::Arc;
+use tokio::sync::broadcast;
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
 use tower_http::services::ServeDir;
 use tracing::{info, warn};
@@ -26,63 +37,23 @@ const COOKIE_NAME: &str = "ltd_auth";
 struct Core {
     encoding_key: EncodingKey,
     decoding_key: DecodingKey,
+    // Channel used to send messages to all connected clients.
+    tx: broadcast::Sender<Vec<u8>>,
 }
 
 impl Core {
     fn default() -> Result<Self, Error> {
+        let (tx, _rx) = broadcast::channel(100);
         Ok(Core {
             encoding_key: EncodingKey::from_secret(env::var("LTD_SECRET_KEY")?.as_bytes()),
             decoding_key: DecodingKey::from_secret(env::var("LTD_SECRET_KEY")?.as_bytes()),
+            tx,
         })
     }
-}
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct Items {
-    items: VecDeque<Item>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct ItemsWithModifiedTime {
-    items: VecDeque<Item>,
-    modified: u128,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct ModifiedTime {
-    modified: u128,
-}
-
-#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone, Serialize, Deserialize)]
-struct Item {
-    id: String,
-    value: String,
-    todo: bool,
-    dot: usize,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Value {
-    value: String,
-    ou: String,
-}
-
-#[derive(Deserialize)]
-struct LogIn {
-    username: String,
-    password: String,
-}
-
-#[derive(Deserialize)]
-struct Sorted {
-    old: usize,
-    new: usize,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Claims {
-    sub: String,
-    exp: usize,
+    fn get_encoding_key(&self) -> EncodingKey {
+        self.encoding_key.to_owned()
+    }
 }
 
 #[tokio::main]
@@ -94,12 +65,8 @@ async fn main() -> Result<(), Error> {
     // build our application with a single route
     let app = Router::new()
         .route("/health", get(health))
-        .route("/api/item", get(read_item).post(update_item))
-        .route("/api/check", get(check_update))
-        .route("/api/item/sort", post(sort_item))
         .route("/api/ldaplogin", post(ldaplogin))
         .route("/api/logout", post(logout))
-        .route("/api/post", post(post_item))
         .route("/ws", any(ws_handler))
         .layer(CookieManagerLayer::new())
         .nest_service("/", ServeDir::new("static"))
@@ -118,168 +85,6 @@ async fn health() -> Html<&'static str> {
 }
 
 #[debug_handler]
-async fn read_item(cookies: Cookies, State(core): State<Core>) -> Result<impl IntoResponse, Error> {
-    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
-        let ou = to_ou(&name)?;
-        let items = read_json(&ou)?;
-        let modified = check_modified_time(&ou)?;
-        Ok(Json(ItemsWithModifiedTime {
-            items: items.items,
-            modified,
-        }))
-    } else {
-        Err(Error::NotVerified)
-    }
-}
-
-#[debug_handler]
-async fn check_update(
-    cookies: Cookies,
-    State(core): State<Core>,
-) -> Result<Json<ModifiedTime>, Error> {
-    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
-        let ou = to_ou(&name)?;
-        Ok(Json(ModifiedTime {
-            modified: check_modified_time(&ou)?,
-        }))
-    } else {
-        Err(Error::NotVerified)
-    }
-}
-
-#[debug_handler]
-async fn update_item(
-    cookies: Cookies,
-    State(core): State<Core>,
-    Query(params): Query<BTreeMap<String, String>>,
-) -> Result<impl IntoResponse, Error> {
-    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
-        let ou = to_ou(&name)?;
-        let mut items = read_json(&ou)?;
-
-        if params.contains_key("add") {
-            let id = params.get("id").unwrap();
-            let value = params.get("value").unwrap();
-            let dot: usize = params.get("dot").unwrap().parse()?;
-            items.items.push_front(Item {
-                id: id.to_string(),
-                value: value.to_string(),
-                todo: true,
-                dot,
-            });
-            info!("Added: id {} value {} dot {}", id, value, dot);
-        } else if params.contains_key("toggle_todo") {
-            let id = params.get("id").unwrap();
-            if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
-                if params.get("toggle_todo").unwrap() == "0" {
-                    target.todo = false;
-                    info!("Archived: {}", target.value);
-                } else {
-                    target.todo = true;
-                    info!("Unarchived: {}", target.value);
-                }
-            } else {
-                warn!("ID not found.");
-            }
-        } else if params.contains_key("toggle_dot") {
-            let id = params.get("id").unwrap();
-            if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
-                match params.get("toggle_dot").unwrap().as_str() {
-                    "1" => target.dot = 1,
-                    "2" => target.dot = 2,
-                    "3" => target.dot = 3,
-                    _ => target.dot = 0,
-                }
-                info!("Toggled dot color: {}", target.value);
-            } else {
-                warn!("ID not found.");
-            }
-        } else if params.contains_key("rename") {
-            let id = params.get("id").unwrap();
-            let value = params.get("value").unwrap();
-            if let Some(target) = items.items.iter_mut().find(|x| &x.id == id) {
-                info!("Renamed: {} -> {}", target.value, value);
-                target.value = value.to_string();
-            } else {
-                warn!("ID not found.");
-            }
-            save_json(items, &ou)?;
-            return Ok(Redirect::to("/").into_response());
-        } else if params.contains_key("delete_archived") {
-            let filtered: VecDeque<Item> =
-                items.items.clone().into_iter().filter(|x| x.todo).collect();
-            items.items = filtered;
-            info!("Deleted Archived items.");
-            save_json(items, &ou)?;
-            return Ok(Redirect::to("/").into_response());
-        }
-
-        let modified = save_json(items, &ou)?;
-        Ok(Json(ModifiedTime { modified }).into_response())
-    } else {
-        Err(Error::NotVerified)
-    }
-}
-
-#[debug_handler]
-async fn post_item(headers: HeaderMap, Json(payload): Json<Value>) -> Result<(), Error> {
-    if let Some(token) = headers.get("authorization") {
-        if token.to_str()? == env::var("LTD_API_TOKEN")? {
-            let value = payload.value;
-            let ou = payload.ou;
-            let id = ulid::Ulid::new().to_string();
-            let mut items = read_json(&ou)?;
-            items.items.push_front(Item {
-                id: id.clone(),
-                value: value.clone(),
-                todo: true,
-                dot: 0,
-            });
-            save_json(items, &ou)?;
-            Ok(info!("Added(via API): id {} value {} dot 0", id, value))
-        } else {
-            warn!("Invalid token.");
-            Err(Error::NotVerified)
-        }
-    } else {
-        warn!("No header.");
-        Err(Error::Header)
-    }
-}
-
-#[debug_handler]
-async fn sort_item(
-    cookies: Cookies,
-    State(core): State<Core>,
-    Json(payload): Json<Sorted>,
-) -> Result<impl IntoResponse, Error> {
-    if let Ok(name) = is_valid(cookies, &core.decoding_key) {
-        let ou = to_ou(&name)?;
-        let items = read_json(&ou)?.items;
-        let mut todo: VecDeque<Item> = items.clone().into_iter().filter(|x| x.todo).collect();
-        let mut done: VecDeque<Item> = items.into_iter().filter(|x| !x.todo).collect();
-        if let Some(moved) = todo.remove(payload.old) {
-            todo.insert(payload.new, moved);
-        }
-
-        todo.append(&mut done);
-        let modified = save_json(
-            Items {
-                items: todo.clone(),
-            },
-            &ou,
-        )?;
-        info!("Sorted items saved.");
-        Ok(Json(ItemsWithModifiedTime {
-            items: todo,
-            modified,
-        }))
-    } else {
-        Err(Error::NotVerified)
-    }
-}
-
-#[debug_handler]
 async fn ldaplogin(
     cookies: Cookies,
     State(core): State<Core>,
@@ -295,7 +100,7 @@ async fn ldaplogin(
             sub: username.to_string(),
             exp: 2000000000,
         };
-        let token = encode(&Header::default(), &my_claims, &core.encoding_key)?;
+        let token = encode(&Header::default(), &my_claims, &core.get_encoding_key())?;
         let cookie = Cookie::build(COOKIE_NAME, token)
             .domain(env::var("LTD_DOMAIN")?)
             .path("/")
@@ -330,26 +135,92 @@ async fn logout(cookies: Cookies) -> Result<impl IntoResponse, Error> {
 }
 
 #[debug_handler]
-async fn ws_handler(ws: WebSocketUpgrade) -> Result<impl IntoResponse, Error> {
-    Ok(ws.on_upgrade(handle_socket))
-}
-
-async fn handle_socket(mut socket: WebSocket) {
-    while let Some(msg) = socket.recv().await {
-        let msg = if let Ok(msg) = msg {
-            msg
-        } else {
-            return;
-        };
-        match msg {
-            Message::Text(text) => println!("{}", text),
-            _ => {}
-        }
-        let msg = Message::Text("hello from ws".to_string());
-        if socket.send(msg).await.is_err() {
-            return;
+async fn ws_handler(
+    cookies: Cookies,
+    State(core): State<Core>,
+    ws: WebSocketUpgrade,
+) -> Result<impl IntoResponse, Error> {
+    info!("WebSocket connection is establishing...");
+    match is_valid(cookies, &core.decoding_key) {
+        Err(_) => Err(Error::NotVerified),
+        Ok(name) => {
+            info!("Verified.");
+            let ou = to_ou(&name)?;
+            Ok(ws.on_upgrade(move |socket| async move {
+                if let Err(e) = handle_socket(socket, core.into(), ou).await {
+                    eprintln!("{}", e);
+                }
+            }))
         }
     }
+}
+
+async fn handle_socket(socket: WebSocket, core: Arc<Core>, ou: String) -> Result<(), Error> {
+    // 1. split the socket into a sender and a receiver
+    let (mut sender, mut receiver) = socket.split();
+
+    // 2. subscribe to the global broadcast channel
+    let mut rx = core.tx.subscribe();
+
+    // 3. send task: forward broadcast messages to this client
+    let mut send_task = tokio::spawn(async move {
+        while let Ok(bin_data) = rx.recv().await {
+            if sender.send(Message::Binary(bin_data.into())).await.is_err() {
+                break;
+            }
+        }
+    });
+
+    // 4. receive task: handle requests from this client
+    let tx = core.tx.clone();
+    let mut recv_task = tokio::spawn(async move {
+        while let Some(Ok(Message::Binary(b))) = receiver.next().await {
+            // decode protobuf
+            if let Ok(req) = WSRequest::decode(b.as_slice()) {
+                let json = read_json(&ou);
+                let mut new_items = vec![];
+                if let Ok(json) = json {
+                    let mut deque = VecDeque::from(json.items);
+                    if let Some(command) = req.command {
+                        match command {
+                            Command::Create(c) => {
+                                deque.push_front(Item {
+                                    id: ulid::Ulid::new().to_string(),
+                                    value: c.value,
+                                    todo: true,
+                                    dot: 0,
+                                });
+                                let items = Items {
+                                    items: Vec::from(deque),
+                                };
+                                if save_json(&items, &ou).is_ok() {
+                                    new_items = get_binary(&items);
+                                }
+                            }
+                            Command::Read(_) => {
+                                let items = Items {
+                                    items: Vec::from(deque),
+                                };
+                                new_items = get_binary(&items);
+                            }
+                            Command::Update(u) => { /* ... */ }
+                            Command::Delete(_) => { /* ... */ }
+                            Command::Post(p) => { /* ... */ }
+                        }
+                    }
+                }
+                // 5. broadcast the updated data to all connected clients
+                let _ = tx.send(new_items);
+            }
+        }
+    });
+
+    // 6. abort the other task when one task finishes (handle disconnection)
+    tokio::select! {
+        _ = &mut send_task => recv_task.abort(),
+        _ = &mut recv_task => send_task.abort(),
+    };
+    Ok(())
 }
 
 fn is_valid(cookies: Cookies, key: &DecodingKey) -> Result<String, Error> {
@@ -383,28 +254,24 @@ fn read_json(ou: &str) -> Result<Items, Error> {
                 std::fs::create_dir("items")?;
             }
             std::fs::File::create(format!("items/{}.json", ou))?;
-            Ok(Items {
-                items: VecDeque::new(),
-            })
+            Ok(Items { items: Vec::new() })
         }
         Ok(json) => match serde_json::from_str(&json) {
-            Ok(json) => Ok(json),
-            Err(_) => Ok(Items {
-                items: VecDeque::new(),
-            }),
+            Ok(items) => Ok(items),
+            Err(e) => Err(Error::Json(e.to_string())),
         },
     }
 }
 
-fn save_json(items: Items, ou: &str) -> Result<u128, Error> {
-    let json = serde_json::to_string(&items)?;
+fn save_json(items: &Items, ou: &str) -> Result<(), Error> {
+    let json = serde_json::to_string(items)?;
     let path = format!("items/{}.json", ou);
-    std::fs::write(path, json)?;
-    check_modified_time(ou)
+    Ok(std::fs::write(path, json)?)
 }
 
-fn check_modified_time(ou: &str) -> Result<u128, Error> {
-    let path = format!("items/{}.json", ou);
-    let metadata = std::fs::metadata(path)?;
-    Ok(metadata.modified()?.duration_since(UNIX_EPOCH)?.as_millis())
+fn get_binary(items: &Items) -> Vec<u8> {
+    let mut buf = Vec::new();
+    buf.reserve(items.encoded_len());
+    items.encode(&mut buf).unwrap();
+    buf
 }

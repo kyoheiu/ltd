@@ -11,6 +11,7 @@ pub enum Error {
     Jwt(String),
     Json(String),
     ParseInt(String),
+    WebSocket(String),
     SystemTime,
     Header,
     NotVerified,
@@ -28,6 +29,7 @@ impl std::fmt::Display for Error {
             Error::Jwt(s) => s,
             Error::Json(s) => s,
             Error::ParseInt(s) => s,
+            Error::WebSocket(s) => s,
             Error::SystemTime => "SystemTimeError.",
             Error::Header => "Token not found.",
             Error::NotVerified => "Not verified.",
@@ -85,6 +87,12 @@ impl From<std::time::SystemTimeError> for Error {
     }
 }
 
+impl From<axum::Error> for Error {
+    fn from(err: axum::Error) -> Self {
+        Error::WebSocket(err.to_string())
+    }
+}
+
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
         let body = match self {
@@ -94,6 +102,7 @@ impl IntoResponse for Error {
             Error::Jwt(s) => s,
             Error::Json(s) => s,
             Error::ParseInt(s) => s,
+            Error::WebSocket(s) => s,
             Error::SystemTime => "SystemTimeError.".to_string(),
             Error::Header => "Token not found.".to_string(),
             Error::NotVerified => "Not verified.".to_string(),

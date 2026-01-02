@@ -64,7 +64,7 @@ export default defineConfig({
     css: true,
   },
   devServer: {
-    port: "3000",
+    port: '3000',
     proxy: [
       {
         context: ['/api'],
