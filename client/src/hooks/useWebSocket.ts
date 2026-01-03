@@ -17,7 +17,6 @@ export const useWebSocket = () => {
   const socketRef = useRef<WebSocket | null>(null);
 
   const connect = useCallback(() => {
-    // Stop if retry count exceeds the limit
     if (retryCount >= MAX_RETRIES) {
       console.error('Max retries reached. Stopping reconnection.');
       return;
@@ -55,7 +54,6 @@ export const useWebSocket = () => {
         try {
           const uint8Array = new Uint8Array(event.data);
           const decodedData = fromBinary(ItemsSchema, uint8Array);
-          console.log(decodedData);
           setItems(decodedData.items);
         } catch (e) {
           console.error(`Failed to decode:', ${e}`);
@@ -105,7 +103,7 @@ export const useWebSocket = () => {
     });
   }, []);
 
-  const createItem = (value: string) => {
+  const createItem = useCallback((value: string) => {
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
       console.error('WebSocket is not connected');
       return;
@@ -118,7 +116,54 @@ export const useWebSocket = () => {
     });
     const buffer = toBinary(RequestSchema, request);
     socketRef.current.send(buffer);
-  };
+  }, []);
 
-  return { items, handleLogin, handleLogout, createItem };
+  const toggleArchived = useCallback((item: Item) => {
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket is not connected');
+      return;
+    }
+    const request = create(RequestSchema, {
+      command: {
+        case: 'update',
+        value: {
+          id: item.id,
+          value: item.value,
+          todo: !item.todo,
+          dot: item.dot,
+        },
+      },
+    });
+    const buffer = toBinary(RequestSchema, request);
+    socketRef.current.send(buffer);
+  }, []);
+
+  const toggleDot = useCallback((item: Item) => {
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket is not connected');
+      return;
+    }
+    const request = create(RequestSchema, {
+      command: {
+        case: 'update',
+        value: {
+          id: item.id,
+          value: item.value,
+          todo: item.todo,
+          dot: item.dot === 3 ? 0 : item.dot + 1,
+        },
+      },
+    });
+    const buffer = toBinary(RequestSchema, request);
+    socketRef.current.send(buffer);
+  }, []);
+
+  return {
+    items,
+    handleLogin,
+    handleLogout,
+    createItem,
+    toggleArchived,
+    toggleDot,
+  };
 };

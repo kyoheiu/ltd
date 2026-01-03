@@ -1,0 +1,7 @@
+.footer {
+  width: 100%;
+  display: grid;
+  place-content: center;
+  margin: 1rem 0;
+  color: var(--color-further);
+}
