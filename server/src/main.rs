@@ -6,9 +6,7 @@ pub mod api {
     }
 }
 
-use crate::api::v1::{
-    request::Command, Delete, Item, Items, Post, Read, Request as WSRequest, Update,
-};
+use crate::api::v1::{request::Command, Item, Items, Request as WSRequest};
 use crate::types::{Claims, LogIn};
 use axum::debug_handler;
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
@@ -185,7 +183,7 @@ async fn handle_socket(socket: WebSocket, core: Arc<Core>, ou: String) -> Result
                         match command {
                             Command::Create(c) => {
                                 deque.push_front(Item {
-                                    id: ulid::Ulid::new().to_string(),
+                                    id: uuid::Uuid::new_v4().to_string(),
                                     value: c.value,
                                     todo: true,
                                     dot: 0,
