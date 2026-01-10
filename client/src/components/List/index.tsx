@@ -94,10 +94,8 @@ export const List = () => {
         ))}
       </div>
       {draggedOutside && <div className={styles.inserted} />}
-      <div
-        style={{ flex: 1, width: '100%' }}
-        onDragEnter={onDragEnterOutside}
-      />
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: drag area */}
+      <div className={styles.margin__insert} onDragEnter={onDragEnterOutside} />
     </div>
   );
 };

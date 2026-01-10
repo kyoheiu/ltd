@@ -1,4 +1,4 @@
-import { createContext, useCallback } from 'react';
+import { createContext, useCallback, useContext } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 
 const notificationContext = createContext<{
@@ -29,7 +29,11 @@ export const NotificationProvider: React.FC<{
   return (
     <notificationContext.Provider value={{ notify }}>
       {children}
-      <Toaster />
+      <Toaster position="bottom-right" />
     </notificationContext.Provider>
   );
+};
+
+export const useNotification = () => {
+  return useContext(notificationContext);
 };

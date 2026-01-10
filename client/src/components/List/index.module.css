@@ -44,3 +44,9 @@
   align-self: center;
   margin-bottom: 0.5rem;
 }
+
+.margin__insert {
+  flex: 1;
+  width: 100%;
+  min-height: 1.5rem;
+}

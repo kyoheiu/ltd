@@ -5,6 +5,7 @@ import { useWebSocket } from '../../hooks/useWebSocket';
 const dataContext = createContext<{
   items: Item[] | null;
   createItem: (value: string) => void;
+  renameItem: (item: Item, value: string) => void;
   toggleArchived: (item: Item) => void;
   toggleDot: (item: Item) => void;
   sort: (target: string, insert: string, last: boolean) => void;
@@ -23,6 +24,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     handleLogin,
     handleLogout,
     createItem,
+    renameItem,
     toggleArchived,
     toggleDot,
     sort,
@@ -50,6 +52,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       handleLogin,
       handleLogout,
       createItem,
+      renameItem,
       toggleArchived,
       toggleDot,
       sort,
@@ -62,6 +65,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       handleLogin,
       handleLogout,
       createItem,
+      renameItem,
       toggleArchived,
       toggleDot,
       sort,

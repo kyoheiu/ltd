@@ -7,11 +7,13 @@ import {
   useState,
 } from 'react';
 import { type Item, ItemsSchema, RequestSchema } from '../../gen/ltd/v1/ws_pb';
+import { useNotification } from '../providers/NotificationProvider';
 
 const MAX_RETRIES = 5;
-const TIMEOUT = 3000;
+const TIMEOUT_UNIT = 3000;
 
 export const useWebSocket = () => {
+  const { notify } = useNotification();
   const [items, setItems] = useState<Item[] | null>(null);
   const retryCountRef = useRef(0);
   const socketRef = useRef<WebSocket | null>(null);
@@ -25,21 +27,17 @@ export const useWebSocket = () => {
     ws.binaryType = 'arraybuffer';
     socketRef.current = ws;
 
-    ws.onclose = (event: CloseEvent) => {
-      console.log(`WebSocket connection closed.`);
-      if (!event.wasClean) {
-        console.warn('Connection lost or failed to connect.');
-      }
-      console.warn(
-        `Connection lost. Retrying in ${TIMEOUT}ms... (${retryCountRef.current + 1}/${MAX_RETRIES})`,
-      );
-
+    ws.onclose = (_event: CloseEvent) => {
       setItems(null);
       retryCountRef.current += 1;
-      setTimeout(() => connect(), TIMEOUT);
+      const timeout = TIMEOUT_UNIT * (retryCountRef.current ^ 2);
+      console.warn(
+        `Connection lost. Retrying in ${timeout} ms... (${retryCountRef.current}/${MAX_RETRIES})`,
+      );
+      setTimeout(() => connect(), timeout);
     };
     ws.onopen = () => {
-      console.log('Connected to WebSocket server.');
+      notify('success', 'Connected to server.');
       retryCountRef.current = 0;
       const buffer = toBinary(
         RequestSchema,
@@ -60,7 +58,7 @@ export const useWebSocket = () => {
         }
       }
     };
-  }, []);
+  }, [notify]);
 
   useEffect(() => {
     connect();
@@ -84,11 +82,11 @@ export const useWebSocket = () => {
           retryCountRef.current = 0;
           connect();
         } else {
-          console.error('Login failed');
+          notify('error', 'Login failed.');
         }
       });
     },
-    [connect],
+    [connect, notify],
   );
 
   const handleLogout = useCallback(async () => {
@@ -99,88 +97,143 @@ export const useWebSocket = () => {
       if (res.ok) {
         setItems(null);
       } else {
-        console.error('Logout failed');
+        notify('error', 'Logout failed.');
       }
     });
-  }, []);
+  }, [notify]);
 
-  const createItem = useCallback((value: string) => {
-    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
-      console.error('WebSocket is not connected');
-      return;
-    }
-    const request = create(RequestSchema, {
-      command: {
-        case: 'create',
-        value: { value },
-      },
-    });
-    const buffer = toBinary(RequestSchema, request);
-    socketRef.current.send(buffer);
-  }, []);
-
-  const toggleArchived = useCallback((item: Item) => {
-    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
-      console.error('WebSocket is not connected');
-      return;
-    }
-    const request = create(RequestSchema, {
-      command: {
-        case: 'update',
-        value: {
-          id: item.id,
-          value: item.value,
-          todo: !item.todo,
-          dot: item.dot,
+  const createItem = useCallback(
+    (value: string) => {
+      if (
+        !socketRef.current ||
+        socketRef.current.readyState !== WebSocket.OPEN
+      ) {
+        notify('error', 'WebSocket is not connected');
+        return;
+      }
+      const request = create(RequestSchema, {
+        command: {
+          case: 'create',
+          value: { value },
         },
-      },
-    });
-    const buffer = toBinary(RequestSchema, request);
-    socketRef.current.send(buffer);
-  }, []);
+      });
+      const buffer = toBinary(RequestSchema, request);
+      socketRef.current.send(buffer);
+    },
+    [notify],
+  );
 
-  const toggleDot = useCallback((item: Item) => {
-    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
-      console.error('WebSocket is not connected');
-      return;
-    }
-    const request = create(RequestSchema, {
-      command: {
-        case: 'update',
-        value: {
-          id: item.id,
-          value: item.value,
-          todo: item.todo,
-          dot: item.dot === 3 ? 0 : item.dot + 1,
+  const renameItem = useCallback(
+    (item: Item, value: string) => {
+      if (
+        !socketRef.current ||
+        socketRef.current.readyState !== WebSocket.OPEN
+      ) {
+        notify('error', 'WebSocket is not connected');
+        return;
+      }
+      const request = create(RequestSchema, {
+        command: {
+          case: 'update',
+          value: {
+            id: item.id,
+            value: value,
+            todo: item.todo,
+            dot: item.dot,
+          },
         },
-      },
-    });
-    const buffer = toBinary(RequestSchema, request);
-    socketRef.current.send(buffer);
-  }, []);
+      });
+      const buffer = toBinary(RequestSchema, request);
+      socketRef.current.send(buffer);
+      notify('success', `Renamed ${item.value} to ${value}.`);
+    },
+    [notify],
+  );
 
-  const sort = useCallback((target: string, insert: string, last: boolean) => {
-    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
-      console.error('WebSocket is not connected');
-      return;
-    }
-    const request = create(RequestSchema, {
-      command: {
-        case: 'sort',
-        value: {
-          target,
-          insert,
-          last,
+  const toggleArchived = useCallback(
+    (item: Item) => {
+      if (
+        !socketRef.current ||
+        socketRef.current.readyState !== WebSocket.OPEN
+      ) {
+        notify('error', 'WebSocket is not connected');
+        return;
+      }
+      const request = create(RequestSchema, {
+        command: {
+          case: 'update',
+          value: {
+            id: item.id,
+            value: item.value,
+            todo: !item.todo,
+            dot: item.dot,
+          },
         },
-      },
-    });
-    const buffer = toBinary(RequestSchema, request);
-    socketRef.current.send(buffer);
-  }, []);
+      });
+      const buffer = toBinary(RequestSchema, request);
+      socketRef.current.send(buffer);
+      notify(
+        'success',
+        `${item.todo ? 'Archived' : 'Unarchived'} ${item.value}.`,
+      );
+    },
+    [notify],
+  );
+
+  const toggleDot = useCallback(
+    (item: Item) => {
+      if (
+        !socketRef.current ||
+        socketRef.current.readyState !== WebSocket.OPEN
+      ) {
+        notify('error', 'WebSocket is not connected');
+        return;
+      }
+      const request = create(RequestSchema, {
+        command: {
+          case: 'update',
+          value: {
+            id: item.id,
+            value: item.value,
+            todo: item.todo,
+            dot: item.dot === 3 ? 0 : item.dot + 1,
+          },
+        },
+      });
+      const buffer = toBinary(RequestSchema, request);
+      socketRef.current.send(buffer);
+    },
+    [notify],
+  );
+
+  const sort = useCallback(
+    (target: string, insert: string, last: boolean) => {
+      if (
+        !socketRef.current ||
+        socketRef.current.readyState !== WebSocket.OPEN
+      ) {
+        notify('error', 'WebSocket is not connected');
+        return;
+      }
+      const request = create(RequestSchema, {
+        command: {
+          case: 'sort',
+          value: {
+            target,
+            insert,
+            last,
+          },
+        },
+      });
+      const buffer = toBinary(RequestSchema, request);
+      socketRef.current.send(buffer);
+    },
+    [notify],
+  );
 
   const deleteArchived = useCallback(() => {
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
-      console.error('WebSocket is not connected');
+      notify('error', 'WebSocket is not connected');
       return;
     }
     const request = create(RequestSchema, {
@@ -191,13 +244,15 @@ export const useWebSocket = () => {
     });
     const buffer = toBinary(RequestSchema, request);
     socketRef.current.send(buffer);
-  }, []);
+    notify('success', 'Deleted archived items.');
+  }, [notify]);
 
   return {
     items,
     handleLogin,
     handleLogout,
     createItem,
+    renameItem,
     toggleArchived,
     toggleDot,
     sort,
