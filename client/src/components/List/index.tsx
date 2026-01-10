@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useData } from '../../providers/DataProvider';
 import { ItemComponent } from '../ItemComponent';
 import { Tab } from '../Tab';
@@ -20,11 +20,26 @@ export const List = () => {
     inputRef.current.value = '';
   }, [createItem]);
 
+  const draggedItem = useRef<number | null>(null);
+  const [draggedOverItem, setDraggedOverItem] = useState<number | null>(null);
+  const onDragStart = useCallback((idx: number) => {
+    draggedItem.current = idx;
+  }, []);
+  const onDragEnter = useCallback((idx: number) => {
+    setDraggedOverItem(idx);
+  }, []);
+
+  const onDragEnd = useCallback(() => {
+    console.log(draggedItem.current, draggedOverItem);
+    draggedItem.current = null;
+    setDraggedOverItem(null);
+  }, [draggedOverItem]);
+
   if (items === null) {
     return null;
   }
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} draggable>
       <form action={handleSubmit}>
         <div className={styles.form__wrapper}>
           <input
@@ -39,10 +54,17 @@ export const List = () => {
         </div>
       </form>
       <Tab />
-      <div className={styles['items__wrapper']}>
-        {items.map((item) => (
+      <div className={styles.items__wrapper}>
+        {items.map((item, idx) => (
           <div key={item.id}>
-            <ItemComponent item={item} />
+            <ItemComponent
+              item={item}
+              idx={idx}
+              isDraggedOver={draggedOverItem === idx}
+              onDragStart={onDragStart}
+              onDragEnter={onDragEnter}
+              onDragEnd={onDragEnd}
+            />
           </div>
         ))}
       </div>

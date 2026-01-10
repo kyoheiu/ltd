@@ -1,25 +1,32 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { Item } from '../../../gen/ltd/v1/ws_pb';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import type { Item } from '../../../gen/ltd/v1/ws_pb';
 
 const dialogContext = createContext<{
   handleShowModal: () => void;
-  setSelectedItem: React.Dispatch<React.SetStateAction<Item | null>>
+  setSelectedItem: React.Dispatch<React.SetStateAction<Item | null>>;
 }>({} as never);
 
 export const DialogProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const handleShowModal = () => dialogRef.current?.showModal();
-  const handleCloseModal = () => dialogRef.current?.close();
+  const handleShowModal = useCallback(() => dialogRef.current?.showModal(), []);
+  const handleCloseModal = useCallback(() => dialogRef.current?.close(), []);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   useEffect(() => {
     if (selectedItem) {
       handleShowModal();
     }
-  }, [selectedItem])
+  }, [selectedItem, handleShowModal]);
 
-  const ctxValue = {handleShowModal, setSelectedItem};
+  const ctxValue = { handleShowModal, setSelectedItem };
 
   return (
     <dialogContext.Provider value={ctxValue}>
@@ -27,7 +34,7 @@ export const DialogProvider: React.FC<{ children: React.ReactNode }> = ({
       <dialog ref={dialogRef}>
         <input type="text" value={selectedItem?.value} />
         <button type="button" onClick={handleCloseModal}>
-          Close 
+          Close
         </button>
       </dialog>
     </dialogContext.Provider>

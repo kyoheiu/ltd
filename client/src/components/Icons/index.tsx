@@ -132,8 +132,8 @@ export const IconCheckbox = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -152,8 +152,8 @@ export const IconCheckboxChecked = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -165,6 +165,31 @@ export const IconCheckboxChecked = () => {
       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
       <path d="M9 11l3 3l8 -8" />
       <path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" />
+    </svg>
+  );
+};
+
+export const IconGrip = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <title>draggable</title>
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M8 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+      <path d="M8 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+      <path d="M8 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+      <path d="M14 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+      <path d="M14 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+      <path d="M14 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
     </svg>
   );
 };

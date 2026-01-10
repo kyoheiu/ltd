@@ -25,7 +25,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     toggleDot,
   } = useWebSocket();
 
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedTab, setSelectedTab] = useState(-1);
 
   const displayedItems = useMemo(() => {
     if (!items) {
