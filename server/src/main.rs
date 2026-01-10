@@ -157,13 +157,13 @@ async fn ws_handler(
 }
 
 async fn handle_socket(socket: WebSocket, core: Arc<Core>, ou: String) -> Result<(), Error> {
-    // 1. split the socket into a sender and a receiver
+    // split the socket into a sender and a receiver
     let (mut sender, mut receiver) = socket.split();
 
-    // 2. subscribe to the global broadcast channel
+    // subscribe to the global broadcast channel
     let mut rx = core.tx.subscribe();
 
-    // 3. send task: forward broadcast messages to this client
+    // send task: forward broadcast messages to this client
     let mut send_task = tokio::spawn(async move {
         while let Ok(bin_data) = rx.recv().await {
             if sender.send(Message::Binary(bin_data.into())).await.is_err() {
@@ -172,7 +172,7 @@ async fn handle_socket(socket: WebSocket, core: Arc<Core>, ou: String) -> Result
         }
     });
 
-    // 4. receive task: handle requests from this client
+    // receive task: handle requests from this client
     let tx = core.tx.clone();
     let mut recv_task = tokio::spawn(async move {
         while let Some(Ok(Message::Binary(b))) = receiver.next().await {
@@ -270,13 +270,13 @@ async fn handle_socket(socket: WebSocket, core: Arc<Core>, ou: String) -> Result
                         }
                     }
                 }
-                // 5. broadcast the updated data to all connected clients
+                // broadcast the updated data to all connected clients
                 let _ = tx.send(new_items);
             }
         }
     });
 
-    // 6. abort the other task when one task finishes (handle disconnection)
+    // abort the other task when one task finishes (handle disconnection)
     tokio::select! {
         _ = &mut send_task => recv_task.abort(),
         _ = &mut recv_task => send_task.abort(),
