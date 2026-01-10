@@ -23,9 +23,9 @@ use futures_util::{sink::SinkExt, stream::StreamExt};
 use http::HeaderMap;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use prost::Message as ProstMessage;
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::env;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use tokio::sync::broadcast;
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
 use tower_http::services::ServeDir;
@@ -37,22 +37,31 @@ const COOKIE_NAME: &str = "ltd_auth";
 struct Core {
     encoding_key: EncodingKey,
     decoding_key: DecodingKey,
-    // Channel used to send messages to all connected clients.
-    tx: broadcast::Sender<Vec<u8>>,
+    channels: Arc<Mutex<HashMap<String, broadcast::Sender<Vec<u8>>>>>,
 }
 
 impl Core {
     fn default() -> Result<Self, Error> {
-        let (tx, _rx) = broadcast::channel(100);
         Ok(Core {
             encoding_key: EncodingKey::from_secret(env::var("LTD_SECRET_KEY")?.as_bytes()),
             decoding_key: DecodingKey::from_secret(env::var("LTD_SECRET_KEY")?.as_bytes()),
-            tx,
+            channels: Arc::new(Mutex::new(HashMap::new())),
         })
     }
 
     fn get_encoding_key(&self) -> EncodingKey {
         self.encoding_key.to_owned()
+    }
+
+    fn get_or_create_tx(&self, ou: &str) -> broadcast::Sender<Vec<u8>> {
+        let mut channels = self.channels.lock().unwrap();
+        channels
+            .entry(ou.to_string())
+            .or_insert_with(|| {
+                let (tx, _rx) = broadcast::channel(100);
+                tx
+            })
+            .clone()
     }
 }
 
@@ -161,7 +170,8 @@ async fn handle_socket(socket: WebSocket, core: Arc<Core>, ou: String) -> Result
     let (mut sender, mut receiver) = socket.split();
 
     // subscribe to the global broadcast channel
-    let mut rx = core.tx.subscribe();
+    let tx = core.get_or_create_tx(&ou);
+    let mut rx = tx.subscribe();
 
     // send task: forward broadcast messages to this client
     let mut send_task = tokio::spawn(async move {
@@ -173,7 +183,7 @@ async fn handle_socket(socket: WebSocket, core: Arc<Core>, ou: String) -> Result
     });
 
     // receive task: handle requests from this client
-    let tx = core.tx.clone();
+    let tx = tx.clone();
     let mut recv_task = tokio::spawn(async move {
         while let Some(Ok(Message::Binary(b))) = receiver.next().await {
             // decode protobuf
@@ -285,7 +295,11 @@ async fn handle_socket(socket: WebSocket, core: Arc<Core>, ou: String) -> Result
 }
 
 #[debug_handler]
-async fn post_item(headers: HeaderMap, Json(payload): Json<Value>) -> Result<(), Error> {
+async fn post_item(
+    State(core): State<Core>,
+    headers: HeaderMap,
+    Json(payload): Json<Value>,
+) -> Result<(), Error> {
     if let Some(token) = headers.get("authorization") {
         if token.to_str()? == env::var("LTD_API_TOKEN")? {
             let value = payload.value;
@@ -303,6 +317,8 @@ async fn post_item(headers: HeaderMap, Json(payload): Json<Value>) -> Result<(),
                 items: Vec::from(deque),
             };
             save_json(&items, &ou)?;
+            let tx = core.get_or_create_tx(&ou);
+            let _ = tx.send(get_binary(&items));
             Ok(info!("Added(via API): id {} value {} dot 0", id, value))
         } else {
             warn!("Invalid token.");
