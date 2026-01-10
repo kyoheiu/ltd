@@ -7,6 +7,8 @@ const dataContext = createContext<{
   createItem: (value: string) => void;
   toggleArchived: (item: Item) => void;
   toggleDot: (item: Item) => void;
+  sort: (target: string, insert: string, last: boolean) => void;
+  deleteArchived: () => void;
   handleLogin: (formData: FormData) => Promise<void>;
   handleLogout: () => Promise<void>;
   selectedTab: number;
@@ -23,6 +25,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     createItem,
     toggleArchived,
     toggleDot,
+    sort,
+    deleteArchived,
   } = useWebSocket();
 
   const [selectedTab, setSelectedTab] = useState(-1);
@@ -48,6 +52,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       createItem,
       toggleArchived,
       toggleDot,
+      sort,
+      deleteArchived,
       selectedTab,
       setSelectedTab,
     }),
@@ -58,6 +64,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       createItem,
       toggleArchived,
       toggleDot,
+      sort,
+      deleteArchived,
       selectedTab,
     ],
   );

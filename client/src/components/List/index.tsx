@@ -5,7 +5,7 @@ import { Tab } from '../Tab';
 import styles from './index.module.css';
 
 export const List = () => {
-  const { items, createItem } = useData();
+  const { items, createItem, sort, deleteArchived, selectedTab } = useData();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleSubmit = useCallback(() => {
@@ -20,26 +20,42 @@ export const List = () => {
     inputRef.current.value = '';
   }, [createItem]);
 
-  const draggedItem = useRef<number | null>(null);
-  const [draggedOverItem, setDraggedOverItem] = useState<number | null>(null);
-  const onDragStart = useCallback((idx: number) => {
-    draggedItem.current = idx;
+  const draggedId = useRef<string | null>(null);
+  const [draggedOverId, setDraggedOverId] = useState<string | null>(null);
+  const [draggedOutside, setDraggedOutside] = useState(false);
+  const onDragStart = useCallback((id: string) => {
+    draggedId.current = id;
   }, []);
-  const onDragEnter = useCallback((idx: number) => {
-    setDraggedOverItem(idx);
+  const onDragEnter = useCallback((id: string) => {
+    setDraggedOutside(false);
+    setDraggedOverId(id);
   }, []);
+  const onDragEnterOutside = useCallback(() => {
+    if (!items) {
+      return;
+    }
+    setDraggedOutside(true);
+  }, [items]);
 
   const onDragEnd = useCallback(() => {
-    console.log(draggedItem.current, draggedOverItem);
-    draggedItem.current = null;
-    setDraggedOverItem(null);
-  }, [draggedOverItem]);
+    if (draggedId.current !== null && draggedOverId !== null) {
+      const target = draggedId.current;
+      const insert = draggedOverId;
+      if (target === insert) {
+        return;
+      }
+      sort(target, insert, draggedOutside);
+    }
+    draggedId.current = null;
+    setDraggedOverId(null);
+    setDraggedOutside(false);
+  }, [draggedOverId, draggedOutside, sort]);
 
   if (items === null) {
     return null;
   }
   return (
-    <div className={styles.wrapper} draggable>
+    <div className={styles.wrapper}>
       <form action={handleSubmit}>
         <div className={styles.form__wrapper}>
           <input
@@ -55,12 +71,21 @@ export const List = () => {
       </form>
       <Tab />
       <div className={styles.items__wrapper}>
-        {items.map((item, idx) => (
+        {selectedTab === 4 && (
+          <button
+            type="button"
+            className={styles.delete}
+            onClick={deleteArchived}
+          >
+            Delete all archived items
+          </button>
+        )}
+        {items.map((item) => (
           <div key={item.id}>
             <ItemComponent
               item={item}
-              idx={idx}
-              isDraggedOver={draggedOverItem === idx}
+              isDragged={draggedId.current === item.id}
+              isDraggedOver={draggedOverId === item.id && !draggedOutside}
               onDragStart={onDragStart}
               onDragEnter={onDragEnter}
               onDragEnd={onDragEnd}
@@ -68,6 +93,11 @@ export const List = () => {
           </div>
         ))}
       </div>
+      {draggedOutside && <div className={styles.inserted} />}
+      <div
+        style={{ flex: 1, width: '100%' }}
+        onDragEnter={onDragEnterOutside}
+      />
     </div>
   );
 };

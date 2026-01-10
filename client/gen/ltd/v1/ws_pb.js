@@ -10,7 +10,7 @@ import { fileDesc, messageDesc } from '@bufbuild/protobuf/codegenv2';
 export const file_ltd_v1_ws =
   /*@__PURE__*/
   fileDesc(
-    'Cg9sdGQvdjEvd3MucHJvdG8SBmx0ZC52MSI8CgRJdGVtEgoKAmlkGAEgASgJEg0KBXZhbHVlGAIgASgJEgwKBHRvZG8YAyABKAgSCwoDZG90GAQgASgFIiQKBUl0ZW1zEhsKBWl0ZW1zGAEgAygLMgwubHRkLnYxLkl0ZW0iFwoGQ3JlYXRlEg0KBXZhbHVlGAEgASgJIgYKBFJlYWQiPgoGVXBkYXRlEgoKAmlkGAEgASgJEg0KBXZhbHVlGAIgASgJEgwKBHRvZG8YAyABKAgSCwoDZG90GAQgASgFIggKBkRlbGV0ZSIhCgRQb3N0Eg0KBXZhbHVlGAEgASgJEgoKAm91GAIgASgJIrYBCgdSZXF1ZXN0EiAKBmNyZWF0ZRgBIAEoCzIOLmx0ZC52MS5DcmVhdGVIABIcCgRyZWFkGAIgASgLMgwubHRkLnYxLlJlYWRIABIgCgZ1cGRhdGUYAyABKAsyDi5sdGQudjEuVXBkYXRlSAASIAoGZGVsZXRlGAQgASgLMg4ubHRkLnYxLkRlbGV0ZUgAEhwKBHBvc3QYBSABKAsyDC5sdGQudjEuUG9zdEgAQgkKB2NvbW1hbmRCTgoKY29tLmx0ZC52MUIHV3NQcm90b1ABogIDTFhYqgIGTHRkLlYxygIGTHRkXFYx4gISTHRkXFYxXEdQQk1ldGFkYXRh6gIHTHRkOjpWMWIGcHJvdG8z',
+    'Cg9sdGQvdjEvd3MucHJvdG8SBmx0ZC52MSI8CgRJdGVtEgoKAmlkGAEgASgJEg0KBXZhbHVlGAIgASgJEgwKBHRvZG8YAyABKAgSCwoDZG90GAQgASgNIiQKBUl0ZW1zEhsKBWl0ZW1zGAEgAygLMgwubHRkLnYxLkl0ZW0iFwoGQ3JlYXRlEg0KBXZhbHVlGAEgASgJIgYKBFJlYWQiPgoGVXBkYXRlEgoKAmlkGAEgASgJEg0KBXZhbHVlGAIgASgJEgwKBHRvZG8YAyABKAgSCwoDZG90GAQgASgNIggKBkRlbGV0ZSI0CgRTb3J0Eg4KBnRhcmdldBgBIAEoCRIOCgZpbnNlcnQYAiABKAkSDAoEbGFzdBgDIAEoCCK2AQoHUmVxdWVzdBIgCgZjcmVhdGUYASABKAsyDi5sdGQudjEuQ3JlYXRlSAASHAoEcmVhZBgCIAEoCzIMLmx0ZC52MS5SZWFkSAASIAoGdXBkYXRlGAMgASgLMg4ubHRkLnYxLlVwZGF0ZUgAEiAKBmRlbGV0ZRgEIAEoCzIOLmx0ZC52MS5EZWxldGVIABIcCgRzb3J0GAUgASgLMgwubHRkLnYxLlNvcnRIAEIJCgdjb21tYW5kQk4KCmNvbS5sdGQudjFCB1dzUHJvdG9QAaICA0xYWKoCBkx0ZC5WMcoCBkx0ZFxWMeICEkx0ZFxWMVxHUEJNZXRhZGF0YeoCB0x0ZDo6VjFiBnByb3RvMw',
   );
 
 /**
@@ -50,10 +50,10 @@ export const UpdateSchema = /*@__PURE__*/ messageDesc(file_ltd_v1_ws, 4);
 export const DeleteSchema = /*@__PURE__*/ messageDesc(file_ltd_v1_ws, 5);
 
 /**
- * Describes the message ltd.v1.Post.
- * Use `create(PostSchema)` to create a new message.
+ * Describes the message ltd.v1.Sort.
+ * Use `create(SortSchema)` to create a new message.
  */
-export const PostSchema = /*@__PURE__*/ messageDesc(file_ltd_v1_ws, 6);
+export const SortSchema = /*@__PURE__*/ messageDesc(file_ltd_v1_ws, 6);
 
 /**
  * Describes the message ltd.v1.Request.

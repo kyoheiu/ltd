@@ -1,4 +1,3 @@
-import { useCallback, useRef } from 'react';
 import type { Item } from '../../../gen/ltd/v1/ws_pb';
 import { useData } from '../../providers/DataProvider';
 import { useDialog } from '../../providers/DialogProvider';
@@ -13,26 +12,34 @@ import styles from './index.module.css';
 
 export const ItemComponent: React.FC<{
   item: Item;
-  idx: number;
+  isDragged: boolean;
   isDraggedOver: boolean;
-  onDragStart: (idx: number) => void;
-  onDragEnter: (idx: number) => void;
+  onDragStart: (id: string) => void;
+  onDragEnter: (id: string) => void;
   onDragEnd: () => void;
-}> = ({ item, idx, isDraggedOver, onDragStart, onDragEnter, onDragEnd }) => {
+}> = ({
+  item,
+  isDragged,
+  isDraggedOver,
+  onDragStart,
+  onDragEnter,
+  onDragEnd,
+}) => {
   const { selectedTab, toggleArchived, toggleDot } = useData();
   const { setSelectedItem } = useDialog();
 
   return (
     <>
-      {isDraggedOver && <div className={styles.inserted}/>}
-      <div
+      {isDraggedOver && <div className={styles.inserted} />}
+      <li
         className={styles.wrapper}
+        data-isdragged={isDragged}
         draggable
         onDragOver={(e) => {
           e.preventDefault();
         }}
-        onDragStart={() => onDragStart(idx)}
-        onDragEnter={() => onDragEnter(idx)}
+        onDragStart={() => onDragStart(item.id)}
+        onDragEnter={() => onDragEnter(item.id)}
         onDragEnd={onDragEnd}
       >
         <div className={styles.checkbox__and__value}>
@@ -57,7 +64,7 @@ export const ItemComponent: React.FC<{
             {shapesMap.get(item.dot.toString())}
           </button>
         </div>
-      </div>
+      </li>
     </>
   );
 };

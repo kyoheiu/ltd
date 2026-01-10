@@ -13,11 +13,11 @@ const TIMEOUT = 3000;
 
 export const useWebSocket = () => {
   const [items, setItems] = useState<Item[] | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
+  const retryCountRef = useRef(0);
   const socketRef = useRef<WebSocket | null>(null);
 
   const connect = useCallback(() => {
-    if (retryCount >= MAX_RETRIES) {
+    if (retryCountRef.current >= MAX_RETRIES) {
       console.error('Max retries reached. Stopping reconnection.');
       return;
     }
@@ -31,16 +31,16 @@ export const useWebSocket = () => {
         console.warn('Connection lost or failed to connect.');
       }
       console.warn(
-        `Connection lost. Retrying in ${TIMEOUT}ms... (${retryCount + 1}/${MAX_RETRIES})`,
+        `Connection lost. Retrying in ${TIMEOUT}ms... (${retryCountRef.current + 1}/${MAX_RETRIES})`,
       );
 
       setItems(null);
-      // setTimeout(() => {
-      //     setRetryCount((prev) => prev + 1);
-      // }, TIMEOUT);
+      retryCountRef.current += 1;
+      setTimeout(() => connect(), TIMEOUT);
     };
     ws.onopen = () => {
       console.log('Connected to WebSocket server.');
+      retryCountRef.current = 0;
       const buffer = toBinary(
         RequestSchema,
         create(RequestSchema, {
@@ -60,7 +60,7 @@ export const useWebSocket = () => {
         }
       }
     };
-  }, [retryCount]);
+  }, []);
 
   useEffect(() => {
     connect();
@@ -81,6 +81,7 @@ export const useWebSocket = () => {
           body: params,
         });
         if (res.ok) {
+          retryCountRef.current = 0;
           connect();
         } else {
           console.error('Login failed');
@@ -158,6 +159,40 @@ export const useWebSocket = () => {
     socketRef.current.send(buffer);
   }, []);
 
+  const sort = useCallback((target: string, insert: string, last: boolean) => {
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket is not connected');
+      return;
+    }
+    const request = create(RequestSchema, {
+      command: {
+        case: 'sort',
+        value: {
+          target,
+          insert,
+          last,
+        },
+      },
+    });
+    const buffer = toBinary(RequestSchema, request);
+    socketRef.current.send(buffer);
+  }, []);
+
+  const deleteArchived = useCallback(() => {
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket is not connected');
+      return;
+    }
+    const request = create(RequestSchema, {
+      command: {
+        case: 'delete',
+        value: {},
+      },
+    });
+    const buffer = toBinary(RequestSchema, request);
+    socketRef.current.send(buffer);
+  }, []);
+
   return {
     items,
     handleLogin,
@@ -165,5 +200,7 @@ export const useWebSocket = () => {
     createItem,
     toggleArchived,
     toggleDot,
+    sort,
+    deleteArchived,
   };
 };

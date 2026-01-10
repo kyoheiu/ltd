@@ -18,6 +18,8 @@
 }
 
 .button {
-  border-radius: 0.5rem;
   padding: 2px 8px;
+  color: inherit;
+  border: 1px solid var(--color-text);
+  border-radius: 0.5rem;
 }

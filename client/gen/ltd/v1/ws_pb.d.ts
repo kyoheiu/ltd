@@ -30,7 +30,7 @@ export declare type Item = Message<'ltd.v1.Item'> & {
   todo: boolean;
 
   /**
-   * @generated from field: int32 dot = 4;
+   * @generated from field: uint32 dot = 4;
    */
   dot: number;
 };
@@ -104,7 +104,7 @@ export declare type Update = Message<'ltd.v1.Update'> & {
   todo: boolean;
 
   /**
-   * @generated from field: int32 dot = 4;
+   * @generated from field: uint32 dot = 4;
    */
   dot: number;
 };
@@ -127,25 +127,30 @@ export declare type Delete = Message<'ltd.v1.Delete'> & {};
 export declare const DeleteSchema: GenMessage<Delete>;
 
 /**
- * @generated from message ltd.v1.Post
+ * @generated from message ltd.v1.Sort
  */
-export declare type Post = Message<'ltd.v1.Post'> & {
+export declare type Sort = Message<'ltd.v1.Sort'> & {
   /**
-   * @generated from field: string value = 1;
+   * @generated from field: string target = 1;
    */
-  value: string;
+  target: string;
 
   /**
-   * @generated from field: string ou = 2;
+   * @generated from field: string insert = 2;
    */
-  ou: string;
+  insert: string;
+
+  /**
+   * @generated from field: bool last = 3;
+   */
+  last: boolean;
 };
 
 /**
- * Describes the message ltd.v1.Post.
- * Use `create(PostSchema)` to create a new message.
+ * Describes the message ltd.v1.Sort.
+ * Use `create(SortSchema)` to create a new message.
  */
-export declare const PostSchema: GenMessage<Post>;
+export declare const SortSchema: GenMessage<Sort>;
 
 /**
  * 既存の定義の後に以下を追加
@@ -187,10 +192,10 @@ export declare type Request = Message<'ltd.v1.Request'> & {
       }
     | {
         /**
-         * @generated from field: ltd.v1.Post post = 5;
+         * @generated from field: ltd.v1.Sort sort = 5;
          */
-        value: Post;
-        case: 'post';
+        value: Sort;
+        case: 'sort';
       }
     | { case: undefined; value?: undefined };
 };

@@ -5,7 +5,7 @@ message Item {
   string id = 1;
   string value = 2;
   bool todo = 3;
-  int32 dot = 4;
+  uint32 dot = 4;
 }
 
 message Items {
@@ -23,15 +23,16 @@ message Update {
   string id = 1;
   string value = 2;
   bool todo = 3;
-  int32 dot = 4;
+  uint32 dot = 4;
 }
 
 message Delete {
 }
 
-message Post {
-  string value = 1;
-  string ou = 2;
+message Sort {
+  string target = 1;
+  string insert = 2;
+  bool last = 3;
 }
 
 // 既存の定義の後に以下を追加
@@ -41,6 +42,6 @@ message Request {
     Read read = 2;
     Update update = 3;
     Delete delete = 4;
-    Post post = 5;
+    Sort sort = 5;
   }
 }

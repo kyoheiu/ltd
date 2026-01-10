@@ -6,14 +6,14 @@ pub struct LogIn {
     pub password: String,
 }
 
-#[derive(Deserialize)]
-pub struct Sorted {
-    old: usize,
-    new: usize,
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     pub sub: String,
     pub exp: usize,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Value {
+    pub value: String,
+    pub ou: String,
 }

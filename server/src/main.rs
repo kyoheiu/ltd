@@ -7,18 +7,20 @@ pub mod api {
 }
 
 use crate::api::v1::{request::Command, Item, Items, Request as WSRequest};
-use crate::types::{Claims, LogIn};
+use crate::types::{Claims, LogIn, Value};
 use axum::debug_handler;
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
 use axum::extract::State;
 use axum::response::{Html, IntoResponse, Redirect};
 use axum::Form;
+use axum::Json;
 use axum::{
     routing::{any, get, post},
     Router,
 };
 use error::Error;
 use futures_util::{sink::SinkExt, stream::StreamExt};
+use http::HeaderMap;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use prost::Message as ProstMessage;
 use std::collections::VecDeque;
@@ -65,6 +67,7 @@ async fn main() -> Result<(), Error> {
         .route("/health", get(health))
         .route("/api/ldaplogin", post(ldaplogin))
         .route("/api/logout", post(logout))
+        .route("/api/post", post(post_item))
         .route("/ws", any(ws_handler))
         .layer(CookieManagerLayer::new())
         .nest_service("/", ServeDir::new("static"))
@@ -235,7 +238,35 @@ async fn handle_socket(socket: WebSocket, core: Arc<Core>, ou: String) -> Result
                                     new_items = get_binary(&items);
                                 }
                             }
-                            Command::Post(p) => { /* ... */ }
+                            Command::Sort(s) => {
+                                let (mut todo, mut done): (VecDeque<Item>, VecDeque<Item>) =
+                                    deque.into_iter().partition(|item| item.todo);
+
+                                let target_idx = todo.iter().position(|item| item.id == s.target);
+                                let insert_idx = todo.iter().position(|item| item.id == s.insert);
+                                match (target_idx, insert_idx) {
+                                    (Some(target), Some(after)) => {
+                                        if let Some(target_item) = todo.remove(target) {
+                                            todo.insert(
+                                                if after > target && !s.last {
+                                                    after - 1
+                                                } else {
+                                                    after
+                                                },
+                                                target_item,
+                                            );
+                                        }
+                                    }
+                                    _ => (),
+                                }
+                                todo.append(&mut done);
+                                let items = Items {
+                                    items: Vec::from(todo),
+                                };
+                                if save_json(&items, &ou).is_ok() {
+                                    new_items = get_binary(&items);
+                                }
+                            }
                         }
                     }
                 }
@@ -251,6 +282,36 @@ async fn handle_socket(socket: WebSocket, core: Arc<Core>, ou: String) -> Result
         _ = &mut recv_task => send_task.abort(),
     };
     Ok(())
+}
+
+#[debug_handler]
+async fn post_item(headers: HeaderMap, Json(payload): Json<Value>) -> Result<(), Error> {
+    if let Some(token) = headers.get("authorization") {
+        if token.to_str()? == env::var("LTD_API_TOKEN")? {
+            let value = payload.value;
+            let ou = payload.ou;
+            let id = uuid::Uuid::new_v4().to_string();
+            let json = read_json(&ou)?;
+            let mut deque = VecDeque::from(json.items);
+            deque.push_front(Item {
+                id: id.clone(),
+                value: value.clone(),
+                todo: true,
+                dot: 0,
+            });
+            let items = Items {
+                items: Vec::from(deque),
+            };
+            save_json(&items, &ou)?;
+            Ok(info!("Added(via API): id {} value {} dot 0", id, value))
+        } else {
+            warn!("Invalid token.");
+            Err(Error::NotVerified)
+        }
+    } else {
+        warn!("No header.");
+        Err(Error::Header)
+    }
 }
 
 fn is_valid(cookies: Cookies, key: &DecodingKey) -> Result<String, Error> {
