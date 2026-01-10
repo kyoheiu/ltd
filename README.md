@@ -41,9 +41,17 @@ Authorization: LTD_API_TOKEN
 ```
 
 ## tech stack
-- Svelte as the frontend
-  - tailwindcss
-- Rust as the backend
-  - axum
-  - ldap3
-  - JWT cookie
+- React
+- axum
+  - WebSocket
+- protobuf
+- ldap3
+- JWT cookie
+
+## develop
+prerequisite: add test user to LDAP via LLDAP http server. See https://github.com/lldap/lldap .
+
+```sh
+make generate # generate types from .proto configuration
+make dev
+```
