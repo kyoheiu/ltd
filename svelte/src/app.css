@@ -1,9 +1,0 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
-  body {
-    @apply w-full sm:w-80 m-auto text-foreground bg-background;
-  }
-}
