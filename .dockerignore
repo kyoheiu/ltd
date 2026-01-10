@@ -1,5 +1,5 @@
 ./server/target
 ./server/items
 ./server/.env
-./svelte/node_modules
+./client/node_modules
 ./ldap
