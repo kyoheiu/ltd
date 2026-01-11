@@ -1,0 +1,28 @@
+{
+  "name": "ltd",
+  "private": true,
+  "version": "2.0.0",
+  "scripts": {
+    "build": "rspack build",
+    "check": "biome check --write",
+    "dev": "rspack dev",
+    "format": "biome format --write",
+    "preview": "rspack preview"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "2.10.2",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-hot-toast": "^2.6.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.2",
+    "@rspack/cli": "1.6.8",
+    "@rspack/core": "1.6.8",
+    "@rspack/plugin-react-refresh": "1.5.3",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "react-refresh": "0.18.0",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,52 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.form__wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input {
+  border-radius: 0.5rem;
+  padding: 4px 8px;
+}
+
+.button {
+  color: inherit;
+}
+
+.items__wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  width: 100%;
+}
+
+.inserted {
+  width: 100%;
+  height: 1px;
+  border-bottom: 2px dashed var(--color-text);
+  margin: 0.25rem 0 0.5rem 0;
+}
+
+.delete {
+  color: var(--color-text);
+  background-color: var(--color-warning);
+  border: 1px solid var(--color-text);
+  border-radius: 0.5rem;
+  height: 2rem;
+  align-self: center;
+  margin-bottom: 0.5rem;
+}
+
+.margin__insert {
+  flex: 1;
+  width: 100%;
+  min-height: 1.5rem;
+}

@@ -1,16 +1,23 @@
+generate:
+	buf generate
+
 fmt:
-	cd svelte && npm run fmt
-	cd axum && cargo fmt
+	cd client && npx biome check --write .
+	cd server && cargo fmt
 
 dev:
-	cd svelte && npm run build
-	cp -r ./svelte/dist/* ./axum/static
-	cd ldap && sudo docker-compose up -d
-	cd axum && LTD_SECRET_KEY=test LTD_DOMAIN=localhost LTD_NETWORK=ldap://localhost:3890 RUST_LOG=debug cargo run
+	@echo "Starting LDAP." 
+	@(cd ldap && sudo docker-compose up -d)
+	@echo "LDAP started."
+	@echo "Starting Axum (Backend) and React (Frontend)."
+	@trap 'kill 0' EXIT; \
+	(cd client && npm run dev) & \
+	(cd server && LTD_SECRET_KEY=test LTD_DOMAIN=localhost LTD_NETWORK=ldap://localhost:3890 LTD_API_TOKEN=test RUST_LOG=debug cargo run) & \
+	wait
 
 build:
-	cd svelte && npm install --package-lock-only
-	cd axum && cargo generate-lockfile
+	cd client && npm install --package-lock-only
+	cd server && cargo generate-lockfile
 	sudo docker build --tag=kyoheiudev/ltd:$(VER) .
 
 push:
