@@ -2,6 +2,7 @@ import { createContext, useContext, useLayoutEffect, useState } from 'react';
 
 const authContext = createContext<{
   isAuthenticated: boolean;
+  setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
 }>({} as never);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -27,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   return (
-    <authContext.Provider value={{ isAuthenticated }}>
+    <authContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
       {children}
     </authContext.Provider>
   );

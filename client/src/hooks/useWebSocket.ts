@@ -14,7 +14,7 @@ const MAX_RETRIES = 5;
 const TIMEOUT_UNIT = 3000;
 
 export const useWebSocket = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, setIsAuthenticated } = useAuth();
   const { notify } = useNotification();
   const [items, setItems] = useState<Item[] | null>(null);
   const retryCountRef = useRef(0);
@@ -90,13 +90,14 @@ export const useWebSocket = () => {
         });
         if (res.ok) {
           retryCountRef.current = 0;
+          setIsAuthenticated(true);
           connect();
         } else {
           notify('error', 'Login failed.');
         }
       });
     },
-    [connect, notify],
+    [connect, notify, setIsAuthenticated],
   );
 
   const handleLogout = useCallback(async () => {
@@ -105,12 +106,13 @@ export const useWebSocket = () => {
         method: 'POST',
       });
       if (res.ok) {
+        setIsAuthenticated(false);
         setItems(null);
       } else {
         notify('error', 'Logout failed.');
       }
     });
-  }, [notify]);
+  }, [notify, setIsAuthenticated]);
 
   const createItem = useCallback(
     (value: string) => {
