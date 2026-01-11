@@ -50,5 +50,6 @@
 }
 
 .grip {
+  touch-action: none;
   cursor: grab;
 }

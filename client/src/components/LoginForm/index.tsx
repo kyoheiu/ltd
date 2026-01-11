@@ -6,7 +6,7 @@ export const LoginForm = () => {
   const { handleLogin } = useData();
 
   return (
-    <form id="login-form" method="post" action={handleLogin}>
+    <form id="login-form" action={handleLogin}>
       <div className={styles.wrapper}>
         <div className={styles.input__wrapper}>
           <input

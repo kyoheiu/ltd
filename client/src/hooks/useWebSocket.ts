@@ -2,28 +2,38 @@ import { create, fromBinary, toBinary } from '@bufbuild/protobuf';
 import {
   startTransition,
   useCallback,
-  useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
 import { type Item, ItemsSchema, RequestSchema } from '../../gen/ltd/v1/ws_pb';
+import { useAuth } from '../providers/AuthProvider';
 import { useNotification } from '../providers/NotificationProvider';
 
 const MAX_RETRIES = 5;
 const TIMEOUT_UNIT = 3000;
 
 export const useWebSocket = () => {
+  const { isAuthenticated } = useAuth();
   const { notify } = useNotification();
   const [items, setItems] = useState<Item[] | null>(null);
   const retryCountRef = useRef(0);
   const socketRef = useRef<WebSocket | null>(null);
 
   const connect = useCallback(() => {
+    if (!isAuthenticated) {
+      return;
+    }
     if (retryCountRef.current >= MAX_RETRIES) {
       console.error('Max retries reached. Stopping reconnection.');
       return;
     }
-    const ws = new WebSocket('ws://localhost:8080/ws');
+    const wsHost =
+      process.env.NODE_ENV === 'production'
+        ? window.location.host
+        : 'localhost:8080';
+
+    const ws = new WebSocket(`ws://${wsHost}/ws`);
     ws.binaryType = 'arraybuffer';
     socketRef.current = ws;
 
@@ -58,9 +68,9 @@ export const useWebSocket = () => {
         }
       }
     };
-  }, [notify]);
+  }, [isAuthenticated, notify]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     connect();
     return () => {
       socketRef.current?.close();

@@ -1,5 +1,6 @@
 import { Auth } from './components/Auth';
 import './index.css';
+import { AuthProvider } from './providers/AuthProvider';
 import { DataProvider } from './providers/DataProvider';
 import { DialogProvider } from './providers/DialogProvider';
 import { NotificationProvider } from './providers/NotificationProvider';
@@ -7,11 +8,13 @@ import { NotificationProvider } from './providers/NotificationProvider';
 function App() {
   return (
     <NotificationProvider>
-      <DataProvider>
-        <DialogProvider>
-          <Auth />
-        </DialogProvider>
-      </DataProvider>
+      <AuthProvider>
+        <DataProvider>
+          <DialogProvider>
+            <Auth />
+          </DialogProvider>
+        </DataProvider>
+      </AuthProvider>
     </NotificationProvider>
   );
 }
