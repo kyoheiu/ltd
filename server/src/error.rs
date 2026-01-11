@@ -95,19 +95,24 @@ impl From<axum::Error> for Error {
 
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
-        let body = match self {
-            Error::Io(s) => s,
-            Error::Env(s) => s,
-            Error::Ldap(s) => s,
-            Error::Jwt(s) => s,
-            Error::Json(s) => s,
-            Error::ParseInt(s) => s,
-            Error::WebSocket(s) => s,
-            Error::SystemTime => "SystemTimeError.".to_string(),
-            Error::Header => "Token not found.".to_string(),
-            Error::NotVerified => "Not verified.".to_string(),
-            Error::OrganizationalUnitName => "OrganizationalUnitName not found.".to_string(),
-        };
-        (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
+        match self {
+            Error::Io(s) => (StatusCode::INTERNAL_SERVER_ERROR, s).into_response(),
+            Error::Env(s) => (StatusCode::INTERNAL_SERVER_ERROR, s).into_response(),
+            Error::Ldap(s) => (StatusCode::INTERNAL_SERVER_ERROR, s).into_response(),
+            Error::Jwt(s) => (StatusCode::UNAUTHORIZED, s).into_response(),
+            Error::Json(s) => (StatusCode::BAD_REQUEST, s).into_response(),
+            Error::ParseInt(s) => (StatusCode::BAD_REQUEST, s).into_response(),
+            Error::WebSocket(s) => (StatusCode::INTERNAL_SERVER_ERROR, s).into_response(),
+            Error::SystemTime => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "SystemTimeError.".to_string(),
+            )
+                .into_response(),
+            Error::Header => (StatusCode::BAD_REQUEST, "Token not found.").into_response(),
+            Error::NotVerified => (StatusCode::UNAUTHORIZED, "Not verified.").into_response(),
+            Error::OrganizationalUnitName => {
+                (StatusCode::BAD_REQUEST, "OrganizationalUnitName not found.").into_response()
+            }
+        }
     }
 }

@@ -20,7 +20,7 @@ use axum::{
 };
 use error::Error;
 use futures_util::{sink::SinkExt, stream::StreamExt};
-use http::HeaderMap;
+use http::{HeaderMap, StatusCode};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use prost::Message as ProstMessage;
 use std::collections::{HashMap, VecDeque};
@@ -74,6 +74,7 @@ async fn main() -> Result<(), Error> {
     // build our application with a single route
     let app = Router::new()
         .route("/health", get(health))
+        .route("/api/auth", get(get_auth_status))
         .route("/api/ldaplogin", post(ldaplogin))
         .route("/api/logout", post(logout))
         .route("/api/post", post(post_item))
@@ -92,6 +93,14 @@ async fn main() -> Result<(), Error> {
 #[debug_handler]
 async fn health() -> Html<&'static str> {
     Html("Hello, developer.")
+}
+
+#[debug_handler]
+async fn get_auth_status(cookies: Cookies, State(core): State<Core>) -> impl IntoResponse {
+    match is_valid(cookies, &core.decoding_key) {
+        Err(_) => StatusCode::UNAUTHORIZED,
+        Ok(_) => StatusCode::OK,
+    }
 }
 
 #[debug_handler]
@@ -336,10 +345,10 @@ fn is_valid(cookies: Cookies, key: &DecodingKey) -> Result<String, Error> {
         if let Ok(claims) = claims {
             Ok(claims.claims.sub)
         } else {
-            Err(Error::Io("error".to_string()))
+            Err(Error::Jwt("invalid jwt.".to_string()))
         }
     } else {
-        Err(Error::Io("error".to_string()))
+        Err(Error::Jwt("invalid jwt.".to_string()))
     }
 }
 
