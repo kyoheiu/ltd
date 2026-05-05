@@ -6,12 +6,12 @@ RUN npm install
 COPY ./client ./
 RUN npm run build
 
-FROM rust:1.86-alpine3.21 as backend-builder
+FROM rust:1.95-alpine3.21 as backend-builder
 WORKDIR /server
 COPY ./server ./
 RUN apk update && apk add --no-cache musl-dev && cargo build --release
 
-FROM alpine:3.18
+FROM alpine:3.21
 WORKDIR /ltd
 COPY --from=frontend-builder /client/dist /ltd/static
 COPY --from=backend-builder /server/target/release/ltd .
