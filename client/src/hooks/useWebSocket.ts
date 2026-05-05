@@ -57,7 +57,7 @@ export const useWebSocket = () => {
       ws.onclose = (_event: CloseEvent) => {
         setItems(null);
         retryCountRef.current += 1;
-        const timeout = TIMEOUT_UNIT * retryCountRef.current ** 2;
+        const timeout = TIMEOUT_UNIT;
         console.warn(
           `Connection lost. Retrying in ${timeout} ms... (${retryCountRef.current}/${MAX_RETRIES})`,
         );
