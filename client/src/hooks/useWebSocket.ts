@@ -11,8 +11,8 @@ import { type Item, ItemsSchema, RequestSchema } from '../../gen/ltd/v1/ws_pb';
 import { useAuth } from '../providers/AuthProvider';
 import { useNotification } from '../providers/NotificationProvider';
 
-const MAX_RETRIES = 5;
-const TIMEOUT_UNIT = 3000;
+const MAX_RETRIES = 10;
+const TIMEOUT_UNIT = 1000;
 
 export const useWebSocket = () => {
   const { isAuthenticated, setIsAuthenticated } = useAuth();
@@ -57,7 +57,7 @@ export const useWebSocket = () => {
       ws.onclose = (_event: CloseEvent) => {
         setItems(null);
         retryCountRef.current += 1;
-        const timeout = TIMEOUT_UNIT * retryCountRef.current ** 2;
+        const timeout = TIMEOUT_UNIT;
         console.warn(
           `Connection lost. Retrying in ${timeout} ms... (${retryCountRef.current}/${MAX_RETRIES})`,
         );
