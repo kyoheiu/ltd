@@ -2,6 +2,7 @@ import { create, fromBinary, toBinary } from '@bufbuild/protobuf';
 import {
   startTransition,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -20,60 +21,97 @@ export const useWebSocket = () => {
   const retryCountRef = useRef(0);
   const socketRef = useRef<WebSocket | null>(null);
 
-  const connect = useCallback(() => {
-    if (!isAuthenticated) {
-      return;
+  const disconnect = useCallback(() => {
+    if (socketRef.current) {
+      socketRef.current.onclose = null;
+      socketRef.current.onerror = null;
+      socketRef.current.close();
+      socketRef.current = null;
     }
-    if (retryCountRef.current >= MAX_RETRIES) {
-      console.error('Max retries reached. Stopping reconnection.');
-      return;
-    }
-    const wsHost =
-      process.env.NODE_ENV === 'production'
-        ? window.location.host
-        : 'localhost:8080';
+  }, []);
 
-    const ws = new WebSocket(`ws://${wsHost}/ws`);
-    ws.binaryType = 'arraybuffer';
-    socketRef.current = ws;
+  const connect = useCallback(
+    ({ isManual }: { isManual: boolean }) => {
+      if (!isAuthenticated) {
+        return;
+      }
+      if (isManual) {
+        retryCountRef.current = 0;
+      }
+      if (retryCountRef.current >= MAX_RETRIES) {
+        console.error('Max retries reached. Stopping reconnection.');
+        return;
+      }
 
-    ws.onclose = (_event: CloseEvent) => {
-      setItems(null);
-      retryCountRef.current += 1;
-      const timeout = TIMEOUT_UNIT * (retryCountRef.current ^ 2);
-      console.warn(
-        `Connection lost. Retrying in ${timeout} ms... (${retryCountRef.current}/${MAX_RETRIES})`,
-      );
-      setTimeout(() => connect(), timeout);
+      disconnect();
+
+      const wsHost =
+        process.env.NODE_ENV === 'production'
+          ? window.location.host
+          : 'localhost:8080';
+
+      const ws = new WebSocket(`ws://${wsHost}/ws`);
+      ws.binaryType = 'arraybuffer';
+      socketRef.current = ws;
+
+      ws.onclose = (_event: CloseEvent) => {
+        setItems(null);
+        retryCountRef.current += 1;
+        const timeout = TIMEOUT_UNIT * retryCountRef.current ** 2;
+        console.warn(
+          `Connection lost. Retrying in ${timeout} ms... (${retryCountRef.current}/${MAX_RETRIES})`,
+        );
+        setTimeout(() => connect({ isManual: false }), timeout);
+      };
+      ws.onopen = () => {
+        notify('success', 'Connected to server.');
+        retryCountRef.current = 0;
+        const buffer = toBinary(
+          RequestSchema,
+          create(RequestSchema, {
+            command: { case: 'read', value: {} },
+          }),
+        );
+        ws.send(buffer);
+      };
+      ws.onmessage = (event: MessageEvent) => {
+        if (event.data instanceof ArrayBuffer) {
+          try {
+            const uint8Array = new Uint8Array(event.data);
+            const decodedData = fromBinary(ItemsSchema, uint8Array);
+            setItems(decodedData.items);
+          } catch (e) {
+            console.error(`Failed to decode:', ${e}`);
+          }
+        }
+      };
+    },
+    [isAuthenticated, notify, disconnect],
+  );
+
+  useLayoutEffect(() => {
+    connect({ isManual: true });
+    return () => {
+      disconnect();
     };
-    ws.onopen = () => {
-      notify('success', 'Connected to server.');
-      retryCountRef.current = 0;
-      const buffer = toBinary(
-        RequestSchema,
-        create(RequestSchema, {
-          command: { case: 'read', value: {} },
-        }),
-      );
-      ws.send(buffer);
-    };
-    ws.onmessage = (event: MessageEvent) => {
-      if (event.data instanceof ArrayBuffer) {
-        try {
-          const uint8Array = new Uint8Array(event.data);
-          const decodedData = fromBinary(ItemsSchema, uint8Array);
-          setItems(decodedData.items);
-        } catch (e) {
-          console.error(`Failed to decode:', ${e}`);
+  }, [connect, disconnect]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        if (
+          !socketRef.current ||
+          socketRef.current.readyState === WebSocket.CLOSED ||
+          socketRef.current.readyState === WebSocket.CLOSING
+        ) {
+          connect({ isManual: true });
         }
       }
     };
-  }, [isAuthenticated, notify]);
 
-  useLayoutEffect(() => {
-    connect();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
-      socketRef.current?.close();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [connect]);
 
@@ -91,7 +129,7 @@ export const useWebSocket = () => {
         if (res.ok) {
           retryCountRef.current = 0;
           setIsAuthenticated(true);
-          connect();
+          connect({ isManual: true });
         } else {
           setIsAuthenticated(false);
           notify('error', 'Login failed.');
