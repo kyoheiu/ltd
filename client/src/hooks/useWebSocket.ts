@@ -11,8 +11,8 @@ import { type Item, ItemsSchema, RequestSchema } from '../../gen/ltd/v1/ws_pb';
 import { useAuth } from '../providers/AuthProvider';
 import { useNotification } from '../providers/NotificationProvider';
 
-const MAX_RETRIES = 5;
-const TIMEOUT_UNIT = 3000;
+const MAX_RETRIES = 10;
+const TIMEOUT_UNIT = 1000;
 
 export const useWebSocket = () => {
   const { isAuthenticated, setIsAuthenticated } = useAuth();
