@@ -93,6 +93,7 @@ export const useWebSocket = () => {
           setIsAuthenticated(true);
           connect();
         } else {
+          setIsAuthenticated(false);
           notify('error', 'Login failed.');
         }
       });
