@@ -24,3 +24,7 @@ button {
   place-content: center;
   cursor: pointer;
 }
+
+dialog::backdrop {
+  backdrop-filter: blur(0.1rem);
+}

@@ -9,6 +9,8 @@ import {
 import type { Item } from '../../../gen/ltd/v1/ws_pb';
 import { useData } from '../DataProvider';
 
+import styles from './index.module.css';
+
 const dialogContext = createContext<{
   handleShowModal: () => void;
   setSelectedItem: React.Dispatch<React.SetStateAction<Item | null>>;
@@ -53,14 +55,27 @@ export const DialogProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <dialogContext.Provider value={ctxValue}>
       {children}
-      <dialog key={selectedItem?.id} ref={dialogRef}>
-        <form onSubmit={handleSubmit}>
-          <input name="value" type="text" defaultValue={selectedItem?.value} />
-          <button type="submit">rename</button>
+      <dialog className={styles.dialog} key={selectedItem?.id} ref={dialogRef}>
+        <form onSubmit={handleSubmit} className={styles.wrapper}>
+          <div className={styles.inputWrapper}>
+            <input
+              className={styles.input}
+              name="value"
+              type="text"
+              defaultValue={selectedItem?.value}
+            />
+            <button className={styles.primaryButton} type="submit">
+              rename
+            </button>
+          </div>
+          <button
+            className={styles.button}
+            type="button"
+            onClick={handleCloseModal}
+          >
+            close
+          </button>
         </form>
-        <button type="button" onClick={handleCloseModal}>
-          Close
-        </button>
       </dialog>
     </dialogContext.Provider>
   );

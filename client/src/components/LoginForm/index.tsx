@@ -25,7 +25,7 @@ export const LoginForm = () => {
           />
         </div>
         <button type="submit" className={styles.button}>
-          Log In
+          log in
         </button>
       </div>
     </form>
