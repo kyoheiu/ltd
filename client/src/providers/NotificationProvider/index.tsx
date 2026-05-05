@@ -29,7 +29,14 @@ export const NotificationProvider: React.FC<{
   return (
     <notificationContext.Provider value={{ notify }}>
       {children}
-      <Toaster position="bottom-right" />
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            width: '216px',
+          },
+        }}
+      />
     </notificationContext.Provider>
   );
 };
